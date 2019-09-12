@@ -1,0 +1,1 @@
+/home/hicham/dotfiles/tag-nvim/config/nvim//autoload/plug.vim

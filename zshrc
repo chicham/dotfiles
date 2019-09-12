@@ -1,3 +1,8 @@
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
 # load custom executable functions
 for function in ~/.zsh/functions/*; do
   source $function
@@ -39,3 +44,13 @@ _load_settings "$HOME/.zsh/configs"
 
 # aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+alias vim='nvim'
+alias -g F='| fzf'
+alias ls='exa'
+
+setopt no_beep         #turn off bell
+setopt NO_LIST_BEEP
+set bell-style none
