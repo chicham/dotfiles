@@ -1,1 +1,0 @@
-/home/hicham/dotfiles/tag-nvim/config/nvim//init.vim

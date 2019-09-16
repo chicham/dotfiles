@@ -38,7 +38,6 @@ zstyle ':prezto:load' pmodule \
   'prompt' \
   'archive' \
   'git' \
-  'dpkg' \
   'docker' \
   'history-substring-search' \
   'python' \

@@ -297,54 +297,69 @@ Plug 'https://github.com/AndrewRadev/linediff.vim'
 
 " Improved tab
 Plug 'https://github.com/ervandew/supertab'
-let g:SuperTabDefaultCompletionType    = '<C-n>'
-let g:SuperTabCrMapping                = 0
-let g:UltiSnipsExpandTrigger           = '<tab>'
-let g:UltiSnipsJumpForwardTrigger      = '<C-n>'
-let g:UltiSnipsJumpBackwardTrigger     = '<C-p>'
-
-Plug 'https://github.com/w0rp/ale'
-let g:airline#extensions#ale#enabled = 1
-let g:ale_set_loclist = 0
-let g:ale_set_quickfix = 1
-
-let g:ale_linters = {
-\   'python': ['pyls'],
-\}
-
-let g:ale_fixers = {
-\   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': ['eslint'],
-\   'python': ['isort', 'black'],
-\}
-
-Plug 'https://github.com/autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
-
-" FIXME: Bug with parameters completion
-let g:LanguageClient_hasSnippetsSupport = 0
-let g:LanguageClient_serverCommands = {
-      \ 'python': ['pyls'],
-      \ 'cpp': ['~/Documents/Work/cquery/build/release/bin/cquery',
-      \ '--log-file=/tmp/cq.log',
-      \ '--init={"cacheDirectory":"/var/cquery/"}']
-      \ }
-
-Plug 'https://github.com/Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-let g:echodoc#enable_at_startup = 1
-let g:deoplete#enable_camel_case = 1
-let g:deoplete#sources#jedi#show_docstring = 1
+" let g:SuperTabDefaultCompletionType    = '<C-n>'
+" let g:SuperTabCrMapping                = 0
+" let g:UltiSnipsExpandTrigger           = '<tab>'
+" let g:UltiSnipsJumpForwardTrigger      = '<C-n>'
+" let g:UltiSnipsJumpBackwardTrigger     = '<C-p>'
+"
+" make YCM compatible with UltiSnips (using supertab)
+let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
+let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+let g:SuperTabDefaultCompletionType = '<C-n>'
 
 
+" Plug 'https://github.com/w0rp/ale'
+" let g:airline#extensions#ale#enabled = 1
+" let g:ale_set_loclist = 0
+" let g:ale_set_quickfix = 1
 
-Plug 'https://github.com/Shougo/neoinclude.vim'
-Plug 'https://github.com/Shougo/echodoc.vim'
+" let g:ale_linters = {
+" \   'python': ['pyls'],
+" \}
+
+" let g:ale_fixers = {
+" \   '*': ['remove_trailing_lines', 'trim_whitespace'],
+" \   'javascript': ['eslint'],
+" \   'python': ['isort', 'black'],
+" \}
+
+" Plug 'https://github.com/autozimu/LanguageClient-neovim', {
+"     \ 'branch': 'next',
+"     \ 'do': 'bash install.sh',
+"     \ }
+
+" " FIXME: Bug with parameters completion
+" let g:LanguageClient_hasSnippetsSupport = 0
+" let g:LanguageClient_serverCommands = {
+"       \ 'python': ['pyls'],
+"       \ 'cpp': ['~/Documents/Work/cquery/build/release/bin/cquery',
+"       \ '--log-file=/tmp/cq.log',
+"       \ '--init={"cacheDirectory":"/var/cquery/"}']
+"       \ }
+
+" Plug 'https://github.com/Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" let g:echodoc#enable_at_startup = 1
+" let g:deoplete#enable_camel_case = 1
+" let g:deoplete#sources#jedi#show_docstring = 1
+
+
+Plug '~/Documents/YouCompleteMe/'
+let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
+
+" better key bindings for UltiSnipsExpandTrigger
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+
+" Plug 'https://github.com/Shougo/neoinclude.vim'
+" Plug 'https://github.com/Shougo/echodoc.vim'
+"
 
 " Icones in status bar
 " Plug 'https://github.com/ryanoasis/vim-devicons'
 " set encoding=UTF-8
+
 
 " The Silver Searcher
 if executable('rg')
@@ -417,9 +432,9 @@ runtime! plugin/opinion.vim
 runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
 
-call deoplete#custom#var('omni', 'input_patterns', {
-      \ 'tex' : g:vimtex#re#deoplete,
-      \})
+" call deoplete#custom#var('omni', 'input_patterns', {
+"       \ 'tex' : g:vimtex#re#deoplete,
+"       \})
 
 colorscheme zenburn
 
@@ -495,10 +510,10 @@ if has("autocmd")
 
   " autocmd FileType qf nmap <buffer> <cr> <cr>:lcl<cr>
   "
-  augroup coding
-    autocmd!
-    autocmd InsertEnter * call deoplete#enable()
-  augroup end
+  " augroup coding
+  "   autocmd!
+  "   autocmd InsertEnter * call deoplete#enable()
+  " augroup end
 
   augroup lexical
     autocmd!
