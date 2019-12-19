@@ -221,6 +221,7 @@ let g:lightline = {
 Plug 'https://github.com/editorconfig/editorconfig-vim'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
+Plug '/usr/bin/fzf'
 Plug 'junegunn/fzf', {'on': 'FZF', 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'https://github.com/junegunn/fzf.vim'
 " Customize fzf colors to match your color scheme
@@ -240,14 +241,11 @@ let g:fzf_colors =
   \ 'header':  ['fg', 'Comment'] }
 let g:fzf_buffers_jump = 1
 
-" command! -bang -nargs=* Rg
-"   \ call fzf#vim#grep('rg --column --line-number --no-heading --color=always '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
-
 nnoremap <leader>fb :<C-u>Buffers<cr>
 nnoremap <leader>ff :<C-u>FZF <c-r>=expand("%:p:h")<cr>/..<cr>
 nnoremap <leader>fh :<C-u>History<cr>
-nnoremap <leader>fg :<C-u>Rg<space>
-" nnoremap <leader>fG :<C-u>Find<space>
+nnoremap <leader>fg :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
+nnoremap <leader>fG :<C-u>Rg<cr>
 nnoremap <leader>fm :<C-u>Marks<cr>
 nnoremap <leader>fc :<C-u>BCommits<cr>
 nnoremap <leader>fp :<C-u>Maps<cr>
@@ -255,10 +253,11 @@ nnoremap <leader>fp :<C-u>Maps<cr>
 " Snippets
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
 " If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+
 let g:UltiSnipsEditSplit="vertical"
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-n>"
-let g:UltiSnipsJumpBackwardTrigger="<c-p>"
 let g:UltiSnipsListSnippets = "<c-u>"
 " let g:UltiSnipsSnippetsDir = ['~/.snippets', 'UltiSnips']
 let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
@@ -287,6 +286,13 @@ let g:vimtex_compiler_latexmk = {
       \ 'build_dir' : 'build',
       \}
 
+if !exists('g:ycm_semantic_triggers')
+  let g:ycm_semantic_triggers = {}
+endif
+au VimEnter * let g:ycm_semantic_triggers.tex=g:vimtex#re#youcompleteme
+
+Plug 'https://github.com/Shougo/echodoc.vim'
+
 " Split/Join lines
 Plug 'https://github.com/AndrewRadev/splitjoin.vim'
 let g:splitjoin_split_mapping = 'gS'
@@ -309,20 +315,24 @@ let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
 let g:SuperTabDefaultCompletionType = '<C-n>'
 
 
-" Plug 'https://github.com/w0rp/ale'
-" let g:airline#extensions#ale#enabled = 1
-" let g:ale_set_loclist = 0
-" let g:ale_set_quickfix = 1
+Plug 'https://github.com/dense-analysis/ale'
+let g:airline#extensions#ale#enabled = 1
+let g:ale_set_loclist = 0
+let g:ale_set_quickfix = 1
+let g:ale_fix_on_save = 1
 
-" let g:ale_linters = {
-" \   'python': ['pyls'],
-" \}
+let g:ale_linters = {
+\   'python': ['flake8', 'vulture', 'bandit', 'pyre', 'mypy', 'pyflakes'],
+\}
 
-" let g:ale_fixers = {
-" \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-" \   'javascript': ['eslint'],
-" \   'python': ['isort', 'black'],
-" \}
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'javascript': ['eslint'],
+\   'python': ['isort', 'black'],
+\}
+
+nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
+
 
 " Plug 'https://github.com/autozimu/LanguageClient-neovim', {
 "     \ 'branch': 'next',
@@ -346,11 +356,29 @@ let g:SuperTabDefaultCompletionType = '<C-n>'
 
 Plug '~/Documents/YouCompleteMe/'
 let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
+let g:ycm_semantic_triggers =
+  \ {
+  \ 'python': ['re!import\s+(\w+(\.|\,\s+)?)*', 're!^(from)\s+', 're!except\s+', 're!raise']
+  \ }
 
 " better key bindings for UltiSnipsExpandTrigger
-let g:UltiSnipsExpandTrigger = "<tab>"
-let g:UltiSnipsJumpForwardTrigger = "<tab>"
-let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+nmap <silent> gd :<C-u>YcmCompleter GoTo<cr>
+nnoremap <silent> <leader>yt :<C-u>YcmCompleter GoTo<cr>
+nnoremap <silent> <leader>yd :<C-u>YcmCompleter GetDoc<cr>
+nnoremap <silent> <leader>yr :<C-u>YcmCompleter GoToReferences<cr>
+nnoremap <silent> <leader>yy :<C-u>YcmCompleter GetType<cr>
+nnoremap <silent> <leader>yf :<C-u>YcmCompleter FixIt<cr>
+
+" let g:ycm_language_server =
+"   \ [
+"   \   {
+"   \     'name': 'python',
+"   \     'cmdline': [ 'pyls'],
+"   \     'filetypes': [ 'python' ]
+"   \   },
+"   \ ]
+
+
 
 " Plug 'https://github.com/Shougo/neoinclude.vim'
 " Plug 'https://github.com/Shougo/echodoc.vim'
@@ -417,13 +445,13 @@ let g:pandoc#formatting#mode = "s"
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
-Plug 'https://github.com/heavenshell/vim-pydocstring'
-
 Plug 'https://github.com/mattn/emmet-vim'
 let g:user_emmet_install_global = 0
 
 "Preview substitutions
-Plug 'https://github.com/markonm/traces.vim'
+" Plug 'https://github.com/markonm/traces.vim'
+" Plug 'https://github.com/terryma/vim-multiple-cursors'
+" Plug 'https://github.com/terryma/vim-expand-region'
 
 call plug#end()
 
@@ -431,6 +459,8 @@ runtime! plugin/sensible.vim
 runtime! plugin/opinion.vim
 runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
+source /usr/share/vim/vimfiles/plugin/fzf.vim
+
 
 " call deoplete#custom#var('omni', 'input_patterns', {
 "       \ 'tex' : g:vimtex#re#deoplete,
