@@ -1,7 +1,12 @@
 #!/bin/sh
+staging_py_files=$(git diff --cached --name-only --diff-filter=ACM | grep .py)
+flake8 $staging_py_files
+isort $staging_py_files
+black $staging_py_files
 
-local_hook="$HOME"/.git_template.local/hooks/pre-commit
+git add $staging_files
 
-if [ -f "$local_hook" ]; then
-  . "$local_hook"
+# S’il existe au moins une erreur, arrête la création du commit
+if [ ${#errors[@]} -ne 0 ]; then
+  exit 1
 fi

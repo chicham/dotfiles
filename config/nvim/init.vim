@@ -3,10 +3,19 @@ if has('vim_starting')
   set all&
 endif
 
-if has("gui_running")
-  " GUI is running or is about to start.
-  set lines=999 columns=999
-endif
+" if has("gui_running")
+"   " GUI is running or is about to start.
+"   set lines=999 columns=999
+" else
+"   " This is console Vim.
+"   if exists("+lines")
+"     set lines=55
+"   endif
+"   if exists("+columns")
+"     set columns=166
+"   endif
+" endif
+
 
 if has('nvim')
   let g:home=expand('~/.config/nvim/', 1)
@@ -42,7 +51,7 @@ Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
 Plug 'https://github.com/tpope/vim-fugitive'
 Plug 'https://github.com/tpope/vim-rhubarb'
-Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
+" Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
 nnoremap <silent><leader>ga :<C-u>Git add %:p<CR><CR>
 nnoremap <silent><leader>gs :<C-u>Gstatus<CR>
@@ -58,7 +67,6 @@ nnoremap <Leader>gp :Gpush --all<cr>
 
 let g:fugitive_gitlab_domains = ['https://git.qwant.ninja/']
 
-Plug 'https://github.com/junegunn/gv.vim', { 'on': 'GV' }
 " Improved dot command
 Plug 'https://github.com/tpope/vim-repeat'
 " Surround
@@ -108,46 +116,49 @@ Plug 'https://github.com/jiangmiao/auto-pairs'
 let g:AutoPairsShortcutFastWrap = '<C-w>'
 let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`'}
 
-" New textobjects
-Plug 'https://github.com/kana/vim-textobj-user'
-" map ab, ib
-Plug 'https://github.com/rhysd/vim-textobj-anyblock'
-" map ac, ic, aC
-Plug 'https://github.com/glts/vim-textobj-comment'
-let g:textobj_comment_no_default_key_mappings = 1
-xmap a$ <Plug>(textobj-comment-a)
-omap a$ <Plug>(textobj-comment-a)
-xmap i$ <Plug>(textobj-comment-i)
-omap i$ <Plug>(textobj-comment-i)
+Plug 'https://github.com/wellle/targets.vim'
+Plug 'https://github.com/wellle/line-targets.vim'
 
-xmap a# <Plug>(textobj-comment-big-a)
-omap a# <Plug>(textobj-comment-big-a)
-xmap i# <Plug>(textobj-comment-big-i)
-omap i# <Plug>(textobj-comment-big-i)
+"" New textobjects
+"Plug 'https://github.com/kana/vim-textobj-user'
+"" map ab, ib
+"Plug 'https://github.com/rhysd/vim-textobj-anyblock'
+"" map ac, ic, aC
+"Plug 'https://github.com/glts/vim-textobj-comment'
+"let g:textobj_comment_no_default_key_mappings = 1
+"xmap a$ <Plug>(textobj-comment-a)
+"omap a$ <Plug>(textobj-comment-a)
+"xmap i$ <Plug>(textobj-comment-i)
+"omap i$ <Plug>(textobj-comment-i)
 
-"map ii, ai, iI, aI
-Plug 'https://github.com/kana/vim-textobj-indent'
-"map a/, i/
-Plug 'https://github.com/kana/vim-textobj-lastpat'
-" map al, il
-Plug 'https://github.com/kana/vim-textobj-line'
-" map a%, i%
-Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
-" map a,, i,
-Plug 'https://github.com/sgur/vim-textobj-parameter'
-"map as, is
-Plug 'https://github.com/kana/vim-textobj-syntax'
-let g:textobj_syntax_no_default_key_mappings = 1
-xmap as  <Plug>(textobj-syntax-a)
-omap as  <Plug>(textobj-syntax-a)
-xmap is  <Plug>(textobj-syntax-i)
-omap is  <Plug>(textobj-syntax-i)
-" map av, iv
-Plug 'https://github.com/Julian/vim-textobj-variable-segment'
+"xmap a# <Plug>(textobj-comment-big-a)
+"omap a# <Plug>(textobj-comment-big-a)
+"xmap i# <Plug>(textobj-comment-big-i)
+"omap i# <Plug>(textobj-comment-big-i)
+
+""map ii, ai, iI, aI
+"Plug 'https://github.com/kana/vim-textobj-indent'
+""map a/, i/
+"Plug 'https://github.com/kana/vim-textobj-lastpat'
+"" map al, il
+"Plug 'https://github.com/kana/vim-textobj-line'
+"" map a%, i%
+"Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
+"" map a,, i,
+"Plug 'https://github.com/sgur/vim-textobj-parameter'
+""map as, is
+"Plug 'https://github.com/kana/vim-textobj-syntax'
+"let g:textobj_syntax_no_default_key_mappings = 1
+"xmap as  <Plug>(textobj-syntax-a)
+"omap as  <Plug>(textobj-syntax-a)
+"xmap is  <Plug>(textobj-syntax-i)
+"omap is  <Plug>(textobj-syntax-i)
+"" map av, iv
+"Plug 'https://github.com/Julian/vim-textobj-variable-segment'
 
 Plug 'https://github.com/kana/vim-operator-user'
 Plug 'https://github.com/kana/vim-operator-replace'
-map gr <Plug>(operator-replace)
+nmap gr <Plug>(operator-replace)
 "Intuitive visual blocks
 Plug 'https://github.com/kana/vim-niceblock/'
 " Better visual mode move
@@ -222,7 +233,6 @@ Plug 'https://github.com/editorconfig/editorconfig-vim'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 Plug '/usr/bin/fzf'
-Plug 'junegunn/fzf', {'on': 'FZF', 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'https://github.com/junegunn/fzf.vim'
 " Customize fzf colors to match your color scheme
 let g:fzf_colors =
@@ -259,7 +269,6 @@ let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
 
 let g:UltiSnipsEditSplit="vertical"
 let g:UltiSnipsListSnippets = "<c-u>"
-" let g:UltiSnipsSnippetsDir = ['~/.snippets', 'UltiSnips']
 let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
 
 " Colorschemes
@@ -286,12 +295,6 @@ let g:vimtex_compiler_latexmk = {
       \ 'build_dir' : 'build',
       \}
 
-if !exists('g:ycm_semantic_triggers')
-  let g:ycm_semantic_triggers = {}
-endif
-au VimEnter * let g:ycm_semantic_triggers.tex=g:vimtex#re#youcompleteme
-
-Plug 'https://github.com/Shougo/echodoc.vim'
 
 " Split/Join lines
 Plug 'https://github.com/AndrewRadev/splitjoin.vim'
@@ -303,12 +306,12 @@ Plug 'https://github.com/AndrewRadev/linediff.vim'
 
 " Improved tab
 Plug 'https://github.com/ervandew/supertab'
-" let g:SuperTabDefaultCompletionType    = '<C-n>'
-" let g:SuperTabCrMapping                = 0
-" let g:UltiSnipsExpandTrigger           = '<tab>'
-" let g:UltiSnipsJumpForwardTrigger      = '<C-n>'
-" let g:UltiSnipsJumpBackwardTrigger     = '<C-p>'
-"
+let g:SuperTabDefaultCompletionType    = '<C-n>'
+let g:SuperTabCrMapping                = 0
+let g:UltiSnipsExpandTrigger           = '<tab>'
+let g:UltiSnipsJumpForwardTrigger      = '<C-n>'
+let g:UltiSnipsJumpBackwardTrigger     = '<C-p>'
+
 " make YCM compatible with UltiSnips (using supertab)
 let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
 let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
@@ -316,13 +319,12 @@ let g:SuperTabDefaultCompletionType = '<C-n>'
 
 
 Plug 'https://github.com/dense-analysis/ale'
-let g:airline#extensions#ale#enabled = 1
-let g:ale_set_loclist = 0
+let g:ale_set_loclist = 1
 let g:ale_set_quickfix = 1
 let g:ale_fix_on_save = 1
 
 let g:ale_linters = {
-\   'python': ['flake8', 'vulture', 'bandit', 'pyre', 'mypy', 'pyflakes'],
+\   'python': ['flake8', 'vulture', 'bandit', 'mypy', 'pyflakes'],
 \}
 
 let g:ale_fixers = {
@@ -331,62 +333,84 @@ let g:ale_fixers = {
 \   'python': ['isort', 'black'],
 \}
 
-nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
+" nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
 
+Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
+Plug 'https://github.com/antoinemadec/coc-fzf'
 
-" Plug 'https://github.com/autozimu/LanguageClient-neovim', {
-"     \ 'branch': 'next',
-"     \ 'do': 'bash install.sh',
-"     \ }
+inoremap <silent><expr> <c-space> coc#refresh()
+" if has('patch8.1.1068')
+"   " Use `complete_info` if your (Neo)Vim version supports it.
+"   inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+" else
+"   imap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" endif
+" Use `[g` and `]g` to navigate diagnostics
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gf <Plug>(coc-references)
 
-" " FIXME: Bug with parameters completion
-" let g:LanguageClient_hasSnippetsSupport = 0
-" let g:LanguageClient_serverCommands = {
-"       \ 'python': ['pyls'],
-"       \ 'cpp': ['~/Documents/Work/cquery/build/release/bin/cquery',
-"       \ '--log-file=/tmp/cq.log',
-"       \ '--init={"cacheDirectory":"/var/cquery/"}']
-"       \ }
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
-" Plug 'https://github.com/Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-" let g:echodoc#enable_at_startup = 1
-" let g:deoplete#enable_camel_case = 1
-" let g:deoplete#sources#jedi#show_docstring = 1
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 
+" Symbol renaming.
+nnoremap <leader>cr <Plug>(coc-rename)
 
-Plug '~/Documents/YouCompleteMe/'
-let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
-let g:ycm_semantic_triggers =
-  \ {
-  \ 'python': ['re!import\s+(\w+(\.|\,\s+)?)*', 're!^(from)\s+', 're!except\s+', 're!raise']
-  \ }
+augroup mygroup
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
 
-" better key bindings for UltiSnipsExpandTrigger
-nmap <silent> gd :<C-u>YcmCompleter GoTo<cr>
-nnoremap <silent> <leader>yt :<C-u>YcmCompleter GoTo<cr>
-nnoremap <silent> <leader>yd :<C-u>YcmCompleter GetDoc<cr>
-nnoremap <silent> <leader>yr :<C-u>YcmCompleter GoToReferences<cr>
-nnoremap <silent> <leader>yy :<C-u>YcmCompleter GetType<cr>
-nnoremap <silent> <leader>yf :<C-u>YcmCompleter FixIt<cr>
-
-" let g:ycm_language_server =
-"   \ [
-"   \   {
-"   \     'name': 'python',
-"   \     'cmdline': [ 'pyls'],
-"   \     'filetypes': [ 'python' ]
-"   \   },
-"   \ ]
-
-
-
-" Plug 'https://github.com/Shougo/neoinclude.vim'
-" Plug 'https://github.com/Shougo/echodoc.vim'
+" Applying codeAction to the selected region.
+" Example: `<leader>aap` for current paragraph
+xnoremap <leader>ca  <Plug>(coc-codeaction-selected)
+nnoremap <leader>ca  <Plug>(coc-codeaction-selected)
+" Remap keys for applying codeAction to the current line.
+nnoremap <leader>caa  <Plug>(coc-codeaction)
+" Apply AutoFix to problem on the current line.
+noremap <leader>cff  <Plug>(coc-fix-current)
 "
+" Mappings using CoCList:
+" Show all diagnostics.
+nnoremap <silent> <space>cd  :<C-u>CocFzfList diagnostics<cr>
+" Manage extensions.
+nnoremap <silent> <space>ce  :<C-u>CocFzfList extensions<cr>
+" Show commands.
+nnoremap <silent> <space>cc  :<C-u>CocFzfList commands<cr>
+" Find symbol of current document.
+nnoremap <silent> <space>co  :<C-u>CocFzfList outline<cr>
+" Search workspace symbols.
+nnoremap <silent> <space>cs  :<C-u>CocFzList -I symbols<cr>
 
-" Icones in status bar
-" Plug 'https://github.com/ryanoasis/vim-devicons'
-" set encoding=UTF-8
+let g:lightline = {
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'cocstatus', 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'component_function': {
+      \   'cocstatus': 'coc#status'
+      \ },
+      \ }
+
+" Use auocmd to force lightline update.
+autocmd User CocStatusChange,CocDiagnosticChange call lightline#update()
+
 
 
 " The Silver Searcher
@@ -394,7 +418,6 @@ if executable('rg')
   " Use ag over grep
   set grepprg=rg\ --vimgrep
 endif
-Plug 'https://github.com/mhinz/vim-grepper', { 'on': ['Grepper', '<plug>(GrepperOperator)'] }
 
 Plug 'https://github.com/luochen1990/rainbow'
 let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
@@ -445,13 +468,8 @@ let g:pandoc#formatting#mode = "s"
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
-Plug 'https://github.com/mattn/emmet-vim'
-let g:user_emmet_install_global = 0
-
-"Preview substitutions
-" Plug 'https://github.com/markonm/traces.vim'
-" Plug 'https://github.com/terryma/vim-multiple-cursors'
-" Plug 'https://github.com/terryma/vim-expand-region'
+Plug 'https://github.com/tbabej/taskwiki'
+Plug 'https://github.com/blindFS/vim-taskwarrior'
 
 call plug#end()
 
@@ -460,11 +478,6 @@ runtime! plugin/opinion.vim
 runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
 source /usr/share/vim/vimfiles/plugin/fzf.vim
-
-
-" call deoplete#custom#var('omni', 'input_patterns', {
-"       \ 'tex' : g:vimtex#re#deoplete,
-"       \})
 
 colorscheme zenburn
 
@@ -500,22 +513,23 @@ set showbreak=>>
 set mouse=nvi
 set mousemodel=popup
 set listchars-=trail:-
-" set listchars+=trail:·
 set t_vb=
 set novisualbell
 set noeb vb t_vb=
 set list
 set nohlsearch
-" set shell=zsh\ -l
 set nojoinspaces
 set noshowmode
 set laststatus=2
 set hidden
 set diffopt+=vertical
-" if exists('&inccommand')
-"   set incsearch
-"   set inccommand=nosplit
-" endif
+set signcolumn=yes
+set shortmess +=c
+
+if exists('&inccommand')
+  set incsearch
+  set inccommand=nosplit
+endif
 
 if v:version >= 703
   set wildignorecase
@@ -537,13 +551,6 @@ endif
 " Autocmd
 " Copied from tpope
 if has("autocmd")
-
-  " autocmd FileType qf nmap <buffer> <cr> <cr>:lcl<cr>
-  "
-  " augroup coding
-  "   autocmd!
-  "   autocmd InsertEnter * call deoplete#enable()
-  " augroup end
 
   augroup lexical
     autocmd!
@@ -632,15 +639,19 @@ nnoremap <leader>et :tabe <c-r>=expand("%:p:h")<cr>/
 nnoremap <leader>ee :e <c-r>=expand("%:p:h")<cr>/
 nnoremap <leader>e_ <C-w><C-s><C-w>l:e <c-r>=expand("%:p:h")<cr>/
 nnoremap <leader>e<bar> <C-w><C-v><C-w>l:e <c-r>=expand("%:p:h")<cr>/
-nnoremap <leader>c <C-w>c
+nnoremap <leader>ww <C-w>c
 nnoremap <leader>w= <C-w>=
 nnoremap <leader>wr <C-w>r
 nnoremap <leader>wT <C-w>T
 nnoremap <leader>wo <C-w>o
-nnoremap gw <C-W>w
-nnoremap gW <C-W>W
 nnoremap <leader>wh <C-w>t<C-w>K
 nnoremap <leader>wv <C-w>t<C-w>H
+
+nnoremap <leader>+ 10<C-w>+
+nnoremap <leader>- 10<C-w>-
+nnoremap <leader>« 10<C-w><
+nnoremap <leader>» 10<C-w>>
+
 
 nmap ( [
 nmap ) ]
@@ -678,3 +689,8 @@ vnoremap <silent><Down> gj
 vnoremap <silent><Up> gk
 " Switch between last 2 files
 nnoremap <leader><leader> <c-^>
+" Open terminal in a split
+
+nnoremap <silent> <leader>t<Bar> <C-W>v<C-W><Right>:terminal<cr>
+nnoremap <silent> <leader>t_ <C-W>s<C-W><Down>:terminal<cr>
+tnoremap <Esc> <C-\><C-n>

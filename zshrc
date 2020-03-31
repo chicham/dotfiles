@@ -13,8 +13,12 @@ fi
 # Customize to your needs...
 
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 source ~/.git-extras-completion.zsh
+export FZF_ROOT=/usr/share/fzf
+[ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
+[ -f $FZF_ROOT/key-bindings.zsh ] && source $FZF_ROOT/key-bindings.zsh
+
+
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -34,7 +38,7 @@ unset __conda_setup
 
 alias ls='exa'
 
-export EDITOR=nvim
+export EDITOR=nvr
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpg-connect-agent updatestartuptty /bye > /dev/null
@@ -42,10 +46,11 @@ export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 # Setting fd as the default source for fzf
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --ignore-case --glob --full-path'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
+# export FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%' --preview 'bat --color=always --style=header,grid --line-range :300 {}'"
 
 
 
-[[ -f ~/.Xresources ]] && xrdb -merge -I$HOME ~/.Xresources
+[[ -f ~/.Xresources ]] && xrdb ~/.Xresources
 
 alias f='fzf'
 
@@ -78,9 +83,10 @@ _fzf_compgen_dir() {
 # ff 'echo Selected music:' --extention mp3
 # fm rm # To rm files in current directory
 ff() {
-    sels=( "${(@f)$(fd "${fd_default[@]}" "${@:2}"| fzf)}" )
+    sels=( "${(@f)$(fd "${fd_default[@]}" "${@:2}" $HOME | fzf)}" )
     test -n "$sels" && print -z -- "$1 ${sels[@]:q:q}"
 }
+
 
 fm() ff "$@" --max-depth 1
 
@@ -90,8 +96,16 @@ fm() ff "$@" --max-depth 1
  fe() {
    local files
    IFS=$'\n' files=($(fd "$1" | fzf --multi --select-1 --exit-0))
-   [[ -n "$files" ]] && ${EDITOR:-nvim} "${files[@]}"
+   [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
  }
+
+# using ripgrep combined with preview
+# find-in-file - usage: fif <searchTerm>
+fif() {
+  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
+  file=$(rg --files-with-matches --no-messages "$1" | fzf --preview "highlight -O ansi -l {} 2> /dev/null | rg --colors 'match:bg:yellow' --ignore-case --pretty --context 10 '$1' || rg --ignore-case --pretty --context 10 '$1' {}")
+  [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
+}
 
 
 # Fuzzy change dir
@@ -100,15 +114,6 @@ fcd() {
   dir=$(fd ${1:-.} -t d $HOME 2> /dev/null | fzf +m --select-1) && cd "$dir"
 }
 
-# using ripgrep combined with preview
-# find-in-file - usage: fif <searchTerm>
-fif() {
-  local file
-  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
-  if [ -n "$file" ]; then
-    [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-nvim} "$file"
-  fi
-}
 
 # fkill - kill processes - list only the ones you can kill. Modified the earlier script.
 fkill() {
