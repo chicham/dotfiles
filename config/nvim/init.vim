@@ -33,8 +33,6 @@ endif
 
 let g:mapleader=' '
 let g:maplocalleader='\'
-let g:python3_host_prog = 'python3'
-let g:python2_host_prog = 'python2'
 
 let g:bundle = g:home . '/bundle/'
 call plug#begin(g:bundle)
@@ -71,6 +69,21 @@ let g:fugitive_gitlab_domains = ['https://git.qwant.ninja/']
 Plug 'https://github.com/tpope/vim-repeat'
 " Surround
 Plug 'https://github.com/machakann/vim-sandwich'
+nmap s <Nop>
+xmap s <Nop>
+xmap is <Plug>(textobj-sandwich-query-i)
+xmap as <Plug>(textobj-sandwich-query-a)
+omap is <Plug>(textobj-sandwich-query-i)
+omap as <Plug>(textobj-sandwich-query-a)
+xmap ib <Plug>(textobj-sandwich-auto-i)
+xmap ab <Plug>(textobj-sandwich-auto-a)
+omap ib <Plug>(textobj-sandwich-auto-i)
+omap ab <Plug>(textobj-sandwich-auto-a)
+xmap im <Plug>(textobj-sandwich-literal-query-i)
+xmap am <Plug>(textobj-sandwich-literal-query-a)
+omap im <Plug>(textobj-sandwich-literal-query-i)
+omap am <Plug>(textobj-sandwich-literal-query-a)
+
 " Automatically end some structures
 Plug 'https://github.com/tpope/vim-endwise'
 " Better syntax for languages
@@ -116,45 +129,32 @@ Plug 'https://github.com/jiangmiao/auto-pairs'
 let g:AutoPairsShortcutFastWrap = '<C-w>'
 let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`'}
 
-Plug 'https://github.com/wellle/targets.vim'
-Plug 'https://github.com/wellle/line-targets.vim'
+" New textobjects
+Plug 'https://github.com/kana/vim-textobj-user'
+"map ii, ai, iI, aI
+Plug 'https://github.com/kana/vim-textobj-indent'
+"map a/, i/
+Plug 'https://github.com/kana/vim-textobj-lastpat'
+" map al, il
+Plug 'https://github.com/kana/vim-textobj-line'
+" map a%, i%
+Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
+" map a,, i,
+Plug 'https://github.com/sgur/vim-textobj-parameter'
+" map ac, ic, aC
+Plug 'https://github.com/glts/vim-textobj-comment'
+let g:textobj_comment_no_default_key_mappings = 1
+xmap a$ <Plug>(textobj-comment-a)
+omap a$ <Plug>(textobj-comment-a)
+xmap i$ <Plug>(textobj-comment-i)
+omap i$ <Plug>(textobj-comment-i)
 
-"" New textobjects
-"Plug 'https://github.com/kana/vim-textobj-user'
-"" map ab, ib
-"Plug 'https://github.com/rhysd/vim-textobj-anyblock'
-"" map ac, ic, aC
-"Plug 'https://github.com/glts/vim-textobj-comment'
-"let g:textobj_comment_no_default_key_mappings = 1
-"xmap a$ <Plug>(textobj-comment-a)
-"omap a$ <Plug>(textobj-comment-a)
-"xmap i$ <Plug>(textobj-comment-i)
-"omap i$ <Plug>(textobj-comment-i)
-
-"xmap a# <Plug>(textobj-comment-big-a)
-"omap a# <Plug>(textobj-comment-big-a)
-"xmap i# <Plug>(textobj-comment-big-i)
-"omap i# <Plug>(textobj-comment-big-i)
-
-""map ii, ai, iI, aI
-"Plug 'https://github.com/kana/vim-textobj-indent'
-""map a/, i/
-"Plug 'https://github.com/kana/vim-textobj-lastpat'
-"" map al, il
-"Plug 'https://github.com/kana/vim-textobj-line'
-"" map a%, i%
-"Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
-"" map a,, i,
-"Plug 'https://github.com/sgur/vim-textobj-parameter'
-""map as, is
-"Plug 'https://github.com/kana/vim-textobj-syntax'
-"let g:textobj_syntax_no_default_key_mappings = 1
-"xmap as  <Plug>(textobj-syntax-a)
-"omap as  <Plug>(textobj-syntax-a)
-"xmap is  <Plug>(textobj-syntax-i)
-"omap is  <Plug>(textobj-syntax-i)
-"" map av, iv
-"Plug 'https://github.com/Julian/vim-textobj-variable-segment'
+xmap a# <Plug>(textobj-comment-big-a)
+omap a# <Plug>(textobj-comment-big-a)
+xmap i# <Plug>(textobj-comment-big-i)
+omap i# <Plug>(textobj-comment-big-i)
+" map av, iv
+Plug 'https://github.com/Julian/vim-textobj-variable-segment'
 
 Plug 'https://github.com/kana/vim-operator-user'
 Plug 'https://github.com/kana/vim-operator-replace'
@@ -234,6 +234,8 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 Plug '/usr/bin/fzf'
 Plug 'https://github.com/junegunn/fzf.vim'
+
+let $FZF_DEFAULT_OPTS .= ' --no-height'
 " Customize fzf colors to match your color scheme
 let g:fzf_colors =
 \ { 'fg':      ['fg', 'Normal'],
@@ -250,15 +252,20 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 let g:fzf_buffers_jump = 1
+let g:fzf_commits_log_options = '--graph --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr"'
 
 nnoremap <leader>fb :<C-u>Buffers<cr>
-nnoremap <leader>ff :<C-u>FZF <c-r>=expand("%:p:h")<cr>/..<cr>
+nnoremap <leader>fF :<C-u>Files <c-r>=expand("$HOME")<cr><cr>
+nnoremap <leader>ff :<C-u>Files <c-r>=expand("%:p:h")<cr><cr>
 nnoremap <leader>fh :<C-u>History<cr>
-nnoremap <leader>fg :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
-nnoremap <leader>fG :<C-u>Rg<cr>
+nnoremap <leader>fG :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
+nnoremap <leader>fg :<C-u>Rg<cr>
 nnoremap <leader>fm :<C-u>Marks<cr>
 nnoremap <leader>fc :<C-u>BCommits<cr>
 nnoremap <leader>fp :<C-u>Maps<cr>
+nnoremap <leader>fT :<C-u>Tags<cr>
+nnoremap <leader>ft :<C-u>BTags<cr>
+nnoremap <leader>fs :<C-u>Snippets<cr>
 
 " Snippets
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
@@ -272,14 +279,17 @@ let g:UltiSnipsListSnippets = "<c-u>"
 let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
 
 " Colorschemes
-Plug 'https://github.com/jnurmine/Zenburn'
-let g:zenburn_high_Contrast=1
-let g:zenburn_alternate_Visual = 1
-let g:zenburn_alternate_Include = 1
-let g:zenburn_alternate_Error = 1
-let g:zenburn_disable_Label_underline = 1
-let g:zenburn_force_dark_Background = 1
-let g:zenburn_unified_CursorColumn = 1
+" Plug 'https://github.com/jnurmine/Zenburn'
+" let g:zenburn_high_Contrast=1
+" let g:zenburn_alternate_Visual = 1
+" let g:zenburn_alternate_Include = 1
+" let g:zenburn_alternate_Error = 1
+" let g:zenburn_disable_Label_underline = 1
+" let g:zenburn_force_dark_Background = 1
+" let g:zenburn_unified_CursorColumn = 1
+
+Plug 'https://github.com/nanotech/jellybeans.vim'
+
 
 "
 " Latex plugin
@@ -335,6 +345,8 @@ let g:ale_fixers = {
 
 " nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
 
+Plug 'https://github.com/Shougo/neco-vim'
+Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 Plug 'https://github.com/antoinemadec/coc-fzf'
 
@@ -468,9 +480,6 @@ let g:pandoc#formatting#mode = "s"
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
-Plug 'https://github.com/tbabej/taskwiki'
-Plug 'https://github.com/blindFS/vim-taskwarrior'
-
 call plug#end()
 
 runtime! plugin/sensible.vim
@@ -479,7 +488,16 @@ runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
 source /usr/share/vim/vimfiles/plugin/fzf.vim
 
-colorscheme zenburn
+let g:sandwich#recipes += [
+      \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
+      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
+      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
+      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{']},
+      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
+      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
+      \ ]
+
+colorscheme jellybeans
 
 inoremap <c-e> <ESC>A
 inoremap <c-b> <Esc>I
@@ -647,10 +665,10 @@ nnoremap <leader>wo <C-w>o
 nnoremap <leader>wh <C-w>t<C-w>K
 nnoremap <leader>wv <C-w>t<C-w>H
 
-nnoremap <leader>+ 10<C-w>+
-nnoremap <leader>- 10<C-w>-
-nnoremap <leader>« 10<C-w><
-nnoremap <leader>» 10<C-w>>
+nnoremap <leader>+ 6<C-w>+
+nnoremap <leader>- 6<C-w>-
+nnoremap <leader>« 6<C-w><
+nnoremap <leader>» 6<C-w>>
 
 
 nmap ( [
@@ -693,4 +711,4 @@ nnoremap <leader><leader> <c-^>
 
 nnoremap <silent> <leader>t<Bar> <C-W>v<C-W><Right>:terminal<cr>
 nnoremap <silent> <leader>t_ <C-W>s<C-W><Down>:terminal<cr>
-tnoremap <Esc> <C-\><C-n>
+tnoremap ,, <C-\><C-n>

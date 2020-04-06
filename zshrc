@@ -38,15 +38,15 @@ unset __conda_setup
 
 alias ls='exa'
 
-export EDITOR=nvr
+export EDITOR=nvim
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpg-connect-agent updatestartuptty /bye > /dev/null
 export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 # Setting fd as the default source for fzf
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --ignore-case --glob --full-path'
+# export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --ignore-case --glob --full-path'
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --ignore-case --full-path'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
-# export FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%' --preview 'bat --color=always --style=header,grid --line-range :300 {}'"
 
 
 
@@ -103,7 +103,7 @@ fm() ff "$@" --max-depth 1
 # find-in-file - usage: fif <searchTerm>
 fif() {
   if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
-  file=$(rg --files-with-matches --no-messages "$1" | fzf --preview "highlight -O ansi -l {} 2> /dev/null | rg --colors 'match:bg:yellow' --ignore-case --pretty --context 10 '$1' || rg --ignore-case --pretty --context 10 '$1' {}")
+  file=$(rg --files-with-matches --no-messages "$1" | fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info)
   [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
 }
 
