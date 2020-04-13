@@ -3,20 +3,6 @@ if has('vim_starting')
   set all&
 endif
 
-" if has("gui_running")
-"   " GUI is running or is about to start.
-"   set lines=999 columns=999
-" else
-"   " This is console Vim.
-"   if exists("+lines")
-"     set lines=55
-"   endif
-"   if exists("+columns")
-"     set columns=166
-"   endif
-" endif
-
-
 if has('nvim')
   let g:home=expand('~/.config/nvim/', 1)
 else
@@ -63,7 +49,7 @@ nnoremap <Leader>g+ :Silent Git stash<CR>:e<CR>
 nnoremap <Leader>g- :Silent Git stash pop<CR>:e<CR>
 nnoremap <Leader>gp :Gpush --all<cr>
 
-let g:fugitive_gitlab_domains = ['https://git.qwant.ninja/']
+let g:fugitive_gitlab_domains = "'https://git.qwant.ninja/'"
 
 " Improved dot command
 Plug 'https://github.com/tpope/vim-repeat'
@@ -84,8 +70,6 @@ xmap am <Plug>(textobj-sandwich-literal-query-a)
 omap im <Plug>(textobj-sandwich-literal-query-i)
 omap am <Plug>(textobj-sandwich-literal-query-a)
 
-" Automatically end some structures
-Plug 'https://github.com/tpope/vim-endwise'
 " Better syntax for languages
 Plug 'https://github.com/sheerun/vim-polyglot'
 let g:polyglot_disabled = ['latex', 'tex', 'tex_LatexBox', 'markdown']
@@ -123,11 +107,9 @@ nmap T <Plug>Sneak_T
 xmap t <Plug>Sneak_t
 xmap T <Plug>Sneak_T
 omap T <Plug>Sneak_T
-let g:sneak#target_labels = "etiscuranmovpdélbjzwqkxgyhàfç/ETISCURANMOVPDÉLBJZWQKXGYHÀFÇ"
-" Automatically close pairs
-Plug 'https://github.com/jiangmiao/auto-pairs'
-let g:AutoPairsShortcutFastWrap = '<C-w>'
-let g:AutoPairs = {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`'}
+let g:sneak#target_labels = "eiuatsrncmopébvdljEIUATSRNCMOPÉBVDLJ"
+
+Plug 'https://github.com/cohama/lexima.vim'
 
 " New textobjects
 Plug 'https://github.com/kana/vim-textobj-user'
@@ -149,7 +131,7 @@ omap a$ <Plug>(textobj-comment-a)
 xmap i$ <Plug>(textobj-comment-i)
 omap i$ <Plug>(textobj-comment-i)
 
-xmap a# <Plug>(textobj-comment-big-a)
+xmap a# <Plug>((textobj-comment-big-a))
 omap a# <Plug>(textobj-comment-big-a)
 xmap i# <Plug>(textobj-comment-big-i)
 omap i# <Plug>(textobj-comment-big-i)
@@ -163,24 +145,7 @@ nmap gr <Plug>(operator-replace)
 Plug 'https://github.com/kana/vim-niceblock/'
 " Better visual mode move
 Plug 'https://github.com/bruno-/vim-vertical-move'
-" Highlight when yanking
-Plug 'https://github.com/haya14busa/vim-operator-flashy'
-map y <Plug>(operator-flashy)
-nmap Y <Plug>(operator-flashy)$
-" Better incsearch
-Plug 'https://github.com/haya14busa/is.vim'
-" Better search word under cursor
-Plug 'https://github.com/haya14busa/vim-asterisk'
-map *  <Plug>(asterisk-z*)<Plug>(is-nohl-1)<Plug>Pulse
-map #  <Plug>(asterisk-z#)<Plug>(is-nohl-1)<Plug>Pulse
-map g* <Plug>(asterisk-gz*)<Plug>(is-nohl-1)<Plug>Pulse
-map g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)<Plug>Pulse
-" Highlight when searching
-Plug 'https://github.com/inside/vim-search-pulse'
-let g:vim_search_pulse_disable_auto_mappings = 1
-let g:vim_search_pulse_mode = 'pattern'
-nmap n :norm! nzzzv<Plug>Pulse<CR>
-nmap N :norm! Nzzzv<Plug>Pulse<CR>
+"
 " Align plugin
 Plug 'https://github.com/tommcdo/vim-lion'
 let b:lion_squeeze_spaces = 1
@@ -196,10 +161,9 @@ let g:indent_guides_auto_colors           = 0
 "
 " Better undo tree
 Plug 'https://github.com/mbbill/undotree'
-nnoremap <silent> <leader>uu :<C-u>UndotreeShow<CR>:<C-u>UndotreeFocus<CR>
-nnoremap <silent> <leader>uf :<C-u>UndotreeFocus<CR>
-nnoremap <silent> <leader>uh :<C-u>UndotreeHide<CR>
-nnoremap <silent> <leader>ut :<C-u>UndotreeToggle<CR>
+let g:undotree_WindowLayout = 2
+nmap U :<C-u>UndotreeToggle<cr>
+nnoremap <leader>u :<C-u>UndotreeFocus
 
 if has("persistent_undo")
     set undodir=~/.undodir/
@@ -234,8 +198,9 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 Plug '/usr/bin/fzf'
 Plug 'https://github.com/junegunn/fzf.vim'
+let $FZF_DEFAULT_OPTS .= ' --inline-info'
 
-let $FZF_DEFAULT_OPTS .= ' --no-height'
+
 " Customize fzf colors to match your color scheme
 let g:fzf_colors =
 \ { 'fg':      ['fg', 'Normal'],
@@ -253,19 +218,24 @@ let g:fzf_colors =
   \ 'header':  ['fg', 'Comment'] }
 let g:fzf_buffers_jump = 1
 let g:fzf_commits_log_options = '--graph --color=always --format="%C(auto)%h%d %s %C(black)%C(bold)%cr"'
+" let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+let g:fzf_layout = { 'down': '80%' }
 
 nnoremap <leader>fb :<C-u>Buffers<cr>
 nnoremap <leader>fF :<C-u>Files <c-r>=expand("$HOME")<cr><cr>
 nnoremap <leader>ff :<C-u>Files <c-r>=expand("%:p:h")<cr><cr>
 nnoremap <leader>fh :<C-u>History<cr>
-nnoremap <leader>fG :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
-nnoremap <leader>fg :<C-u>Rg<cr>
+nnoremap <leader>fg :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
+nnoremap <leader>fG :<C-u>Rg<space>
 nnoremap <leader>fm :<C-u>Marks<cr>
 nnoremap <leader>fc :<C-u>BCommits<cr>
 nnoremap <leader>fp :<C-u>Maps<cr>
 nnoremap <leader>fT :<C-u>Tags<cr>
 nnoremap <leader>ft :<C-u>BTags<cr>
 nnoremap <leader>fs :<C-u>Snippets<cr>
+nmap / :<C-u>BLines<cr>
+nmap * :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
+
 
 " Snippets
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
@@ -278,18 +248,7 @@ let g:UltiSnipsEditSplit="vertical"
 let g:UltiSnipsListSnippets = "<c-u>"
 let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
 
-" Colorschemes
-" Plug 'https://github.com/jnurmine/Zenburn'
-" let g:zenburn_high_Contrast=1
-" let g:zenburn_alternate_Visual = 1
-" let g:zenburn_alternate_Include = 1
-" let g:zenburn_alternate_Error = 1
-" let g:zenburn_disable_Label_underline = 1
-" let g:zenburn_force_dark_Background = 1
-" let g:zenburn_unified_CursorColumn = 1
-
 Plug 'https://github.com/nanotech/jellybeans.vim'
-
 
 "
 " Latex plugin
@@ -334,13 +293,17 @@ let g:ale_set_quickfix = 1
 let g:ale_fix_on_save = 1
 
 let g:ale_linters = {
-\   'python': ['flake8', 'vulture', 'bandit', 'mypy', 'pyflakes'],
+\   'python': ['flake8', 'vulture', 'bandit', 'pytype'],
+\   'yaml': ['yamllint'],
 \}
+
+let g:ale_yaml_yamllint_options = '-d relaxed'
 
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'javascript': ['eslint'],
 \   'python': ['isort', 'black'],
+\   'yaml': ['prettier'],
 \}
 
 " nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
@@ -349,6 +312,8 @@ Plug 'https://github.com/Shougo/neco-vim'
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 Plug 'https://github.com/antoinemadec/coc-fzf'
+let g:coc_fzf_preview = 'right:50%'
+
 
 inoremap <silent><expr> <c-space> coc#refresh()
 " if has('patch8.1.1068')
@@ -408,7 +373,7 @@ nnoremap <silent> <space>cc  :<C-u>CocFzfList commands<cr>
 " Find symbol of current document.
 nnoremap <silent> <space>co  :<C-u>CocFzfList outline<cr>
 " Search workspace symbols.
-nnoremap <silent> <space>cs  :<C-u>CocFzList -I symbols<cr>
+nnoremap <silent> <space>cs  :<C-u>CocFzList symbols<cr>
 
 let g:lightline = {
       \ 'active': {
@@ -488,14 +453,7 @@ runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
 source /usr/share/vim/vimfiles/plugin/fzf.vim
 
-let g:sandwich#recipes += [
-      \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
-      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
-      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
-      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{']},
-      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
-      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
-      \ ]
+let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
 
 colorscheme jellybeans
 
