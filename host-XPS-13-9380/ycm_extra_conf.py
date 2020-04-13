@@ -95,17 +95,17 @@ def GetCompilationInfoForFile(database, filename):
 def FindNearest(path, target, build_folder=None):
     candidate = os.path.join(path, target)
     if(os.path.isfile(candidate) or os.path.isdir(candidate)):
-        logging.info("Found nearest " + target + " at " + candidate)
+        logging.info('Found nearest ' + target + ' at ' + candidate)
         return candidate;
 
     parent = os.path.dirname(os.path.abspath(path));
     if(parent == path):
-        raise RuntimeError("Could not find " + target);
+        raise RuntimeError('Could not find ' + target);
 
     if(build_folder):
         candidate = os.path.join(parent, build_folder, target)
         if(os.path.isfile(candidate) or os.path.isdir(candidate)):
-            logging.info("Found nearest " + target + " in build folder at " + candidate)
+            logging.info('Found nearest ' + target + ' in build folder at ' + candidate)
             return candidate;
 
     return FindNearest(parent, target, build_folder)
@@ -154,7 +154,7 @@ def FlagsForInclude(root):
         for dirroot, dirnames, filenames in os.walk(include_path):
             for dir_path in dirnames:
                 real_path = os.path.join(dirroot, dir_path)
-                flags = flags + ["-I" + real_path]
+                flags = flags + ['-I' + real_path]
         return flags
     except:
         return None
@@ -165,14 +165,14 @@ def FlagsForCompilationDatabase(root, filename):
         # out of source projects
         compilation_db_path = FindNearest(root, 'compile_commands.json', BUILD_DIRECTORY)
         compilation_db_dir = os.path.dirname(compilation_db_path)
-        logging.info("Set compilation database directory to " + compilation_db_dir)
+        logging.info('Set compilation database directory to ' + compilation_db_dir)
         compilation_db =  ycm_core.CompilationDatabase(compilation_db_dir)
         if not compilation_db:
-            logging.info("Compilation database file found but unable to load")
+            logging.info('Compilation database file found but unable to load')
             return None
         compilation_info = GetCompilationInfoForFile(compilation_db, filename)
         if not compilation_info:
-            logging.info("No compilation info for " + filename + " in compilation database")
+            logging.info('No compilation info for ' + filename + ' in compilation database')
             return None
         return MakeRelativePathsInFlagsAbsolute(
                 compilation_info.compiler_flags_,
@@ -208,5 +208,5 @@ def FlagsForFile(filename):
 def Settings(**kwargs):
     env_prefix = os.environ.get('CONDA_PREFIX', '/usr')
     return {
-    'interpreter_path': f"{env_prefix}/bin/python"
+    'interpreter_path': f'{env_prefix}/bin/python'
   }

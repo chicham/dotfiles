@@ -10,8 +10,8 @@ else
 endif
 
 if !filereadable(g:home . '/autoload/plug.vim')
-  if !executable("curl")
-    echo "You have to install curl or first install plug yourself"
+  if !executable('curl')
+    echo 'You have to install curl or first install plug yourself'
   else
     silent !\curl -fLo g:home . /autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   endif
@@ -49,7 +49,7 @@ nnoremap <Leader>g+ :Silent Git stash<CR>:e<CR>
 nnoremap <Leader>g- :Silent Git stash pop<CR>:e<CR>
 nnoremap <Leader>gp :Gpush --all<cr>
 
-let g:fugitive_gitlab_domains = "'https://git.qwant.ninja/'"
+let g:fugitive_gitlab_domains = 'https://git.qwant.ninja/'
 
 " Improved dot command
 Plug 'https://github.com/tpope/vim-repeat'
@@ -107,7 +107,7 @@ nmap T <Plug>Sneak_T
 xmap t <Plug>Sneak_t
 xmap T <Plug>Sneak_T
 omap T <Plug>Sneak_T
-let g:sneak#target_labels = "eiuatsrncmopébvdljEIUATSRNCMOPÉBVDLJ"
+let g:sneak#target_labels = 'eiuatsrncmopébvdljEIUATSRNCMOPÉBVDLJ'
 
 Plug 'https://github.com/cohama/lexima.vim'
 
@@ -165,7 +165,7 @@ let g:undotree_WindowLayout = 2
 nmap U :<C-u>UndotreeToggle<cr>
 nnoremap <leader>u :<C-u>UndotreeFocus
 
-if has("persistent_undo")
+if has('persistent_undo')
     set undodir=~/.undodir/
     set undofile
 endif
@@ -240,12 +240,12 @@ nmap * :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
 " Snippets
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
 " If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsExpandTrigger = "<tab>"
-let g:UltiSnipsJumpForwardTrigger = "<tab>"
-let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+let g:UltiSnipsExpandTrigger = '<tab>'
+let g:UltiSnipsJumpForwardTrigger = '<tab>'
+let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
 
-let g:UltiSnipsEditSplit="vertical"
-let g:UltiSnipsListSnippets = "<c-u>"
+let g:UltiSnipsEditSplit='vertical'
+let g:UltiSnipsListSnippets = '<c-u>'
 let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
 
 Plug 'https://github.com/nanotech/jellybeans.vim'
@@ -256,7 +256,7 @@ Plug 'https://github.com/lervag/vimtex'
 let g:vimtex_complete_enabled = 1
 " let g:vimtex_complete_recursive_bib = 1
 let g:vimtex_view_method='zathura'
-let g:tex_flavor="latex"
+let g:tex_flavor='latex'
 let g:vimtex_compiler_method = 'latexmk'
 let g:vimtex_compiler_latexmk = {
       \ 'backend': 'nvim',
@@ -331,9 +331,13 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gf <Plug>(coc-references)
 
-" Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
-autocmd CursorHold * silent call CocActionAsync('highlight')
+augroup coc-settings
+  " Use K to show documentation in preview window.
+  autocmd CursorHold * silent call CocActionAsync('highlight')
+  " Use auocmd to force lightline update.
+  autocmd User CocStatusChange,CocDiagnosticChange call lightline#update()
+augroup END
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
@@ -385,8 +389,6 @@ let g:lightline = {
       \ },
       \ }
 
-" Use auocmd to force lightline update.
-autocmd User CocStatusChange,CocDiagnosticChange call lightline#update()
 
 
 
@@ -440,8 +442,8 @@ Plug 'https://github.com/vim-pandoc/vim-pandoc' |
       \ Plug 'https://github.com/vim-pandoc/vim-pandoc-after'
 
 let g:pandoc#keyboard#use_default_mappings = 0
-let g:pandoc#after#modules#enabled = ["ultisnips", "supertab"]
-let g:pandoc#formatting#mode = "s"
+let g:pandoc#after#modules#enabled = ['ultisnips', 'supertab']
+let g:pandoc#formatting#mode = 's'
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
@@ -514,7 +516,7 @@ if v:version >= 703
   set relativenumber
 endif
 
-if exists("syntax_on") || exists("syntax_manual")
+if exists('syntax_on') || exists('syntax_manual')
 else
   syntax on
 endif
@@ -526,7 +528,7 @@ endif
 
 " Autocmd
 " Copied from tpope
-if has("autocmd")
+if has('autocmd')
 
   augroup lexical
     autocmd!
