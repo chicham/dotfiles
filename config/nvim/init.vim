@@ -141,6 +141,9 @@ Plug 'https://github.com/Julian/vim-textobj-variable-segment'
 Plug 'https://github.com/kana/vim-operator-user'
 Plug 'https://github.com/kana/vim-operator-replace'
 nmap gr <Plug>(operator-replace)
+Plug 'https://github.com/haya14busa/vim-operator-flashy'
+map y <Plug>(operator-flashy)
+nmap Y <Plug>(operator-flashy)$
 "Intuitive visual blocks
 Plug 'https://github.com/kana/vim-niceblock/'
 " Better visual mode move
@@ -186,12 +189,24 @@ let g:lightline = {
       \ 'colorscheme': 'one',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \             [ 'gitbranch', 'cocstatus', 'readonly', 'absolutepath', 'modified' ] ]
       \ },
       \ 'component_function': {
-      \   'gitbranch': 'fugitive#head'
+      \   'gitbranch': 'fugitive#head',
+      \   'cocstatus': 'coc#status',
+      \   'filetype': 'MyFiletype',
+      \   'fileformat': 'MyFileformat',
       \ },
       \ }
+
+function! MyFiletype()
+  return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
+endfunction
+
+function! MyFileformat()
+  return winwidth(0) > 70 ? (&fileformat . ' ' . WebDevIconsGetFileFormatSymbol()) : ''
+endfunction
+
 
 Plug 'https://github.com/editorconfig/editorconfig-vim'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
@@ -233,8 +248,23 @@ nnoremap <leader>fp :<C-u>Maps<cr>
 nnoremap <leader>fT :<C-u>Tags<cr>
 nnoremap <leader>ft :<C-u>BTags<cr>
 nnoremap <leader>fs :<C-u>Snippets<cr>
-nmap / :<C-u>BLines<cr>
-nmap * :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
+nmap g/ :<C-u>BLines<cr>
+nmap g* :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
+
+Plug 'https://github.com/haya14busa/is.vim'
+
+Plug 'https://github.com/haya14busa/vim-asterisk'
+let g:asterisk#keeppos = 1
+Plug 'https://github.com/inside/vim-search-pulse'
+let g:vim_search_pulse_disable_auto_mappings = 1
+let g:vim_search_pulse_mode = 'pattern'
+nmap * <Plug>(asterisk-z*)<Plug>Pulse
+nmap # <Plug>(asterisk-z#)<Plug>Pulse
+nmap n :norm! nzzzv<Plug>Pulse<CR>
+nmap N :norm! Nzzzv<Plug>Pulse<CR>
+" Pulses cursor line on first match
+" when doing search with / or ?
+cmap <silent> <expr> <enter> search_pulse#PulseFirst()
 
 
 " Snippets
@@ -288,9 +318,9 @@ let g:SuperTabDefaultCompletionType = '<C-n>'
 
 
 Plug 'https://github.com/dense-analysis/ale'
-let g:ale_set_loclist = 1
-let g:ale_set_quickfix = 1
-let g:ale_fix_on_save = 1
+" let g:ale_set_loclist = 1
+" let g:ale_set_quickfix = 1
+" let g:ale_fix_on_save = 1
 
 let g:ale_linters = {
 \   'python': ['flake8', 'vulture', 'bandit', 'pytype'],
@@ -308,7 +338,7 @@ let g:ale_fixers = {
 
 " nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
 
-Plug 'https://github.com/Shougo/neco-vim'
+" Plug 'https://github.com/Shougo/neco-vim'
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 Plug 'https://github.com/antoinemadec/coc-fzf'
@@ -379,15 +409,6 @@ nnoremap <silent> <space>co  :<C-u>CocFzfList outline<cr>
 " Search workspace symbols.
 nnoremap <silent> <space>cs  :<C-u>CocFzList symbols<cr>
 
-let g:lightline = {
-      \ 'active': {
-      \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'cocstatus', 'readonly', 'filename', 'modified' ] ]
-      \ },
-      \ 'component_function': {
-      \   'cocstatus': 'coc#status'
-      \ },
-      \ }
 
 
 
@@ -446,6 +467,7 @@ let g:pandoc#after#modules#enabled = ['ultisnips', 'supertab']
 let g:pandoc#formatting#mode = 's'
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
+Plug 'https://github.com/ryanoasis/vim-devicons'
 
 call plug#end()
 
@@ -467,7 +489,6 @@ filetype plugin indent on
 
 scriptencoding utf-8
 
-set guifont=Source\ Code\ Pro.otf
 set autowrite
 set autochdir
 set tags=./tags,tags

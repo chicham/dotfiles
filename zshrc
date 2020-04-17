@@ -36,7 +36,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 
-alias ls='exa'
+alias ls='exa --icons'
 
 export EDITOR=nvim
 export GPG_TTY="$(tty)"
