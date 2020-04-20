@@ -48,9 +48,16 @@ export EDITOR=nvim
 # gpg-connect-agent updatestartuptty /bye > /dev/null
 export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 # Setting fd as the default source for fzf
-export FZF_DEFAULT_COMMAND='fd --type f --follow --exclude .git --full-path'
+export FZF_DEFAULT_COMMAND='fd --type=f --follow --exclude .git --full-path'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
 export FZF_PREVIEW_OPTS='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info'
+#
+# Default file search commands
+_fzf_compgen_path() { fd --hidden --follow --type=f }
+
+# Default directory search commands
+export FZF_ALT_C_COMMAND='fd --hidden --follow --type=d'
+_fzf_compgen_dir() { fd --hidden --follow --type=d }
 
 # (EXPERIMENTAL) Advanced customization of fzf options via _fzf_comprun function
 # - The first argument to the function is the name of the command.
@@ -78,3 +85,10 @@ realpath=\${(Qe)~realpath}
 "
 
 zstyle ':fzf-tab:complete:cd:*' extra-opts --preview=$extract'exa --level 3 --color=always --tree $realpath'
+
+# using ripgrep combined with preview
+peep() {
+  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
+  file=$(rg --files-with-matches --no-messages "$1" | fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info)
+  [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
+}

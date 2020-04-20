@@ -29,7 +29,7 @@ FZF_TAB_COMMAND=(
     '--header-lines=$#headers' # $#headers will be expanded to lines of headers at runtime
 )
 zstyle ':fzf-tab:*' command $FZF_TAB_COMMAND
-zstyle ':fzf-tab:*' query-string prefix input prefix
+zstyle ':fzf-tab:*' query-string prefix first input
 
 #
 # Tmux

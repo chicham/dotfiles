@@ -1,5 +1,5 @@
 # Unix
-alias ls="exa"
+alias ls="exa --icons"
 alias cat="bat"
 alias ll="ls -al"
 alias ln="ln -v"
