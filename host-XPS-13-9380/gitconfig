@@ -15,6 +15,8 @@
 [core]
   excludesfile = ~/.gitignore
   autocrlf = input
+[core]
+  pager = delta --dark
 [merge]
   ff = only
 [commit]
@@ -28,12 +30,12 @@
 [diff]
   colorMoved = zebra
 [user]
-	email = hicham@randrianarivo.net
-	name = Hicham Randrianarivo
+  email = hicham@randrianarivo.net
+  name = Hicham Randrianarivo
 [http]
-	sslVerify = false
+  sslVerify = false
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true

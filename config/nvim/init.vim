@@ -35,7 +35,7 @@ Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
 Plug 'https://github.com/tpope/vim-fugitive'
 Plug 'https://github.com/tpope/vim-rhubarb'
-" Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
+Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
 nnoremap <silent><leader>ga :<C-u>Git add %:p<CR><CR>
 nnoremap <silent><leader>gs :<C-u>Gstatus<CR>
@@ -50,6 +50,9 @@ nnoremap <Leader>g- :Silent Git stash pop<CR>:e<CR>
 nnoremap <Leader>gp :Gpush --all<cr>
 
 let g:fugitive_gitlab_domains = 'https://git.qwant.ninja/'
+Plug 'https://github.com/mattn/vim-gist'
+let g:gist_clip_command = 'xclip -selection clipboard'
+let g:gist_show_privates = 1
 
 " Improved dot command
 Plug 'https://github.com/tpope/vim-repeat'
@@ -73,7 +76,6 @@ omap am <Plug>(textobj-sandwich-literal-query-a)
 " Better syntax for languages
 Plug 'https://github.com/sheerun/vim-polyglot'
 let g:polyglot_disabled = ['latex', 'tex', 'tex_LatexBox', 'markdown']
-Plug 'https://github.com/dzeban/vim-log-syntax'
 " Pairs mappings
 Plug 'https://github.com/tpope/vim-unimpaired'
 " Automatically comments
@@ -109,7 +111,10 @@ xmap T <Plug>Sneak_T
 omap T <Plug>Sneak_T
 let g:sneak#target_labels = 'eiuatsrncmopébvdljEIUATSRNCMOPÉBVDLJ'
 
-Plug 'https://github.com/cohama/lexima.vim'
+Plug 'https://github.com/jiangmiao/auto-pairs'
+let g:AutoPairsFlyMode = 0
+let g:AutoPairsShortcutBackInsert = '<C-b>'
+let g:AutoPairsShortcutFastWrap = '<C-w>'
 
 " New textobjects
 Plug 'https://github.com/kana/vim-textobj-user'
@@ -189,13 +194,14 @@ let g:lightline = {
       \ 'colorscheme': 'one',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'gitbranch', 'cocstatus', 'readonly', 'absolutepath', 'modified' ] ]
+      \             [ 'gitbranch', 'cocstatus', 'readonly', 'absolutepath', 'CocCurrentFunction', 'modified' ] ]
       \ },
       \ 'component_function': {
       \   'gitbranch': 'fugitive#head',
       \   'cocstatus': 'coc#status',
       \   'filetype': 'MyFiletype',
       \   'fileformat': 'MyFileformat',
+      \   'currentfunction': 'CocCurrentFunction',
       \ },
       \ }
 
@@ -317,28 +323,6 @@ let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
 let g:SuperTabDefaultCompletionType = '<C-n>'
 
 
-Plug 'https://github.com/dense-analysis/ale'
-" let g:ale_set_loclist = 1
-" let g:ale_set_quickfix = 1
-" let g:ale_fix_on_save = 1
-
-let g:ale_linters = {
-\   'python': ['flake8', 'vulture', 'bandit', 'pytype'],
-\   'yaml': ['yamllint'],
-\}
-
-let g:ale_yaml_yamllint_options = '-d relaxed'
-
-let g:ale_fixers = {
-\   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': ['eslint'],
-\   'python': ['isort', 'black'],
-\   'yaml': ['prettier'],
-\}
-
-" nnoremap <silent> <leader>af :<C-u>ALEFix<cr>
-
-" Plug 'https://github.com/Shougo/neco-vim'
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 Plug 'https://github.com/antoinemadec/coc-fzf'
@@ -386,6 +370,7 @@ augroup mygroup
   autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
   " Update signature help on jump placeholder.
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+  autocmd BufRead,BufNewFile .antigenrc set filetype=zsh
 augroup end
 
 " Applying codeAction to the selected region.
@@ -467,7 +452,30 @@ let g:pandoc#after#modules#enabled = ['ultisnips', 'supertab']
 let g:pandoc#formatting#mode = 's'
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
+
 Plug 'https://github.com/ryanoasis/vim-devicons'
+
+" Add maktaba and codefmt to the runtimepath.
+" (The latter must be installed before it can be used.)
+Plug 'https://github.com/google/vim-maktaba'
+Plug 'https://github.com/google/vim-codefmt'
+" Also add Glaive, which is used to configure codefmt's maktaba flags. See
+" `:help :Glaive` for usage.
+Plug 'https://github.com/google/vim-glaive'
+
+augroup autoformat_settings
+  autocmd FileType bzl AutoFormatBuffer buildifier
+  autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+  autocmd FileType dart AutoFormatBuffer dartfmt
+  autocmd FileType go AutoFormatBuffer gofmt
+  autocmd FileType gn AutoFormatBuffer gn
+  autocmd FileType html,css,sass,scss,less,json AutoFormatBuffer js-beautify
+  autocmd FileType java AutoFormatBuffer google-java-format
+  autocmd FileType python AutoFormatBuffer black
+  autocmd FileType rust AutoFormatBuffer rustfmt
+  autocmd FileType vue AutoFormatBuffer prettier
+  autocmd FileType yaml AutoFormatBuffer prettier
+augroup END
 
 call plug#end()
 
