@@ -11,7 +11,7 @@ URxvt.searchable-scrollback: A-f
 
 ! ssh remote-host mkdir -p $HOME/.terminfo/r/
 ! scp /usr/share/terminfo/r/rxvt-unicode-256color remote-host:$HOME/.terminfo/r/
-URxvt.termName: rxvt-unicode-256color
+URxvt.termName: screen-256color
 
 ! - Clickable URLs
 URxvt.perl-ext-common: default,matcher

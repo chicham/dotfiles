@@ -1,0 +1,80 @@
+source /etc/skel/.zshrc
+[[ ! -d "$HOME/.antigen" ]] && git clone https://github.com/zsh-users/antigen.git "$HOME/.antigen"
+source "$HOME/.antigen/antigen.zsh"
+antigen init $HOME/.antigenrc
+source $HOME/.git-extras-completion.zsh
+source $HOME/.aliases
+# Mandatory for auth with yubikey
+export FZF_ROOT=/usr/share/fzf
+[ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
+[ -f $FZF_ROOT/key-bindings.zsh ] && source $FZF_ROOT/key-bindings.zsh
+
+# GPG Conf
+#
+
+export AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
+# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+if [[ ! -S $AGENT_SOCK ]]; then
+  gpg-agent --daemon --use-standard-socket &>/dev/null
+fi
+export GPG_TTY=$TTY
+
+# Set SSH to use gpg-agent if it's enabled
+GNUPGCONFIG="${GNUPGHOME:-"$HOME/.gnupg"}/gpg-agent.conf"
+if [[ -r $GNUPGCONFIG ]] && command grep -q enable-ssh-support "$GNUPGCONFIG"; then
+  export SSH_AUTH_SOCK="$AGENT_SOCK.ssh"
+  unset SSH_AGENT_PID
+fi
+gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/opt/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/opt/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/opt/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/opt/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+#
+
+export EDITOR=nvim
+# Mandatory for ssh-agent
+# gpg-connect-agent updatestartuptty /bye > /dev/null
+export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
+# Setting fd as the default source for fzf
+export FZF_DEFAULT_COMMAND='fd --type f --follow --exclude .git --full-path'
+export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
+export FZF_PREVIEW_OPTS='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info'
+
+# (EXPERIMENTAL) Advanced customization of fzf options via _fzf_comprun function
+# - The first argument to the function is the name of the command.
+# - You should make sure to pass the rest of the arguments to fzf.
+_fzf_comprun() {
+  local command=$1
+  shift
+
+  case "$command" in
+    cd)           fzf "$@" --preview 'exa --level 3 --color=always --tree {}' ;;
+    export|unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
+    *)            fzf "$@" ;;
+  esac
+}
+
+
+local extract="
+# trim input(what you select)
+local in=\${\${\"\$(<{f})\"%\$'\0'*}#*\$'\0'}
+# get ctxt for current completion(some thing before or after the current word)
+local -A ctxt=(\"\${(@ps:\2:)CTXT}\")
+# real path
+local realpath=\${ctxt[IPREFIX]}\${ctxt[hpre]}\$in
+realpath=\${(Qe)~realpath}
+"
+
+zstyle ':fzf-tab:complete:cd:*' extra-opts --preview=$extract'exa --level 3 --color=always --tree $realpath'
