@@ -9,9 +9,9 @@ export FZF_ROOT=/usr/share/fzf
 [ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
 [ -f $FZF_ROOT/key-bindings.zsh ] && source $FZF_ROOT/key-bindings.zsh
 
+
 # GPG Conf
 #
-
 export AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 if [[ ! -S $AGENT_SOCK ]]; then

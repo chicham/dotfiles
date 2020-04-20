@@ -11,11 +11,14 @@ antigen bundles <<EOBUNDLES
   rsync
   tmux
   Aloxaf/fzf-tab
+  nojhan/liquidprompt
 EOBUNDLES
 
 # Set any settings or overrides here
-# nojhan/liquidprompt
-# antigen theme liquidprompt
+#
+RPROMPT=""
+antigen theme liquidprompt
+
 
 FZF_TAB_COMMAND=(
     fzf
