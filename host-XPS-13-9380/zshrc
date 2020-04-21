@@ -13,10 +13,8 @@ export FZF_ROOT=/usr/share/fzf
 # GPG Conf
 #
 export AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
-# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-if [[ ! -S $AGENT_SOCK ]]; then
-  gpg-agent --daemon --use-standard-socket &>/dev/null
-fi
+[[ ! -S $AGENT_SOCK ]] && gpg-agent --daemon --use-standard-socket &>/dev/null
+
 export GPG_TTY=$TTY
 
 # Set SSH to use gpg-agent if it's enabled
@@ -48,16 +46,18 @@ export EDITOR=nvim
 # gpg-connect-agent updatestartuptty /bye > /dev/null
 export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 # Setting fd as the default source for fzf
-export FZF_DEFAULT_COMMAND='fd --type=f --follow --exclude .git --full-path'
-export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
-export FZF_PREVIEW_OPTS='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info'
-#
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+# export FZF_DEFAULT_COMMAND="$RG_PREFIX --with-filename"
+
+export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
+# export FZF_PREVIEW_OPTS='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info'
+
+
 # Default file search commands
-_fzf_compgen_path() { fd --hidden --follow --type=f }
+_fzf_compgen_path() { fd --hidden --follow --type=f  --exclude .git}
 
 # Default directory search commands
-export FZF_ALT_C_COMMAND='fd --hidden --follow --type=d'
-_fzf_compgen_dir() { fd --hidden --follow --type=d }
+_fzf_compgen_dir() { fd --hidden --follow --type=d --exclude .git }
 
 # (EXPERIMENTAL) Advanced customization of fzf options via _fzf_comprun function
 # - The first argument to the function is the name of the command.
@@ -86,9 +86,43 @@ realpath=\${(Qe)~realpath}
 
 zstyle ':fzf-tab:complete:cd:*' extra-opts --preview=$extract'exa --level 3 --color=always --tree $realpath'
 
-# using ripgrep combined with preview
+# # using ripgrep combined with preview
+# peep() {
+#   if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
+#   file=$(rg --files-with-matches --no-messages "$1" | fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info)
+#   [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
+# }
+
 peep() {
-  if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
-  file=$(rg --files-with-matches --no-messages "$1" | fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info)
-  [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
+  # RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
+  # (( $# == 0 )) && echo "Need a string to search for!" && return 1;
+
+  RG_PREFIX="rg --files-with-matches --line-number --column --no-messages --no-heading --smart-case"
+  # FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY' || true" \
+  # fzf --ansi --phony \
+  # --preview "bat --color=always --style=header,grid --line-range :300 {}"
+
+  (( $# == 1 )) && selected=$(
+  FZF_DEFAULT_COMMAND="$RG_PREFIX '$1' || true" \
+  fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info
+  );
+
+  if (( $# == 2 )); then
+
+    local command=$1
+    shift
+    case $command in
+      --reload|-r)
+      INITIAL_QUERY=$1
+      shift
+      selected=$(
+      FZF_DEFAULT_COMMAND="$RG_PREFIX '$1' || true" \
+        fzf --bind "change:reload:$RG_PREFIX {q} || true" --ansi --phony \
+        --query $INITIAL_QUERY \
+        --preview "bat --color=always --style=header,grid --line-range :300 {}"
+    );;
+    esac
+  fi
+
+  [ -n "$selected" ] && ${EDITOR:-vim} "$selected"
 }
