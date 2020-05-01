@@ -219,7 +219,7 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 Plug '/usr/bin/fzf'
 Plug 'https://github.com/junegunn/fzf.vim'
-let $FZF_DEFAULT_OPTS .= ' --inline-info'
+let $FZF_DEFAULT_OPTS = '--layout=reverse --inline-info --height "80%" --select-1'
 
 
 " Customize fzf colors to match your color scheme
@@ -497,6 +497,7 @@ filetype plugin indent on
 
 scriptencoding utf-8
 
+set guifont=FiraCode\ Nerd\ Font\ Mono:style=Medium
 set autowrite
 set autochdir
 set tags=./tags,tags

@@ -1,26 +1,29 @@
 source /etc/skel/.zshrc
+zstyle ':completion:*' menu select
+zmodload zsh/complist
+autoload -U zmv
 [[ ! -d "$HOME/.antigen" ]] && git clone https://github.com/zsh-users/antigen.git "$HOME/.antigen"
 source "$HOME/.antigen/antigen.zsh"
 antigen init $HOME/.antigenrc
 source $HOME/.git-extras-completion.zsh
 source $HOME/.aliases
 # Mandatory for auth with yubikey
-export FZF_ROOT=/usr/share/fzf
+FZF_ROOT=/usr/share/fzf
 [ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
 [ -f $FZF_ROOT/key-bindings.zsh ] && source $FZF_ROOT/key-bindings.zsh
 
 
 # GPG Conf
 #
-export AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
+AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
 [[ ! -S $AGENT_SOCK ]] && gpg-agent --daemon --use-standard-socket &>/dev/null
 
-export GPG_TTY=$TTY
+GPG_TTY=$TTY
 
 # Set SSH to use gpg-agent if it's enabled
 GNUPGCONFIG="${GNUPGHOME:-"$HOME/.gnupg"}/gpg-agent.conf"
 if [[ -r $GNUPGCONFIG ]] && command grep -q enable-ssh-support "$GNUPGCONFIG"; then
-  export SSH_AUTH_SOCK="$AGENT_SOCK.ssh"
+  SSH_AUTH_SOCK="$AGENT_SOCK.ssh"
   unset SSH_AGENT_PID
 fi
 gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
@@ -34,7 +37,7 @@ else
     if [ -f "/opt/miniconda3/etc/profile.d/conda.sh" ]; then
         . "/opt/miniconda3/etc/profile.d/conda.sh"
     else
-        export PATH="/opt/miniconda3/bin:$PATH"
+        PATH="/opt/miniconda3/bin:$PATH"
     fi
 fi
 unset __conda_setup
@@ -46,83 +49,90 @@ export EDITOR=nvim
 # gpg-connect-agent updatestartuptty /bye > /dev/null
 export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 # Setting fd as the default source for fzf
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-# export FZF_DEFAULT_COMMAND="$RG_PREFIX --with-filename"
-
-export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
-# export FZF_PREVIEW_OPTS='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info'
-
+# RG_PREFIX="rg --with-filename --column --no-messages --no-heading --smart-case"
+RG_PREFIX="rg --files-with-matches --column --no-messages"
+FD_PREFIX="fd --hidden --follow --exclude .git"
+export FZF_DEFAULT_COMMAND="$FD_PREFIX --type f"
+export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
+FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}"'
 
 # Default file search commands
-_fzf_compgen_path() { fd --hidden --follow --type=f  --exclude .git}
+_fzf_compgen_path() { fd --hidden --follow --type=f  --exclude .git "$1"}
 
 # Default directory search commands
-_fzf_compgen_dir() { fd --hidden --follow --type=d --exclude .git }
+_fzf_compgen_dir() { fd --hidden --follow --type=d --exclude .git "$1" }
+
 
 # (EXPERIMENTAL) Advanced customization of fzf options via _fzf_comprun function
 # - The first argument to the function is the name of the command.
 # - You should make sure to pass the rest of the arguments to fzf.
+
+_fzf_cd() {
+  fd --hidden --follow --type=d --exclude .git $1 ${2:-$PWD} | fzf --ansi \
+    --preview 'exa --level 3 --color=always --tree {}' \
+}
+
 _fzf_comprun() {
   local command=$1
   shift
 
   case "$command" in
-    cd)           fzf "$@" --preview 'exa --level 3 --color=always --tree {}' ;;
+    cd)           _fzf_cd "$2" ;;
     export|unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
     *)            fzf "$@" ;;
   esac
 }
 
+fcd () {
+  local selected=$(_fzf_cd $1 ${2:-$HOME})
+    [ -n "$selected" ] && cd "$selected"
+}
 
-local extract="
-# trim input(what you select)
-local in=\${\${\"\$(<{f})\"%\$'\0'*}#*\$'\0'}
-# get ctxt for current completion(some thing before or after the current word)
-local -A ctxt=(\"\${(@ps:\2:)CTXT}\")
-# real path
-local realpath=\${ctxt[IPREFIX]}\${ctxt[hpre]}\$in
-realpath=\${(Qe)~realpath}
-"
-
-zstyle ':fzf-tab:complete:cd:*' extra-opts --preview=$extract'exa --level 3 --color=always --tree $realpath'
-
-# # using ripgrep combined with preview
-# peep() {
-#   if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi
-#   file=$(rg --files-with-matches --no-messages "$1" | fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info)
-#   [[ -n "$file" ]] && ${EDITOR:-vim} "${file}"
-# }
+fif () {
+  local INITIAL_QUERY=""
+  local EXTRA_ARGS=""
+  if (( $# == 1 )); then
+    INITIAL_QUERY=$1
+    shift
+  else
+    return 128
+  fi
+  # FZF_DEFAULT_COMMAND="$RG_PREFIX $INITIAL_QUERY" fzf  $EXTRA_ARGS --exact --ansi --preview "rg -i --pretty --context 2 {q} {}"
+  FZF_DEFAULT_COMMAND="$RG_PREFIX" fzf $EXTRA_ARGS --exact --ansi --phony --preview "echo {} {+} {q}"
+}
 
 peep() {
-  # RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
-  # (( $# == 0 )) && echo "Need a string to search for!" && return 1;
-
-  RG_PREFIX="rg --files-with-matches --line-number --column --no-messages --no-heading --smart-case"
-  # FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY' || true" \
-  # fzf --ansi --phony \
-  # --preview "bat --color=always --style=header,grid --line-range :300 {}"
-
-  (( $# == 1 )) && selected=$(
-  FZF_DEFAULT_COMMAND="$RG_PREFIX '$1' || true" \
-  fzf --ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}" --layout=reverse --inline-info
-  );
-
-  if (( $# == 2 )); then
-
-    local command=$1
-    shift
-    case $command in
-      --reload|-r)
-      INITIAL_QUERY=$1
-      shift
-      selected=$(
-      FZF_DEFAULT_COMMAND="$RG_PREFIX '$1' || true" \
-        fzf --bind "change:reload:$RG_PREFIX {q} || true" --ansi --phony \
-        --query $INITIAL_QUERY \
-        --preview "bat --color=always --style=header,grid --line-range :300 {}"
-    );;
-    esac
-  fi
-
+  local selected=$(fif $@)
   [ -n "$selected" ] && ${EDITOR:-vim} "$selected"
+}
+
+
+is_in_git_repo() {
+  git rev-parse HEAD > /dev/null 2>&1
+}
+
+
+gsl() {
+  is_in_git_repo || return
+  git stash list | fzf -d: --preview 'git show --color=always {1}' |
+  cut -d: -f1
+}
+
+
+gl() {
+  is_in_git_repo || return
+  git log --color=always --pretty=oneline --no-abbrev-commit --decorate \
+    | fzf --phony --bind="change:reload:git log -G{q} --color=always --pretty=oneline --no-abbrev-commit --decorate" \
+    --preview="git show --color=always {1}" \
+    --with-nth=2.. --layout=reverse --no-sort --ansi \
+    | awk '{print $1}'
+}
+
+gh() {
+  is_in_git_repo || return
+  git log --date=short --format="%C(green)%C(bold)%cd %C(auto)%h%d %s (%an)" --graph --color=always |
+  fzf --ansi --no-sort --reverse --multi --bind 'ctrl-s:toggle-sort' \
+    --header 'Press CTRL-S to toggle sort' \
+    --preview 'grep -o "[a-f0-9]\{7,\}" <<< {} | xargs git show --color=always | head -200' |
+  grep -o "[a-f0-9]\{7,\}"
 }
