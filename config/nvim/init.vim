@@ -277,12 +277,10 @@ cmap <silent> <expr> <enter> search_pulse#PulseFirst()
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsExpandTrigger = '<tab>'
-let g:UltiSnipsJumpForwardTrigger = '<tab>'
-let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
 
-let g:UltiSnipsEditSplit='vertical'
-let g:UltiSnipsListSnippets = '<c-u>'
-let g:UltiSnipsSnippetDirectories=['UltiSnips', $HOME . '/.snippets/']
+let g:UltiSnipsEditSplit='context'
+" let g:UltiSnipsListSnippets = '<c-u>'
+let g:UltiSnipsSnippetDirectories=[$HOME . '/.snippets/']
 
 Plug 'https://github.com/nanotech/jellybeans.vim'
 
@@ -314,13 +312,8 @@ Plug 'https://github.com/ervandew/supertab'
 let g:SuperTabDefaultCompletionType    = '<C-n>'
 let g:SuperTabCrMapping                = 0
 let g:UltiSnipsExpandTrigger           = '<tab>'
-let g:UltiSnipsJumpForwardTrigger      = '<C-n>'
-let g:UltiSnipsJumpBackwardTrigger     = '<C-p>'
-
-" make YCM compatible with UltiSnips (using supertab)
-let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
-let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
-let g:SuperTabDefaultCompletionType = '<C-n>'
+let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
+let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
 
 Plug 'https://github.com/neoclide/coc-neco'

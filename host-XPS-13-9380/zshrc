@@ -5,8 +5,11 @@ autoload -U zmv
 [[ ! -d "$HOME/.antigen" ]] && git clone https://github.com/zsh-users/antigen.git "$HOME/.antigen"
 source "$HOME/.antigen/antigen.zsh"
 antigen init $HOME/.antigenrc
-source $HOME/.git-extras-completion.zsh
+
 source $HOME/.aliases
+source $HOME/.git-extras-completion.zsh
+source $HOME/.github.zsh
+
 # Mandatory for auth with yubikey
 FZF_ROOT=/usr/share/fzf
 [ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
@@ -112,14 +115,14 @@ is_in_git_repo() {
 }
 
 
-gsl() {
+gslist() {
   is_in_git_repo || return
   git stash list | fzf -d: --preview 'git show --color=always {1}' |
   cut -d: -f1
 }
 
 
-gl() {
+glog() {
   is_in_git_repo || return
   git log --color=always --pretty=oneline --no-abbrev-commit --decorate \
     | fzf --phony --bind="change:reload:git log -G{q} --color=always --pretty=oneline --no-abbrev-commit --decorate" \
@@ -128,7 +131,7 @@ gl() {
     | awk '{print $1}'
 }
 
-gh() {
+ghist() {
   is_in_git_repo || return
   git log --date=short --format="%C(green)%C(bold)%cd %C(auto)%h%d %s (%an)" --graph --color=always |
   fzf --ansi --no-sort --reverse --multi --bind 'ctrl-s:toggle-sort' \
@@ -136,3 +139,5 @@ gh() {
     --preview 'grep -o "[a-f0-9]\{7,\}" <<< {} | xargs git show --color=always | head -200' |
   grep -o "[a-f0-9]\{7,\}"
 }
+
+eval "$(direnv hook zsh)"
