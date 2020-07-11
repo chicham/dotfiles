@@ -9,14 +9,6 @@ else
   let g:home=expand('~/.vim/', 1)
 endif
 
-if !filereadable(g:home . '/autoload/plug.vim')
-  if !executable('curl')
-    echo 'You have to install curl or first install plug yourself'
-  else
-    silent !\curl -fLo g:home . /autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  endif
-endif
-
 let g:mapleader=' '
 let g:maplocalleader='\'
 
@@ -29,7 +21,7 @@ Plug 'https://github.com/rstacruz/vim-opinion/'
 " automatic indentation
 Plug 'https://github.com/tpope/vim-sleuth'
 " Improved Search/Substitute, typo
-Plug 'https://github.com/tpope/vim-abolish' | Plug 'https://github.com/nelstrom/vim-americanize', {'on': ['Abolish', 'Americanize']}
+Plug 'https://github.com/tpope/vim-abolish' , {'on': ['Abolish']}
 " Unix shell command
 Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
@@ -75,7 +67,7 @@ omap am <Plug>(textobj-sandwich-literal-query-a)
 
 " Better syntax for languages
 Plug 'https://github.com/sheerun/vim-polyglot'
-let g:polyglot_disabled = ['latex', 'tex', 'tex_LatexBox', 'markdown']
+let g:polyglot_disabled = ['markdown']
 " Pairs mappings
 Plug 'https://github.com/tpope/vim-unimpaired'
 " Automatically comments
@@ -110,45 +102,58 @@ xmap t <Plug>Sneak_t
 xmap T <Plug>Sneak_T
 omap T <Plug>Sneak_T
 let g:sneak#target_labels = 'eiuatsrncmopébvdljEIUATSRNCMOPÉBVDLJ'
-
-Plug 'https://github.com/jiangmiao/auto-pairs'
-let g:AutoPairsFlyMode = 0
-let g:AutoPairsShortcutBackInsert = '<C-b>'
-let g:AutoPairsShortcutFastWrap = '<C-w>'
+"
+Plug 'https://github.com/tmsvg/pear-tree'
+" Smart pairs are disabled by default:
+let g:pear_tree_smart_openers = 1
+let g:pear_tree_smart_closers = 1
+let g:pear_tree_smart_backspace = 1
+" If enabled, smart pair functions timeout after 60ms:
+let g:pear_tree_timeout = 30
 
 " New textobjects
-Plug 'https://github.com/kana/vim-textobj-user'
-"map ii, ai, iI, aI
-Plug 'https://github.com/kana/vim-textobj-indent'
-"map a/, i/
-Plug 'https://github.com/kana/vim-textobj-lastpat'
-" map al, il
-Plug 'https://github.com/kana/vim-textobj-line'
-" map a%, i%
-Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
-" map a,, i,
-Plug 'https://github.com/sgur/vim-textobj-parameter'
-" map ac, ic, aC
-Plug 'https://github.com/glts/vim-textobj-comment'
-let g:textobj_comment_no_default_key_mappings = 1
-xmap a$ <Plug>(textobj-comment-a)
-omap a$ <Plug>(textobj-comment-a)
-xmap i$ <Plug>(textobj-comment-i)
-omap i$ <Plug>(textobj-comment-i)
+" Try to configure targets again
+"Plug 'https://github.com/kana/vim-textobj-user'
+""map ii, ai, iI, aI
+"Plug 'https://github.com/kana/vim-textobj-indent'
+""map a/, i/
+"Plug 'https://github.com/kana/vim-textobj-lastpat'
+"" map al, il
+"Plug 'https://github.com/kana/vim-textobj-line'
+"" map a%, i%
+"Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
+"" map a,, i,
+"Plug 'https://github.com/sgur/vim-textobj-parameter'
+"" map ac, ic, aC
+"Plug 'https://github.com/glts/vim-textobj-comment'
+"let g:textobj_comment_no_default_key_mappings = 1
+"xmap a$ <Plug>(textobj-comment-a)
+"omap a$ <Plug>(textobj-comment-a)
+"xmap i$ <Plug>(textobj-comment-i)
+"omap i$ <Plug>(textobj-comment-i)
 
-xmap a# <Plug>((textobj-comment-big-a))
-omap a# <Plug>(textobj-comment-big-a)
-xmap i# <Plug>(textobj-comment-big-i)
-omap i# <Plug>(textobj-comment-big-i)
-" map av, iv
-Plug 'https://github.com/Julian/vim-textobj-variable-segment'
+"xmap a# <Plug>((textobj-comment-big-a))
+"omap a# <Plug>(textobj-comment-big-a)
+"xmap i# <Plug>(textobj-comment-big-i)
+"omap i# <Plug>(textobj-comment-big-i)
 
-Plug 'https://github.com/kana/vim-operator-user'
-Plug 'https://github.com/kana/vim-operator-replace'
-nmap gr <Plug>(operator-replace)
-Plug 'https://github.com/haya14busa/vim-operator-flashy'
-map y <Plug>(operator-flashy)
-nmap Y <Plug>(operator-flashy)$
+"" map av, iv
+"Plug 'https://github.com/Julian/vim-textobj-variable-segment'
+
+Plug 'https://github.com/wellle/targets.vim'
+let g:targets_nl = 'nN'
+let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB rr ll rb al rB Al bb aa bB Aa BB AA'
+
+
+autocmd User targets#mappings#user call targets#mappings#extend({
+    \ 'b': {'block':  [{'o':'(', 'c':')'}, {'o':'[', 'c':']'}, {'o':'{', 'c':'}'}, {'o': '<', 'c': '>'},{'d': '"'}, {'d': "'"}, {'d': '`'}]}
+    \ })
+
+
+nmap gr <plug>(SubversiveSubstitute)
+nmap grr <plug>(SubversiveSubstituteLine)
+nmap gR <plug>(SubversiveSubstituteToEndOfLine)
+Plug 'https://github.com/svermeulen/vim-subversive'
 "Intuitive visual blocks
 Plug 'https://github.com/kana/vim-niceblock/'
 " Better visual mode move
@@ -162,11 +167,18 @@ Plug 'https://github.com/kshenoy/vim-signature.git'
 " Show diff with git head
 Plug 'https://github.com/mhinz/vim-signify'
 " Show indentation
-Plug 'https://github.com/nathanaelkane/vim-indent-guides'
-let g:indent_guides_enable_on_vim_startup = 1
-let g:indent_guides_guide_size            = 1
-let g:indent_guides_auto_colors           = 0
-"
+" Plug 'https://github.com/nathanaelkane/vim-indent-guides'
+" let g:indent_guides_enable_on_vim_startup = 1
+" let g:indent_guides_guide_size            = 1
+" let g:indent_guides_auto_colors           = 0
+
+Plug 'https://github.com/Yggdroot/indentLine'
+let g:indentLine_enabled = 1
+let g:indentLine_setColors = 0
+let g:indentLine_setConceal = 1
+let g:indentLine_char = "│"
+let g:indentLine_Faster = 1
+
 " Better undo tree
 Plug 'https://github.com/mbbill/undotree'
 let g:undotree_WindowLayout = 2
@@ -258,7 +270,6 @@ nmap g/ :<C-u>BLines<cr>
 nmap g* :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
 
 Plug 'https://github.com/haya14busa/is.vim'
-
 Plug 'https://github.com/haya14busa/vim-asterisk'
 let g:asterisk#keeppos = 1
 Plug 'https://github.com/inside/vim-search-pulse'
@@ -286,7 +297,7 @@ Plug 'https://github.com/nanotech/jellybeans.vim'
 
 "
 " Latex plugin
-Plug 'https://github.com/lervag/vimtex'
+" Plug 'https://github.com/lervag/vimtex', {'for':['tex', 'latex']}
 let g:vimtex_complete_enabled = 1
 " let g:vimtex_complete_recursive_bib = 1
 let g:vimtex_view_method='zathura'
@@ -303,6 +314,7 @@ let g:vimtex_compiler_latexmk = {
 Plug 'https://github.com/AndrewRadev/splitjoin.vim'
 let g:splitjoin_split_mapping = 'gS'
 let g:splitjoin_join_mapping  = 'gJ'
+Plug 'https://github.com/flwyd/vim-conjoin'
 
 " Diff two lines
 Plug 'https://github.com/AndrewRadev/linediff.vim'
@@ -315,21 +327,13 @@ let g:UltiSnipsExpandTrigger           = '<tab>'
 let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
 let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
-
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 Plug 'https://github.com/antoinemadec/coc-fzf'
-let g:coc_fzf_preview = 'right:50%'
+let g:coc_fzf_preview = 'right:70%'
 
 
 inoremap <silent><expr> <c-space> coc#refresh()
-" if has('patch8.1.1068')
-"   " Use `complete_info` if your (Neo)Vim version supports it.
-"   inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
-" else
-"   imap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-" endif
-" Use `[g` and `]g` to navigate diagnostics
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 " GoTo code navigation.
@@ -388,9 +392,6 @@ nnoremap <silent> <space>co  :<C-u>CocFzfList outline<cr>
 nnoremap <silent> <space>cs  :<C-u>CocFzList symbols<cr>
 
 
-
-
-
 " The Silver Searcher
 if executable('rg')
   " Use ag over grep
@@ -438,7 +439,7 @@ Plug 'https://github.com/vim-pandoc/vim-pandoc' |
       \ Plug 'https://github.com/vim-pandoc/vim-pandoc-syntax' |
       \ Plug 'https://github.com/vim-pandoc/vim-criticmarkup' |
       \ Plug 'https://github.com/vim-pandoc/vim-rmarkdown' |
-      \ Plug 'https://github.com/vim-pandoc/vim-pandoc-after'
+      \ Plug 'https://github.com/vim-pandoc/vim-pandoc-after', {'for': ['markdown']}
 
 let g:pandoc#keyboard#use_default_mappings = 0
 let g:pandoc#after#modules#enabled = ['ultisnips', 'supertab']
@@ -452,9 +453,6 @@ Plug 'https://github.com/ryanoasis/vim-devicons'
 " (The latter must be installed before it can be used.)
 Plug 'https://github.com/google/vim-maktaba'
 Plug 'https://github.com/google/vim-codefmt'
-" Also add Glaive, which is used to configure codefmt's maktaba flags. See
-" `:help :Glaive` for usage.
-Plug 'https://github.com/google/vim-glaive'
 
 augroup autoformat_settings
   autocmd FileType bzl AutoFormatBuffer buildifier
@@ -476,6 +474,7 @@ runtime! plugin/sensible.vim
 runtime! plugin/opinion.vim
 runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
+" TODO add a check
 source /usr/share/vim/vimfiles/plugin/fzf.vim
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
@@ -610,12 +609,6 @@ if has('autocmd')
     autocmd!
     autocmd Filetype qf setlocal colorcolumn=0 nolist nocursorline nowrap textwidth=0
   augroup END
-
-  augroup indentguide
-    autocmd!
-    autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=darkgrey guibg=darkgrey
-    autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=grey guibg=grey
-  augroup end
 
 endif
 

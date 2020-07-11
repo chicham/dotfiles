@@ -56,7 +56,7 @@ export PATH="/home/hicham/.texlive/2019/bin/x86_64-linux/:$PATH"
 RG_PREFIX="rg --files-with-matches --column --no-messages"
 FD_PREFIX="fd --hidden --follow --exclude .git"
 export FZF_DEFAULT_COMMAND="$FD_PREFIX --type f"
-export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
+export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
 FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}"'
 
 # Default file search commands
@@ -138,6 +138,11 @@ ghist() {
     --header 'Press CTRL-S to toggle sort' \
     --preview 'grep -o "[a-f0-9]\{7,\}" <<< {} | xargs git show --color=always | head -200' |
   grep -o "[a-f0-9]\{7,\}"
+}
+
+
+gconflict(){
+  git diff --name-only --diff-filter=U
 }
 
 eval "$(direnv hook zsh)"
