@@ -9,6 +9,14 @@ else
   let g:home=expand('~/.vim/', 1)
 endif
 
+if empty(glob(g:home . "/autoload/plug.vim"))
+    " Ensure all needed directories exist  (Thanks @kapadiamush)
+    execute '!mkdir -p ~/.vim/plugged'
+    execute '!mkdir -p ~/.vim/autoload'
+    " Download the actual plugin manager
+    execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+endif
+
 let g:mapleader=' '
 let g:maplocalleader='\'
 
@@ -21,7 +29,7 @@ Plug 'https://github.com/rstacruz/vim-opinion/'
 " automatic indentation
 Plug 'https://github.com/tpope/vim-sleuth'
 " Improved Search/Substitute, typo
-Plug 'https://github.com/tpope/vim-abolish' , {'on': ['Abolish']}
+Plug 'https://github.com/tpope/vim-abolish'
 " Unix shell command
 Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
@@ -297,7 +305,7 @@ Plug 'https://github.com/nanotech/jellybeans.vim'
 
 "
 " Latex plugin
-" Plug 'https://github.com/lervag/vimtex', {'for':['tex', 'latex']}
+Plug 'https://github.com/lervag/vimtex', {'for':['tex', 'latex']}
 let g:vimtex_complete_enabled = 1
 " let g:vimtex_complete_recursive_bib = 1
 let g:vimtex_view_method='zathura'
@@ -395,7 +403,7 @@ nnoremap <silent> <space>cs  :<C-u>CocFzList symbols<cr>
 " The Silver Searcher
 if executable('rg')
   " Use ag over grep
-  set grepprg=rg\ --vimgrep
+  set grepprg=rg\ --vimgrep\ --smart-case\ --follow
 endif
 
 Plug 'https://github.com/luochen1990/rainbow'
@@ -451,22 +459,22 @@ Plug 'https://github.com/ryanoasis/vim-devicons'
 
 " Add maktaba and codefmt to the runtimepath.
 " (The latter must be installed before it can be used.)
-Plug 'https://github.com/google/vim-maktaba'
-Plug 'https://github.com/google/vim-codefmt'
+" Plug 'https://github.com/google/vim-maktaba'
+" Plug 'https://github.com/google/vim-codefmt'
 
-augroup autoformat_settings
-  autocmd FileType bzl AutoFormatBuffer buildifier
-  autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-  autocmd FileType dart AutoFormatBuffer dartfmt
-  autocmd FileType go AutoFormatBuffer gofmt
-  autocmd FileType gn AutoFormatBuffer gn
-  autocmd FileType html,css,sass,scss,less,json AutoFormatBuffer js-beautify
-  autocmd FileType java AutoFormatBuffer google-java-format
-  autocmd FileType python AutoFormatBuffer black
-  autocmd FileType rust AutoFormatBuffer rustfmt
-  autocmd FileType vue AutoFormatBuffer prettier
-  autocmd FileType yaml AutoFormatBuffer prettier
-augroup END
+" augroup autoformat_settings
+"   autocmd FileType bzl AutoFormatBuffer buildifier
+"   autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+"   autocmd FileType dart AutoFormatBuffer dartfmt
+"   autocmd FileType go AutoFormatBuffer gofmt
+"   autocmd FileType gn AutoFormatBuffer gn
+"   autocmd FileType html,css,sass,scss,less,json AutoFormatBuffer js-beautify
+"   autocmd FileType java AutoFormatBuffer google-java-format
+"   autocmd FileType python AutoFormatBuffer black
+"   autocmd FileType rust AutoFormatBuffer rustfmt
+"   autocmd FileType vue AutoFormatBuffer prettier
+"   autocmd FileType yaml AutoFormatBuffer prettier
+" augroup END
 
 call plug#end()
 
