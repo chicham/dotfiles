@@ -76,6 +76,7 @@ omap am <Plug>(textobj-sandwich-literal-query-a)
 " Better syntax for languages
 Plug 'https://github.com/sheerun/vim-polyglot'
 let g:polyglot_disabled = ['markdown']
+Plug 'https://github.com/raimon49/requirements.txt.vim', {'for': 'requirements'}
 " Pairs mappings
 Plug 'https://github.com/tpope/vim-unimpaired'
 " Automatically comments

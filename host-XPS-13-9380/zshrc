@@ -57,10 +57,9 @@ export EDITOR=nvim
 # Setting fd as the default source for fzf
 # RG_PREFIX="rg --with-filename --column --no-messages --no-heading --smart-case"
 RG_PREFIX="rg --files-with-matches --column --no-messages"
-FD_PREFIX="fd --hidden --follow --exclude .git"
-export FZF_DEFAULT_COMMAND="$FD_PREFIX --type f"
+export FZF_DEFAULT_COMMAND="fd --hidden --follow --exclude .git --type f"
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
-FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}"'
+export FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}"'
 
 # Default file search commands
 _fzf_compgen_path() { fd --hidden --follow --type=f  --exclude .git "$1"}
