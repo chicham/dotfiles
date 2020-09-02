@@ -9,19 +9,19 @@ else
   let g:home=expand('~/.vim/', 1)
 endif
 
+let g:plugged = g:home . '/plugged/'
+
 if empty(glob(g:home . "/autoload/plug.vim"))
     " Ensure all needed directories exist  (Thanks @kapadiamush)
-    execute '!mkdir -p ~/.vim/plugged'
-    execute '!mkdir -p ~/.vim/autoload'
+    execute '!mkdir -p ' . g:home . '/autoload/'
     " Download the actual plugin manager
-    execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+    execute '!curl -fLo '. g:home . '/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
 endif
 
 let g:mapleader=' '
 let g:maplocalleader='\'
 
-let g:bundle = g:home . '/bundle/'
-call plug#begin(g:bundle)
+call plug#begin(g:plugged)
 
 " Better defaults settings
 Plug 'https://github.com/tpope/vim-sensible'
