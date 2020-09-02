@@ -238,7 +238,7 @@ endfunction
 Plug 'https://github.com/editorconfig/editorconfig-vim'
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
-Plug '/usr/bin/fzf'
+Plug 'https://github.com/junegunn/fzf'
 Plug 'https://github.com/junegunn/fzf.vim'
 let $FZF_DEFAULT_OPTS = '--layout=reverse --inline-info --height "80%" --select-1'
 
