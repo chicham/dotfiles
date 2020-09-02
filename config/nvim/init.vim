@@ -483,8 +483,6 @@ runtime! plugin/sensible.vim
 runtime! plugin/opinion.vim
 runtime! macros/sandwich/keymap/surround.vim
 runtime! macros/matchit.vim
-" TODO add a check
-source /usr/share/vim/vimfiles/plugin/fzf.vim
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
 
