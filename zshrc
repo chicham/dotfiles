@@ -1,4 +1,4 @@
-[[ -f $HOME/.config.zsh ]] && curl -fLo $HOME/.config.zsh https://raw.githubusercontent.com/Chrysostomus/manjaro-zsh-config/master/manjaro-zsh-config
+[[ ! -f $HOME/.config.zsh ]] && curl -fLo $HOME/.config.zsh https://raw.githubusercontent.com/Chrysostomus/manjaro-zsh-config/master/manjaro-zsh-config
 source $HOME/.config.zsh
 
 zstyle ':completion:*' menu select
