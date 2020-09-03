@@ -151,3 +151,5 @@ gconflict(){
 eval "$(direnv hook zsh)"
 
 [ -f $HOME/.zshenv ] && source $HOME/.zshenv
+
+export RCRC="/home/$USERNAME/dotfiles/rcrc rcup"
