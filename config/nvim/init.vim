@@ -339,7 +339,13 @@ let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 Plug 'https://github.com/Shougo/neco-vim'
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
-let g:coc_global_extensions = ['coc-json', 'coc-python', 'coc-yaml', 'coc-cmake', 'coc-clangd', 'coc-rls', 'coc-vimtex']
+Plug 'https://github.com/neoclide/coc-json'
+Plug 'https://github.com/neoclide/coc-python'
+Plug 'https://github.com/neoclide/coc-yaml'
+Plug 'https://github.com/voldikss/coc-cmake'
+Plug 'https://github.com/clangd/coc-clangd'
+Plug 'https://github.com/neoclide/coc-rls'
+Plug 'https://github.com/neoclide/coc-vimtex'
 
 Plug 'https://github.com/antoinemadec/coc-fzf'
 let g:coc_fzf_preview = 'right:70%'

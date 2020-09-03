@@ -2,9 +2,10 @@ source /etc/skel/.zshrc
 zstyle ':completion:*' menu select
 zmodload zsh/complist
 autoload -U zmv
-[[ ! -d "$HOME/.antigen" ]] && git clone https://github.com/zsh-users/antigen.git "$HOME/.antigen"
 
-source "$HOME/.antigen/antigen.zsh"
+[[ ! -d "$HOME/.antigen" ]] && git clone --depth 1 https://github.com/zsh-users/antigen.git "$HOME/.antigen"
+
+source $HOME/.antigen/antigen.zsh
 
 antigen init $HOME/.antigenrc
 
@@ -12,12 +13,12 @@ antigen init $HOME/.antigenrc
 [ -f $HOME/.git-extras-completion.zsh ] && source $HOME/.git-extras-completion.zsh
 [ -f $HOME/.github.zsh ] && source $HOME/.github.zsh
 
-# Mandatory for auth with yubikey
 FZF_ROOT=/usr/share/fzf
 [ -f $FZF_ROOT/completion.zsh ] && source $FZF_ROOT/completion.zsh
 [ -f $FZF_ROOT/key-bindings.zsh ] && source $FZF_ROOT/key-bindings.zsh
 
 
+# Mandatory for login with the yubikey
 # GPG Conf
 #
 export GPG_TTY="$(tty)"
