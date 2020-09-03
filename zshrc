@@ -1,4 +1,6 @@
-source /etc/skel/.zshrc
+[[ -f $HOME/.config.zsh ]] && curl -fLo $HOME/.config.zsh https://raw.githubusercontent.com/Chrysostomus/manjaro-zsh-config/master/manjaro-zsh-config
+source $HOME/.config.zsh
+
 zstyle ':completion:*' menu select
 zmodload zsh/complist
 autoload -U zmv
@@ -21,20 +23,23 @@ FZF_ROOT=/usr/share/fzf
 # Mandatory for login with the yubikey
 # GPG Conf
 #
-export GPG_TTY="$(tty)"
-# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-# AGENT_SOCK=$(gpgconf --list-dirs | grep agent-socket | cut -d : -f 2)
-# [[ ! -S $AGENT_SOCK ]] && gpg-agent --daemon --use-standard-socket &>/dev/null
 
-# Set SSH to use gpg-agent if it's enabled
-GNUPGCONFIG="${GNUPGHOME:-"$HOME/.gnupg"}/gpg-agent.conf"
-unset SSH_AGENT_PID
-if [[ -r $GNUPGCONFIG ]] && command grep -q enable-ssh-support "$GNUPGCONFIG"; then
-  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+if ! command -v gpgconf &> /dev/null
+then
+
+  export GPG_TTY="$(tty)"
+
+  # Set SSH to use gpg-agent if it's enabled
+  GNUPGCONFIG="${GNUPGHOME:-"$HOME/.gnupg"}/gpg-agent.conf"
+  unset SSH_AGENT_PID
+  if [[ -r $GNUPGCONFIG ]] && command grep -q enable-ssh-support "$GNUPGCONFIG"; then
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+  fi
+
+  # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
+  gpgconf --launch gpg-agent
+
 fi
-
-# gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
-gpgconf --launch gpg-agent
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -53,10 +58,7 @@ unset __conda_setup
 #
 
 export EDITOR=nvim
-# Mandatory for ssh-agent
-# gpg-connect-agent updatestartuptty /bye > /dev/null
-# Setting fd as the default source for fzf
-# RG_PREFIX="rg --with-filename --column --no-messages --no-heading --smart-case"
+
 RG_PREFIX="rg --files-with-matches --column --no-messages"
 export FZF_DEFAULT_COMMAND="fd --hidden --follow --exclude .git --type f"
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
@@ -152,4 +154,4 @@ eval "$(direnv hook zsh)"
 
 [ -f $HOME/.zshenv ] && source $HOME/.zshenv
 
-export RCRC="/home/$USERNAME/dotfiles/rcrc rcup"
+export RCRC="/home/$USERNAME/.dotfiles/rcrc rcup"
