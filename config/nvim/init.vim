@@ -336,8 +336,11 @@ let g:UltiSnipsExpandTrigger           = '<tab>'
 let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
 let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
+Plug 'https://github.com/Shougo/neco-vim'
 Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
+let g:coc_global_extensions = ['coc-json', 'coc-python', 'coc-yaml', 'coc-cmake', 'coc-clangd', 'coc-rls', 'coc-vimtex']
+
 Plug 'https://github.com/antoinemadec/coc-fzf'
 let g:coc_fzf_preview = 'right:70%'
 
