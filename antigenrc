@@ -11,6 +11,10 @@ antigen bundles <<EOBUNDLES
   rsync
   tmux
   nojhan/liquidprompt
+  zsh-users/zsh-syntax-highlighting
+  zsh-users/zsh-history-substring-search
+  zsh-users/zsh-completions
+  zsh-users/zsh-docker
 EOBUNDLES
 
 # Set any settings or overrides here

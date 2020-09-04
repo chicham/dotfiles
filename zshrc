@@ -1,4 +1,4 @@
-[[ ! -f $HOME/.config.zsh ]] && curl -fLo $HOME/.config.zsh https://raw.githubusercontent.com/Chrysostomus/manjaro-zsh-config/master/manjaro-zsh-config
+[[ ! -f $HOME/.config.zsh ]] && curl -fLo $HOME/.config.zsh https://raw.githubusercontent.com/Chrysostomus/manjaro-zsh-config/master/rootzshrc
 source $HOME/.config.zsh
 
 zstyle ':completion:*' menu select
@@ -24,7 +24,7 @@ FZF_ROOT=/usr/share/fzf
 # GPG Conf
 #
 
-if ! command -v gpgconf &> /dev/null
+if command -v gpgconf &> /dev/null
 then
 
   export GPG_TTY="$(tty)"
