@@ -14,7 +14,7 @@ antigen bundles <<EOBUNDLES
   zsh-users/zsh-syntax-highlighting
   zsh-users/zsh-history-substring-search
   zsh-users/zsh-completions
-  zsh-users/zsh-docker
+  zsh-users/zsh-autosuggestions
 EOBUNDLES
 
 # Set any settings or overrides here
@@ -43,3 +43,6 @@ zstyle ':prezto:module:utility' safe-ops 'yes'
 
 # Load everything
 antigen apply
+
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
