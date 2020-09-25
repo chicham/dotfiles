@@ -126,6 +126,12 @@ gslist() {
   cut -d: -f1
 }
 
+gblist() {
+  is_in_git_repo || return
+  git branch --list | fzf -d: --preview 'git show --color=always {1}' |
+  cut -d: -f1
+}
+
 
 glog() {
   is_in_git_repo || return
@@ -150,8 +156,15 @@ gconflict(){
   git diff --name-only --diff-filter=U
 }
 
+alias gcm='git commit -m'
+
 eval "$(direnv hook zsh)"
 
 [ -f $HOME/.zshenv ] && source $HOME/.zshenv
 
 export RCRC="/home/$USERNAME/.dotfiles/rcrc rcup"
+
+bindkey "[D" backward-word
+bindkey "[C" forward-word
+bindkey "^[[1~" beginning-of-line
+bindkey "^[[4~" end-of-line

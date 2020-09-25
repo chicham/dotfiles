@@ -33,7 +33,7 @@ Plug 'https://github.com/tpope/vim-abolish'
 " Unix shell command
 Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
-Plug 'https://github.com/tpope/vim-fugitive'
+Plug 'https://github.com/tpope/vim-fugitive', 
 Plug 'https://github.com/tpope/vim-rhubarb'
 Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
@@ -120,35 +120,6 @@ let g:pear_tree_smart_backspace = 1
 " If enabled, smart pair functions timeout after 60ms:
 let g:pear_tree_timeout = 30
 
-" New textobjects
-" Try to configure targets again
-"Plug 'https://github.com/kana/vim-textobj-user'
-""map ii, ai, iI, aI
-"Plug 'https://github.com/kana/vim-textobj-indent'
-""map a/, i/
-"Plug 'https://github.com/kana/vim-textobj-lastpat'
-"" map al, il
-"Plug 'https://github.com/kana/vim-textobj-line'
-"" map a%, i%
-"Plug 'https://github.com/adriaanzon/vim-textobj-matchit'
-"" map a,, i,
-"Plug 'https://github.com/sgur/vim-textobj-parameter'
-"" map ac, ic, aC
-"Plug 'https://github.com/glts/vim-textobj-comment'
-"let g:textobj_comment_no_default_key_mappings = 1
-"xmap a$ <Plug>(textobj-comment-a)
-"omap a$ <Plug>(textobj-comment-a)
-"xmap i$ <Plug>(textobj-comment-i)
-"omap i$ <Plug>(textobj-comment-i)
-
-"xmap a# <Plug>((textobj-comment-big-a))
-"omap a# <Plug>(textobj-comment-big-a)
-"xmap i# <Plug>(textobj-comment-big-i)
-"omap i# <Plug>(textobj-comment-big-i)
-
-"" map av, iv
-"Plug 'https://github.com/Julian/vim-textobj-variable-segment'
-
 Plug 'https://github.com/wellle/targets.vim'
 let g:targets_nl = 'nN'
 let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB rr ll rb al rB Al bb aa bB Aa BB AA'
@@ -159,9 +130,9 @@ autocmd User targets#mappings#user call targets#mappings#extend({
     \ })
 
 
-nmap gr <plug>(SubversiveSubstitute)
-nmap grr <plug>(SubversiveSubstituteLine)
-nmap gR <plug>(SubversiveSubstituteToEndOfLine)
+nmap gs <plug>(SubversiveSubstitute)
+nmap gss <plug>(SubversiveSubstituteLine)
+nmap gS <plug>(SubversiveSubstituteToEndOfLine)
 Plug 'https://github.com/svermeulen/vim-subversive'
 "Intuitive visual blocks
 Plug 'https://github.com/kana/vim-niceblock/'
@@ -175,11 +146,6 @@ let b:lion_squeeze_spaces = 1
 Plug 'https://github.com/kshenoy/vim-signature.git'
 " Show diff with git head
 Plug 'https://github.com/mhinz/vim-signify'
-" Show indentation
-" Plug 'https://github.com/nathanaelkane/vim-indent-guides'
-" let g:indent_guides_enable_on_vim_startup = 1
-" let g:indent_guides_guide_size            = 1
-" let g:indent_guides_auto_colors           = 0
 
 Plug 'https://github.com/Yggdroot/indentLine'
 let g:indentLine_enabled = 1
@@ -336,20 +302,10 @@ let g:UltiSnipsExpandTrigger           = '<tab>'
 let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
 let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
-Plug 'https://github.com/Shougo/neco-vim'
-Plug 'https://github.com/neoclide/coc-neco'
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
-Plug 'https://github.com/neoclide/coc-json'
-Plug 'https://github.com/neoclide/coc-python'
-Plug 'https://github.com/neoclide/coc-yaml'
-Plug 'https://github.com/voldikss/coc-cmake'
-Plug 'https://github.com/clangd/coc-clangd'
-Plug 'https://github.com/neoclide/coc-rls'
-Plug 'https://github.com/neoclide/coc-vimtex'
 
 Plug 'https://github.com/antoinemadec/coc-fzf'
 let g:coc_fzf_preview = 'right:70%'
-
 
 inoremap <silent><expr> <c-space> coc#refresh()
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
@@ -358,7 +314,17 @@ nmap <silent> ]g <Plug>(coc-diagnostic-next)
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gf <Plug>(coc-references)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> ga <Plug>(coc-codeaction-line)
+nmap <silent> gA <Plug>(coc-codeaction-selected)
+xmap <silent> gA <Plug>(coc-codeaction-selected)
+nmap <silent> gf :<c-u>CocFix<cr>
+
+xmap if <Plug>(coc-funcobj-i)
+omap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap af <Plug>(coc-funcobj-a)
+
 
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 augroup coc-settings
@@ -376,8 +342,6 @@ function! s:show_documentation()
   endif
 endfunction
 
-" Symbol renaming.
-nnoremap <leader>cr <Plug>(coc-rename)
 
 augroup mygroup
   autocmd!
@@ -388,26 +352,20 @@ augroup mygroup
   autocmd BufRead,BufNewFile .antigenrc set filetype=zsh
 augroup end
 
-" Applying codeAction to the selected region.
-" Example: `<leader>aap` for current paragraph
-xnoremap <leader>ca  <Plug>(coc-codeaction-selected)
-nnoremap <leader>ca  <Plug>(coc-codeaction-selected)
-" Remap keys for applying codeAction to the current line.
-nnoremap <leader>caa  <Plug>(coc-codeaction)
-" Apply AutoFix to problem on the current line.
-noremap <leader>cff  <Plug>(coc-fix-current)
-"
 " Mappings using CoCList:
 " Show all diagnostics.
-nnoremap <silent> <space>cd  :<C-u>CocFzfList diagnostics<cr>
+nnoremap <silent><leader>cd  :<C-u>CocFzfList diagnostics<cr>
 " Manage extensions.
-nnoremap <silent> <space>ce  :<C-u>CocFzfList extensions<cr>
+nnoremap <silent><leader>ce  :<C-u>CocFzfList extensions<cr>
 " Show commands.
-nnoremap <silent> <space>cc  :<C-u>CocFzfList commands<cr>
+nnoremap <silent><leader>cc  :<C-u>CocFzfList commands<cr>
 " Find symbol of current document.
-nnoremap <silent> <space>co  :<C-u>CocFzfList outline<cr>
+nnoremap <silent><leader>co  :<C-u>CocFzfList outline<cr>
 " Search workspace symbols.
-nnoremap <silent> <space>cs  :<C-u>CocFzList symbols<cr>
+nnoremap <silent><leader>cs  :<C-u>CocFzfList symbols<cr>
+nnoremap <silent><leader>cl  :<C-u>CocFzfList location<cr>
+" Symbol renaming.
+nnoremap <silent><leader>cr <Plug>(coc-rename)
 
 
 " The Silver Searcher
@@ -466,25 +424,6 @@ let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
 Plug 'https://github.com/ryanoasis/vim-devicons'
-
-" Add maktaba and codefmt to the runtimepath.
-" (The latter must be installed before it can be used.)
-" Plug 'https://github.com/google/vim-maktaba'
-" Plug 'https://github.com/google/vim-codefmt'
-
-" augroup autoformat_settings
-"   autocmd FileType bzl AutoFormatBuffer buildifier
-"   autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-"   autocmd FileType dart AutoFormatBuffer dartfmt
-"   autocmd FileType go AutoFormatBuffer gofmt
-"   autocmd FileType gn AutoFormatBuffer gn
-"   autocmd FileType html,css,sass,scss,less,json AutoFormatBuffer js-beautify
-"   autocmd FileType java AutoFormatBuffer google-java-format
-"   autocmd FileType python AutoFormatBuffer black
-"   autocmd FileType rust AutoFormatBuffer rustfmt
-"   autocmd FileType vue AutoFormatBuffer prettier
-"   autocmd FileType yaml AutoFormatBuffer prettier
-" augroup END
 
 call plug#end()
 

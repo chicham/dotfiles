@@ -8,6 +8,11 @@
     "python.formatting.provider": "black",
     "python.jediEnabled": true,
     "python.analysis.diagnosticEnabled": true,
+    "pyright.disableCompletion": true,
+    "pyright.disableOrganizeImports": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportGeneralTypeIssues": "none",
+    },
     "yaml.validate": true,
     "yaml.hover": true,
     "yaml.completion": true,
@@ -16,6 +21,7 @@
     "diagnostic.infoSign": "",
     "diagnostic.hintSign": "",
     "coc.source.vimtex.enable": true,
+    "coc.preferences.formatOnType": true,
     "coc.preferences.formatOnSaveFiletypes": [
         "json",
         "Markdown",
