@@ -85,8 +85,6 @@ fif () {
   else
     return 128
   fi
-  # FZF_DEFAULT_COMMAND="$RG_PREFIX $INITIAL_QUERY" fzf  $EXTRA_ARGS --exact --ansi --preview "rg -i --pretty --context 2 {q} {}"
-  # bat --color=always --style=header,grid --line-range :300 {1}
   FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY'" fzf --ansi --ansi --preview-window "right:60%" --preview "cat {1} | rg $INITIAL_QUERY --context 3 --color=always --line-number --ignore-case"
 }
 
