@@ -33,7 +33,7 @@ Plug 'https://github.com/tpope/vim-abolish'
 " Unix shell command
 Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
-Plug 'https://github.com/tpope/vim-fugitive', 
+Plug 'https://github.com/tpope/vim-fugitive',
 Plug 'https://github.com/tpope/vim-rhubarb'
 Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
@@ -315,8 +315,8 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-nmap <silent> ga <Plug>(coc-codeaction-line)
-nmap <silent> gA <Plug>(coc-codeaction-selected)
+" nmap <silent> ga <Plug>(coc-codeaction-line)
+" nmap <silent> gA <Plug>(coc-codeaction-selected)
 xmap <silent> gA <Plug>(coc-codeaction-selected)
 nmap <silent> gf :<c-u>CocFix<cr>
 
@@ -352,6 +352,7 @@ augroup mygroup
   autocmd BufRead,BufNewFile .antigenrc set filetype=zsh
 augroup end
 
+
 " Mappings using CoCList:
 " Show all diagnostics.
 nnoremap <silent><leader>cd  :<C-u>CocFzfList diagnostics<cr>
@@ -366,6 +367,16 @@ nnoremap <silent><leader>cs  :<C-u>CocFzfList symbols<cr>
 nnoremap <silent><leader>cl  :<C-u>CocFzfList location<cr>
 " Symbol renaming.
 nnoremap <silent><leader>cr <Plug>(coc-rename)
+
+" Remap for do codeAction of selected region
+function! s:cocActionsOpenFromSelected(type) abort
+  execute 'CocCommand actions.open ' . a:type
+endfunction
+" xmap <silent> <leader>ca :<C-u>execute 'CocCommand actions.open ' . visualmode()<CR>
+" nmap <silent> <leader>ca :<C-u>set operatorfunc=<SID>cocActionsOpenFromSelected<CR>g@
+
+xmap <silent> ga :<C-u>execute 'CocCommand actions.open ' . visualmode()<CR>
+nmap <silent> ga :<C-u>set operatorfunc=<SID>cocActionsOpenFromSelected<CR>g@
 
 
 " The Silver Searcher
