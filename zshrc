@@ -57,7 +57,6 @@ unset __conda_setup
 # <<< conda initialize <<<
 #
 
-export EDITOR=nvim
 
 RG_PREFIX="rg --files-with-matches --column --no-messages"
 export FZF_DEFAULT_COMMAND="fd --hidden --follow --exclude .git --type f"
@@ -99,36 +98,6 @@ is_in_git_repo() {
   git rev-parse HEAD > /dev/null 2>&1
 }
 
-# fco_preview - checkout git branch/tag, with a preview showing the commits between the tag/branch and HEAD
-gco() {
-  local tags branches target
-  branches=$(
-    git --no-pager branch --all \
-      --format="%(if)%(HEAD)%(then)%(else)%(if:equals=HEAD)%(refname:strip=3)%(then)%(else)%1B[0;34;1mbranch%09%1B[m%(refname:short)%(end)%(end)" \
-    | sed '/^$/d') || return
-  tags=$(
-    git --no-pager tag | awk '{print "\x1b[35;1mtag\x1b[m\t" $1}') || return
-  target=$(
-    (echo "$branches"; echo "$tags") |
-    fzf --no-hscroll --no-multi -n 2 \
-        --ansi --reverse --preview='git log --color=always --oneline --decorate {2}') || return
-  git checkout $(awk '{print $2}' <<<"$target" )
-}
-
-gsl() {
-  is_in_git_repo || return
-  git stash list | fzf -d: --preview 'git show --color=always {1}' |
-  cut -d: -f1
-}
-
-glo() {
-  is_in_git_repo || return
-  git log --color=always --pretty='format:%C(auto)%h [%ad] %s, %an ' --date=short \
-    | fzf \
-    --preview="git diff --name-status {1}" \
-    --layout=reverse --no-sort --ansi \
-    --preview-window "40%"
-}
 
 gconflict(){
   git diff --name-only --diff-filter=U
@@ -146,3 +115,5 @@ bindkey "[D" backward-word
 bindkey "[C" forward-word
 bindkey "^[[1~" beginning-of-line
 bindkey "^[[4~" end-of-line
+
+export VISUAL="/usr/bin/nvim"

@@ -73,10 +73,6 @@ xmap am <Plug>(textobj-sandwich-literal-query-a)
 omap im <Plug>(textobj-sandwich-literal-query-i)
 omap am <Plug>(textobj-sandwich-literal-query-a)
 
-" Better syntax for languages
-Plug 'https://github.com/sheerun/vim-polyglot'
-let g:polyglot_disabled = ['markdown']
-Plug 'https://github.com/raimon49/requirements.txt.vim', {'for': 'requirements'}
 " Pairs mappings
 Plug 'https://github.com/tpope/vim-unimpaired'
 " Automatically comments
@@ -135,7 +131,8 @@ nmap gss <plug>(SubversiveSubstituteLine)
 nmap gS <plug>(SubversiveSubstituteToEndOfLine)
 Plug 'https://github.com/svermeulen/vim-subversive'
 "Intuitive visual blocks
-Plug 'https://github.com/kana/vim-niceblock/'
+" Plug 'https://github.com/kana/vim-niceblock/'
+Plug 'https://github.com/mg979/vim-visual-multi'
 " Better visual mode move
 Plug 'https://github.com/bruno-/vim-vertical-move'
 "
@@ -272,9 +269,9 @@ Plug 'https://github.com/nanotech/jellybeans.vim'
 
 "
 " Latex plugin
-Plug 'https://github.com/lervag/vimtex', {'for':['tex', 'latex']}
+Plug 'https://github.com/lervag/vimtex'
 let g:vimtex_complete_enabled = 1
-" let g:vimtex_complete_recursive_bib = 1
+let g:vimtex_complete_recursive_bib = 1
 let g:vimtex_view_method='zathura'
 let g:tex_flavor='latex'
 let g:vimtex_compiler_method = 'latexmk'
@@ -283,6 +280,7 @@ let g:vimtex_compiler_latexmk = {
       \ 'continuous': 1,
       \ 'build_dir' : 'build',
       \}
+let g:vimtex_quick_enabled = 0
 
 
 " Split/Join lines
@@ -435,6 +433,11 @@ let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1
 
 Plug 'https://github.com/ryanoasis/vim-devicons'
+
+" Better syntax for languages
+Plug 'https://github.com/sheerun/vim-polyglot'
+let g:polyglot_disabled = ['markdown']
+Plug 'https://github.com/raimon49/requirements.txt.vim', {'for': 'requirements'}
 
 call plug#end()
 
