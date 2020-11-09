@@ -253,7 +253,7 @@ nmap n :norm! nzzzv<Plug>Pulse<CR>
 nmap N :norm! Nzzzv<Plug>Pulse<CR>
 " Pulses cursor line on first match
 " when doing search with / or ?
-cmap <silent> <expr> <enter> search_pulse#PulseFirst()
+"cmap <silent> <expr> <enter> search_pulse#PulseFirst()
 
 
 " Snippets
