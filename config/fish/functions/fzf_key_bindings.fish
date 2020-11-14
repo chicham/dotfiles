@@ -1,1 +1,0 @@
-/home/hicham/dotfiles/config/fish/functions/fzf_key_bindings.fish
