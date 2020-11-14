@@ -40,4 +40,6 @@ gpgconf --launch gpg-agent
 alias ls="exa --icons"
 alias ll="exa -al"
 alias diff="delta"
+alias cat="bat"
 
+set -x VISUAL nvim

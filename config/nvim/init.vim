@@ -266,6 +266,7 @@ let g:UltiSnipsEditSplit='context'
 let g:UltiSnipsSnippetDirectories=[$HOME . '/.snippets/']
 
 Plug 'https://github.com/nanotech/jellybeans.vim'
+Plug 'https://github.com/altercation/vim-colors-solarized'
 
 "
 " Latex plugin
@@ -449,7 +450,8 @@ runtime! macros/matchit.vim
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
 
-colorscheme jellybeans
+" colorscheme jellybeans
+colorscheme solarized
 
 inoremap <c-e> <ESC>A
 inoremap <c-b> <Esc>I
@@ -460,6 +462,7 @@ filetype plugin indent on
 scriptencoding utf-8
 
 set guifont=FiraCode\ Nerd\ Font\ Mono:style=Medium
+set background=dark
 set autowrite
 set autochdir
 set tags=./tags,tags
