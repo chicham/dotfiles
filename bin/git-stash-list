@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -e
-
-git stash list | fzf -d: --preview 'git show --color=always {1}' |
-cut -d: -f1

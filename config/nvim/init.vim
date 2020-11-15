@@ -175,7 +175,7 @@ Plug 'https://github.com/vim-scripts/python_match.vim'
 Plug 'https://github.com/itchyny/lightline.vim'
 
 let g:lightline = {
-      \ 'colorscheme': 'one',
+      \ 'colorscheme': 'jellybeans',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
       \             [ 'gitbranch', 'cocstatus', 'readonly', 'absolutepath', 'CocCurrentFunction', 'modified' ] ]
@@ -265,8 +265,10 @@ let g:UltiSnipsEditSplit='context'
 " let g:UltiSnipsListSnippets = '<c-u>'
 let g:UltiSnipsSnippetDirectories=[$HOME . '/.snippets/']
 
-Plug 'https://github.com/nanotech/jellybeans.vim'
-Plug 'https://github.com/altercation/vim-colors-solarized'
+" Plug 'https://github.com/nanotech/jellybeans.vim'
+" Plug 'https://github.com/altercation/vim-colors-solarized'
+" let g:solarized_termcolors=256
+Plug 'https://github.com/morhetz/gruvbox'
 
 "
 " Latex plugin
@@ -451,7 +453,8 @@ runtime! macros/matchit.vim
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
 
 " colorscheme jellybeans
-colorscheme solarized
+" colorscheme solarized
+colorscheme gruvbox
 
 inoremap <c-e> <ESC>A
 inoremap <c-b> <Esc>I
