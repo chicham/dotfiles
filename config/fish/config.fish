@@ -43,3 +43,6 @@ alias diff="delta"
 alias cat="bat"
 
 set -x VISUAL nvim
+set -x FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
+set -x FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
+set -x FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'

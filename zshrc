@@ -61,7 +61,7 @@ unset __conda_setup
 RG_PREFIX="rg --files-with-matches --column --no-messages"
 export FZF_DEFAULT_COMMAND="fd --hidden --follow --exclude .git --type f"
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info --height '80%' --select-1"
-export FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid --line-range :300 {}"'
+export FZF_PREVIEW_FILE='--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
 
 # Default file search commands
 _fzf_compgen_path() { fd --hidden --follow --type=f  --exclude .git "$1"}
