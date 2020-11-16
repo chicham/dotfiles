@@ -11,11 +11,10 @@ endif
 
 let g:plugged = g:home . '/plugged/'
 
+" Install vim-plug if not found
 if empty(glob(g:home . "/autoload/plug.vim"))
-    " Ensure all needed directories exist  (Thanks @kapadiamush)
-    execute '!mkdir -p ' . g:home . '/autoload/'
-    " Download the actual plugin manager
-    execute '!curl -fLo '. g:home . '/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 endif
 
 let g:mapleader=' '
