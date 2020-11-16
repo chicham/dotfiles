@@ -30,10 +30,10 @@ end
 eval (direnv hook fish)
 
 #### GPG-AGENT ####
-set -x -U GPG_TTY (tty)
+set -x GPG_TTY (tty)
+set -u SSH_AGENT_PID
 # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
-set -U -x SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-
+set -x SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
 
 #### ALIASES ####
@@ -45,4 +45,4 @@ alias cat="bat"
 set -x VISUAL nvim
 set -x FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
 set -x FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
-set -x FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
+set FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
