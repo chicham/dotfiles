@@ -9,10 +9,15 @@ and not set -q TMUX
   tmux new-session -A -s main
 end
 
+if test -d $HOME/.miniconda/
+  set CONDA_BIN $HOME/.miniconda/
+else
+  set CONDA_BIN /opt/conda/
+end
 #### CONDA ####
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-eval /home/hicham/.miniconda/bin/conda "shell.fish" "hook" $argv | source
+eval $CONDA_BIN/condabin/conda "shell.fish" "hook" $argv | source
 # <<< conda initialize <<<
 
 #### FZF ####
