@@ -258,10 +258,8 @@ nmap N :norm! Nzzzv<Plug>Pulse<CR>
 " Snippets
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
 " If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsExpandTrigger = '<tab>'
 
 let g:UltiSnipsEditSplit='context'
-" let g:UltiSnipsListSnippets = '<c-u>'
 let g:UltiSnipsSnippetDirectories=[$HOME . '/.snippets/']
 
 " Plug 'https://github.com/nanotech/jellybeans.vim'
@@ -294,19 +292,12 @@ Plug 'https://github.com/flwyd/vim-conjoin'
 " Diff two lines
 Plug 'https://github.com/AndrewRadev/linediff.vim'
 
-" Improved tab
-Plug 'https://github.com/ervandew/supertab'
-let g:SuperTabDefaultCompletionType    = '<C-n>'
-let g:SuperTabCrMapping                = 0
-let g:UltiSnipsExpandTrigger           = '<tab>'
-let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
-let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
 " let g:coc_global_extensions = ['coc-json', 'coc-actions', 'coc-clangd', 'coc-clangd', 'coc-cmake', 'coc-json', 'coc-pyright','coc-python', 'coc-rls', 'coc-sh', 'coc-tabnine', 'coc-vimlsp', 'coc-vimtex', 'coc-yaml']
 
 Plug 'https://github.com/antoinemadec/coc-fzf'
-let g:coc_fzf_preview = 'right:70%'
+let g:coc_fzf_preview = 'right:50%'
 
 inoremap <silent><expr> <c-space> coc#refresh()
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
@@ -316,8 +307,6 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-" nmap <silent> ga <Plug>(coc-codeaction-line)
-" nmap <silent> gA <Plug>(coc-codeaction-selected)
 xmap <silent> gA <Plug>(coc-codeaction-selected)
 nmap <silent> gf :<c-u>CocFix<cr>
 
@@ -325,7 +314,6 @@ xmap if <Plug>(coc-funcobj-i)
 omap if <Plug>(coc-funcobj-i)
 xmap af <Plug>(coc-funcobj-a)
 omap af <Plug>(coc-funcobj-a)
-
 
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 augroup coc-settings
@@ -378,6 +366,14 @@ endfunction
 
 xmap <silent> ga :<C-u>execute 'CocCommand actions.open ' . visualmode()<CR>
 nmap <silent> ga :<C-u>set operatorfunc=<SID>cocActionsOpenFromSelected<CR>g@
+
+" Improved tab
+Plug 'https://github.com/ervandew/supertab'
+let g:SuperTabDefaultCompletionType    = '<C-n>'
+let g:SuperTabCrMapping                = 0
+let g:UltiSnipsExpandTrigger           = '<tab>'
+let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
+let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
 
 " The Silver Searcher

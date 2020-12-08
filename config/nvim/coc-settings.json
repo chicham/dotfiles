@@ -6,13 +6,12 @@
   "python.linting.lintOnSave": true,
   "python.linting.pylintEnabled": false,
   "python.formatting.provider": "black",
-  "python.jediEnabled": true,
-  "python.analysis.diagnosticEnabled": true,
-  "pyright.disableCompletion": true,
-  "pyright.disableOrganizeImports": true,
   "python.analysis.diagnosticSeverityOverrides": {
     "reportGeneralTypeIssues": "none"
   },
+  "python.linting.pytypeEnabled": true,
+  "pyright.disableCompletion": false,
+  "pyright.disableOrganizeImports": true,
   "yaml.validate": true,
   "yaml.hover": true,
   "yaml.completion": true,
