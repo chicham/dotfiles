@@ -294,10 +294,10 @@ Plug 'https://github.com/AndrewRadev/linediff.vim'
 
 
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
-" let g:coc_global_extensions = ['coc-json', 'coc-actions', 'coc-clangd', 'coc-clangd', 'coc-cmake', 'coc-json', 'coc-pyright','coc-python', 'coc-rls', 'coc-sh', 'coc-tabnine', 'coc-vimlsp', 'coc-vimtex', 'coc-yaml']
+" let g:coc_global_extensions = ['coc-json', 'coc-actions', 'coc-clangd', 'coc-cmake', 'coc-json', 'coc-pyright', 'coc-rls', 'coc-sh', 'coc-vimlsp', 'coc-vimtex', 'coc-yaml']
 
 Plug 'https://github.com/antoinemadec/coc-fzf'
-let g:coc_fzf_preview = 'right:50%'
+let g:coc_fzf_preview = 'right:65%'
 
 inoremap <silent><expr> <c-space> coc#refresh()
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
@@ -307,7 +307,6 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-xmap <silent> gA <Plug>(coc-codeaction-selected)
 nmap <silent> gf :<c-u>CocFix<cr>
 
 xmap if <Plug>(coc-funcobj-i)
@@ -356,6 +355,8 @@ nnoremap <silent><leader>cs  :<C-u>CocFzfList symbols<cr>
 nnoremap <silent><leader>cl  :<C-u>CocFzfList location<cr>
 " Symbol renaming.
 nnoremap <silent><leader>cr <Plug>(coc-rename)
+" Format current file
+nnoremap <silent><leader>cf :call CocAction('format')<cr>
 
 " Remap for do codeAction of selected region
 function! s:cocActionsOpenFromSelected(type) abort

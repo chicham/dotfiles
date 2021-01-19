@@ -2,14 +2,13 @@
   "suggest.maxCompleteItemCount": 10,
   "suggest.maxPreviewWidth": 88,
   "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
   "python.linting.lintOnSave": true,
   "python.linting.pylintEnabled": false,
+  "python.linting.pytypeEnabled": true,
   "python.formatting.provider": "black",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportGeneralTypeIssues": "none"
   },
-  "python.linting.pytypeEnabled": true,
   "pyright.disableCompletion": false,
   "pyright.disableOrganizeImports": true,
   "yaml.validate": true,
@@ -24,7 +23,6 @@
   "coc.preferences.formatOnSaveFiletypes": [
     "json",
     "Markdown",
-    "python",
     "yaml"
   ]
 }

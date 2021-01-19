@@ -10,14 +10,14 @@ and not set -q TMUX
 end
 
 if test -d $HOME/.miniconda/
-  set CONDA_BIN $HOME/.miniconda/
+  set CONDA_HOME $HOME/.miniconda/
 else
-  set CONDA_BIN /opt/conda/
+  set CONDA_HOME /opt/conda/
 end
 #### CONDA ####
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-eval $CONDA_BIN/condabin/conda "shell.fish" "hook" $argv | source
+eval $CONDA_HOME/bin/conda "shell.fish" "hook" $argv | source
 # <<< conda initialize <<<
 
 #### FZF ####
