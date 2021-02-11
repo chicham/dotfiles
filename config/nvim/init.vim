@@ -304,6 +304,8 @@ nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 " GoTo code navigation.
 nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> g<bar> <C-w><C-v><C-w>l <Plug>(coc-definition)
+nmap <silent> g_ <C-w><C-s><C-w>l <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
@@ -519,6 +521,8 @@ if has('unnamedplus')
 else
   set clipboard=unnamed
 endif
+set splitbelow
+set splitright
 
 " Autocmd
 " Copied from tpope
@@ -537,6 +541,7 @@ if has('autocmd')
     autocmd bufnewfile,bufread *named.conf*       set ft=named
     autocmd bufnewfile,bufread *.txt if &ft == ""|set ft=text|endif
     autocmd bufnewfile,bufread readme,install,news,todo if &ft == ""|set ft=pandoc|endif
+    autocmd bufnewfile,bufread .tmux.* if &ft == ""|set ft=tmux|endif
   augroup end
 
   augroup ftoptions
@@ -608,10 +613,10 @@ nnoremap <leader>e<bar> <C-w><C-v><C-w>l:e <c-r>=expand("%:p:h")<cr>/
 nnoremap <leader>ww <C-w>c
 nnoremap <leader>w= <C-w>=
 nnoremap <leader>wr <C-w>r
-nnoremap <leader>wT <C-w>T
 nnoremap <leader>wo <C-w>o
 nnoremap <leader>wh <C-w>t<C-w>K
 nnoremap <leader>wv <C-w>t<C-w>H
+nnoremap <leader>wR <C-w>R
 
 nnoremap <leader>+ 6<C-w>+
 nnoremap <leader>- 6<C-w>-

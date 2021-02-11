@@ -1,5 +1,6 @@
 [init]
 	templateDir = /home/hicham/.git_template
+	defaultBranch = main
 [push]
   default = current
 [color]

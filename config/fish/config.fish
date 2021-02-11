@@ -41,14 +41,10 @@ set -u SSH_AGENT_PID
 set -x SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
 
-#### ALIASES ####
-alias ls="exa --icons"
-alias ll="exa -al"
-alias diff="delta"
-alias cat="bat"
-
 set -x VISUAL nvim
 set -x FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
 set -x FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
 set FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
 set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+
+. $HOME/.config/fish/aliases.fish
