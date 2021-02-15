@@ -1,0 +1,19 @@
+[general]
+targets = qwant_gitlab, qwant_jira
+
+[qwant_gitlab]
+service = gitlab
+gitlab.login = h.randrianarivo
+gitlab.token = @oracle:use_keyring
+gitlab.host = git.qwant.ninja
+gitlab.filter_merge_requests = True
+gitlab.only_if_assigned = h.randrianarivo
+gitlab.description_template =  Issue/MR #{{gitlabnumber}} {{gitlabtitle}}
+
+[qwant_jira]
+service = jira
+jira.base_uri = https://jira.qwant.ninja
+jira.username = h.randrianarivo
+jira.password = @oracle:use_keyring
+jira.query = assignee = h.randrianarivo and not ( status = closed or status = canceled or status = done or status = cancelled )
+jira.description_template = {{jiraid}} {{jirasummary}}

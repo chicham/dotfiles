@@ -46,5 +46,14 @@ set -x FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
 set -x FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
 set FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
 set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+set -x PATH "$HOME/.local/bin:$PATH"
 
-. $HOME/.config/fish/aliases.fish
+set alias_file $HOME/.config/fish/aliases.fish
+if test -e $alias_file
+  . $alias_file
+end
+
+set local_file $HOME/.config.local.fish
+if test -e $local_file
+  . $local_file
+end
