@@ -36,17 +36,15 @@ Plug 'https://github.com/tpope/vim-fugitive',
 Plug 'https://github.com/tpope/vim-rhubarb'
 Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
-nnoremap <silent><leader>ga :<C-u>Git add %:p<CR><CR>
-nnoremap <silent><leader>gs :<C-u>Gstatus<CR>
-nnoremap <silent><leader>gc :<C-u>Gcommit -v -q %:p<CR>
+nnoremap <leader>gc :<C-u>Git commit -m ""<left>
+nnoremap <leader>gr :<C-u>Git rebase -i<cr>
 nnoremap <silent><leader>gw :<C-u>Gwrite<CR><CR>
+" TODO: modify this bindings to grep word under cursor
 nnoremap <silent><leader>gg :<C-u>Ggrep<Space>
-nnoremap <silent><leader>gb :<C-u>Git branch<Space>
-nnoremap <silent><leader>go :<C-u>Git checkout<Space>
-nnoremap <silent><leader>gd :<C-u>Gvdiff<Space>
 nnoremap <Leader>g+ :Silent Git stash<CR>:e<CR>
 nnoremap <Leader>g- :Silent Git stash pop<CR>:e<CR>
-nnoremap <Leader>gp :Gpush --all<cr>
+nnoremap <Leader>gp :Git push -u<cr>
+nnoremap <Leader>gd :Gdiffsplit HEAD<cr>
 
 let g:fugitive_gitlab_domains = 'https://git.qwant.ninja/'
 Plug 'https://github.com/mattn/vim-gist'
@@ -440,6 +438,8 @@ Plug 'https://github.com/ryanoasis/vim-devicons'
 Plug 'https://github.com/sheerun/vim-polyglot'
 let g:polyglot_disabled = ['markdown']
 Plug 'https://github.com/raimon49/requirements.txt.vim', {'for': 'requirements'}
+
+Plug 'https://github.com/goerz/jupytext.vim'
 
 call plug#end()
 

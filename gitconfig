@@ -1,5 +1,5 @@
 [init]
-	templateDir = /home/hicham/.git_template
+	templateDir = /home/hicham/.git_template/
 	defaultBranch = main
 [push]
   default = current
@@ -13,10 +13,6 @@
   co = checkout
   pf = push --force-with-lease
   st = status
-[core]
-  pager = delta
-  excludesfile = ~/.gitignore
-  autocrlf = input
 [core]
   pager = delta --dark
 [merge]
@@ -55,3 +51,7 @@
     line-numbers-right-style = cyan
     line-numbers-minus-style = 124
     line-numbers-plus-style = 28
+[user]
+	email = hicham@randrianarivo.net
+[pull]
+	rebase = true
