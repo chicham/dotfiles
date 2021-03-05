@@ -29,6 +29,9 @@ Plug 'https://github.com/rstacruz/vim-opinion/'
 Plug 'https://github.com/tpope/vim-sleuth'
 " Improved Search/Substitute, typo
 Plug 'https://github.com/tpope/vim-abolish'
+" Highlight changes
+Plug 'https://github.com/markonm/traces.vim'
+let g:traces_abolish_integration=1
 " Unix shell command
 Plug 'https://github.com/tpope/vim-eunuch'
 " Git plugin
@@ -116,7 +119,6 @@ let g:pear_tree_timeout = 30
 Plug 'https://github.com/wellle/targets.vim'
 let g:targets_nl = 'nN'
 let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB rr ll rb al rB Al bb aa bB Aa BB AA'
-
 
 autocmd User targets#mappings#user call targets#mappings#extend({
     \ 'b': {'block':  [{'o':'(', 'c':')'}, {'o':'[', 'c':']'}, {'o':'{', 'c':'}'}, {'o': '<', 'c': '>'},{'d': '"'}, {'d': "'"}, {'d': '`'}]}
@@ -500,10 +502,10 @@ set diffopt+=vertical
 set signcolumn=yes
 set shortmess +=c
 
-if exists('&inccommand')
-  set incsearch
-  set inccommand=nosplit
-endif
+" if exists('&inccommand')
+"   set incsearch
+"   set inccommand=nosplit
+" endif
 
 if v:version >= 703
   set wildignorecase
