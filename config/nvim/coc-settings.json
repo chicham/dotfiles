@@ -1,6 +1,7 @@
 {
   "suggest.maxCompleteItemCount": 10,
-  "suggest.maxPreviewWidth": 88,
+  "suggest.maxPreviewWidth": 90,
+  "suggest.noselect": false,
   "python.linting.enabled": true,
   "python.linting.lintOnSave": true,
   "python.linting.pylintEnabled": false,
@@ -9,8 +10,7 @@
   "python.analysis.diagnosticSeverityOverrides": {
     "reportGeneralTypeIssues": "none"
   },
-  "pyright.disableCompletion": false,
-  "pyright.disableOrganizeImports": true,
+  "python.analysis.autoImportCompletions": true,
   "yaml.validate": true,
   "yaml.hover": true,
   "yaml.completion": true,
@@ -24,5 +24,12 @@
     "json",
     "Markdown",
     "yaml"
+  ],
+  "suggest.enablePreview": true,
+  "suggest.minTriggerInputLength": 1,
+  "suggest.snippetIndicator": "[S] ",
+  "snippets.ultisnips.directories": [
+    "UltiSnips",
+    "$HOME/.snippets"
   ]
 }

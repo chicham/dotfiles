@@ -41,13 +41,13 @@ Plug 'https://github.com/shumphrey/fugitive-gitlab.vim'
 " fugitive git bindings
 nnoremap <leader>gc :<C-u>Git commit -m ""<left>
 nnoremap <leader>gr :<C-u>Git rebase -i<cr>
-nnoremap <silent><leader>gw :<C-u>Gwrite<CR><CR>
+nnoremap <leader>gw :<C-u>Gwrite<CR><CR>
 " TODO: modify this bindings to grep word under cursor
-nnoremap <silent><leader>gg :<C-u>Ggrep<Space>
+" nnoremap <leader>gg :<C-u>Ggrep<Space>
 nnoremap <Leader>g+ :Silent Git stash<CR>:e<CR>
 nnoremap <Leader>g- :Silent Git stash pop<CR>:e<CR>
 nnoremap <Leader>gp :Git push -u<cr>
-nnoremap <Leader>gd :Gdiffsplit HEAD<cr>
+nnoremap <Leader>gd :Gdiffsplit main<cr>
 
 let g:fugitive_gitlab_domains = 'https://git.qwant.ninja/'
 Plug 'https://github.com/mattn/vim-gist'
@@ -202,7 +202,7 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 Plug 'https://github.com/junegunn/fzf'
 Plug 'https://github.com/junegunn/fzf.vim'
-let $FZF_DEFAULT_OPTS = '--layout=reverse --inline-info --height "80%" --select-1'
+let $FZF_DEFAULT_OPTS = '--layout=reverse --inline-info --height "80%"'
 
 
 " Customize fzf colors to match your color scheme
@@ -232,11 +232,11 @@ nnoremap <leader>fh :<C-u>History<cr>
 nnoremap <leader>fg :<C-u>Rg <c-r>=expand("<cword>")<cr><cr>
 nnoremap <leader>fG :<C-u>Rg<space>
 nnoremap <leader>fm :<C-u>Marks<cr>
-nnoremap <leader>fc :<C-u>BCommits<cr>
 nnoremap <leader>fp :<C-u>Maps<cr>
 nnoremap <leader>fT :<C-u>Tags<cr>
 nnoremap <leader>ft :<C-u>BTags<cr>
 nnoremap <leader>fs :<C-u>Snippets<cr>
+command! Todo :Rg (TODO|FIXME|XXX):
 nmap g/ :<C-u>BLines<cr>
 nmap g* :<C-u>BLines <c-r>=expand("<cword>")<cr><cr>
 
@@ -259,8 +259,9 @@ nmap N :norm! Nzzzv<Plug>Pulse<CR>
 Plug 'https://github.com/SirVer/ultisnips' | Plug 'https://github.com/honza/vim-snippets'
 " If you want :UltiSnipsEdit to split your window.
 
-let g:UltiSnipsEditSplit='context'
-let g:UltiSnipsSnippetDirectories=[$HOME . '/.snippets/']
+let g:UltiSnipsEditSplit = 'context'
+let g:UltiSnipsSnippetDirectories = [$HOME . '/.snippets/']
+let g:ultisnips_python_style = 'sphinx'
 
 " Plug 'https://github.com/nanotech/jellybeans.vim'
 " Plug 'https://github.com/altercation/vim-colors-solarized'
@@ -280,7 +281,12 @@ let g:vimtex_compiler_latexmk = {
       \ 'continuous': 1,
       \ 'build_dir' : 'build',
       \}
-let g:vimtex_quick_enabled = 0
+
+let g:vimtex_quickfix_mode = 2
+let g:vimtex_quickfix_autoclose_after_keystrokes = 2
+let g:vimtex_quickfix_open_on_warning = 0
+let g:vimtex_quickfix_method='pplatex'
+let g:vimtex_syntax_conceal_default = 0
 
 
 " Split/Join lines
@@ -294,7 +300,9 @@ Plug 'https://github.com/AndrewRadev/linediff.vim'
 
 
 Plug 'https://github.com/neoclide/coc.nvim', {'branch': 'release'}
-" let g:coc_global_extensions = ['coc-json', 'coc-actions', 'coc-clangd', 'coc-cmake', 'coc-json', 'coc-pyright', 'coc-rls', 'coc-sh', 'coc-vimlsp', 'coc-vimtex', 'coc-yaml']
+" let g:coc_global_extensions = ['coc-json', 'coc-actions', 'coc-clangd',
+" 'coc-cmake', 'coc-pyright', 'coc-rust-analyzer', 'coc-sh', 'coc-vimlsp',
+" 'coc-vimtex', 'coc-yaml', 'coc-snippets']
 
 Plug 'https://github.com/antoinemadec/coc-fzf'
 let g:coc_fzf_preview = 'right:65%'
@@ -345,7 +353,8 @@ augroup end
 
 " Mappings using CoCList:
 " Show all diagnostics.
-nnoremap <silent><leader>cd  :<C-u>CocFzfList diagnostics<cr>
+nnoremap <silent><leader>cd  :<C-u>CocFzfList diagnostics --current-buf<cr>
+nnoremap <silent><leader>cD  :<C-u>CocFzfList diagnostics<cr>
 " Manage extensions.
 nnoremap <silent><leader>ce  :<C-u>CocFzfList extensions<cr>
 " Show commands.
@@ -364,20 +373,39 @@ nnoremap <silent><leader>cf :call CocAction('format')<cr>
 function! s:cocActionsOpenFromSelected(type) abort
   execute 'CocCommand actions.open ' . a:type
 endfunction
-" xmap <silent> <leader>ca :<C-u>execute 'CocCommand actions.open ' . visualmode()<CR>
-" nmap <silent> <leader>ca :<C-u>set operatorfunc=<SID>cocActionsOpenFromSelected<CR>g@
 
 xmap <silent> ga :<C-u>execute 'CocCommand actions.open ' . visualmode()<CR>
 nmap <silent> ga :<C-u>set operatorfunc=<SID>cocActionsOpenFromSelected<CR>g@
 
-" Improved tab
-Plug 'https://github.com/ervandew/supertab'
-let g:SuperTabDefaultCompletionType    = '<C-n>'
-let g:SuperTabCrMapping                = 0
-let g:UltiSnipsExpandTrigger           = '<tab>'
-let g:UltiSnipsJumpForwardTrigger      = '<C-j>'
-let g:UltiSnipsJumpBackwardTrigger     = '<C-k>'
 
+" Use <c-space> to trigger completion.
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
+" inoremap <silent><expr> <TAB>
+"       \ pumvisible() ? coc#_select_confirm() :
+"       \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+"       \ <SID>check_back_space() ? "\<TAB>" :
+"       \ coc#refresh()
+inoremap <silent><expr> <c-space> coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+" Make <CR> auto-select the first completion item and notify coc.nvim to
+" format on enter, <cr> could be remapped by other vim plugin
+
+inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+inoremap <silent><expr> <TAB> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+let g:coc_snippet_next = '<tab>'
 
 " The Silver Searcher
 if executable('rg')
@@ -429,7 +457,7 @@ Plug 'https://github.com/vim-pandoc/vim-pandoc' |
       \ Plug 'https://github.com/vim-pandoc/vim-pandoc-after', {'for': ['markdown']}
 
 let g:pandoc#keyboard#use_default_mappings = 0
-let g:pandoc#after#modules#enabled = ['ultisnips', 'supertab']
+let g:pandoc#after#modules#enabled = ['ultisnips']
 let g:pandoc#formatting#mode = 's'
 let g:pandoc#syntax#conceal#use = 0
 let g:pandoc#biblio#use_bibtool = 1

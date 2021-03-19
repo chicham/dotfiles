@@ -1,0 +1,24 @@
+snippet attrdef "attr class with docstrings" b
+@attr.${1:define}
+class ${2:MyClass}:
+
+	`!p snip.rv = triple_quotes(snip)`${3:Docstring for $2. }`!p snip.rv = triple_quotes(snip)`
+	$0
+endsnippet
+
+snippet iftyper "ifmain" b
+import typer
+import logging
+
+def $1($0):
+	logging.info(f`!p snip.rv = get_quoting_style(snip)`Run {__filename__}`!p snip.rv = get_quoting_style(snip)`)
+
+if __name__ == `!p snip.rv = get_quoting_style(snip)`__main__`!p snip.rv = get_quoting_style(snip)`:
+	typer.run(${1:${VISUAL:main}})
+endsnippet
+
+snippet richlog "Configure rich logging" b
+logging.getLogger().handle = [RichHandler()]
+logging.getLogger().propagate = True
+$0
+endsnippet
