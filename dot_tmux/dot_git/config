@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "upstream"]
+	url = https://github.com/gpakosz/.tmux
+	fetch = +refs/heads/*:refs/remotes/upstream/*
+[remote "origin"]
+	url = git@github.com:chicham/.tmux.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

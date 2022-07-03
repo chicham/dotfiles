@@ -1,0 +1,13 @@
+[general]
+targets = github_chicham
+
+
+[github_chicham]
+service = github
+github.username = chicham
+github.login = chicham
+github.token = {{ (bitwardenFields "item" "39a94c34-dcd0-4779-ba08-acc200a366aa").bugwarrior_token.value }}
+github.filter_pull_requests = True
+github.include_user_issues = False
+github.involved_issues = True
+github.description_template = {{ "[{{githubrepo}}] {{githubtype}}#{{githubnumber}}: {{githubtitle}}" }}

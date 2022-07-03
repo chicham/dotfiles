@@ -1,3 +1,5 @@
 coc-settings.json
 fish_plugins
 fish_variables
+install.sh
+pre-commit
