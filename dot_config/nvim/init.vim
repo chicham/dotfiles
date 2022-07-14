@@ -35,9 +35,6 @@ let g:fugitive_gitlab_domains = ["git.qwant.ninja"]
 nnoremap <silent><leader>gg :<C-u>Git<cr><cr>
 nnoremap <leader>gw :<C-u>Gwrite<CR><CR>
 nnoremap <leader>gW :<C-u>Gwrite !<CR><CR>
-nnoremap <leader>gdl :<C-u>diffget //2<CR><CR>
-nnoremap <leader>gdh :<C-u>diffget //3<CR><CR>
-nnoremap <leader>gv :<C-u>Gvdiff<CR><CR>
 " TODO: modify this bindings to grep word under cursor
 " nnoremap <leader>gg :<C-u>Ggrep<Space>
 nnoremap <Leader>g+ :Git stash<CR>:e<CR>
@@ -47,6 +44,7 @@ nnoremap <Leader>gd :Gdiffsplit main<cr>
 nnoremap <Leader>go :execute line('.') . ',GBrowse'<cr>
 nnoremap <leader>gl :diffget //2<cr>
 nnoremap <leader>gr :diffget //3<cr>
+nnoremap <leader>gv :<C-u>Gvdiff<CR><CR>
 Plug 'https://github.com/github/copilot.vim'
 Plug 'https://github.com/APZelos/blamer.nvim'
 let g:blamer_enabled = 0
