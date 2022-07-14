@@ -1,6 +1,6 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-pamac install neovim tmux fish fd sd ripgrep git git-delta docker docker-compose rsync direnv fzw kitty \
+pamac install neovim tmux fish fd sd ripgrep git git-delta docker docker-compose rsync direnv fzf kitty \
         yubikey-manager yubikey-personalization yubico-pam pam-u2f
 pamac build google-chrome nerd-fonts-source-code-pro miniconda3
 {{ end -}}
