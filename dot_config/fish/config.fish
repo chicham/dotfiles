@@ -59,7 +59,7 @@ if test -e $local_file
 end
 
 
-if ! command -v gh &> dev/null
+if ! command -v gh &> /dev/null
   gh completion -s fish | source
 end
 if ! command -v glab &> /dev/null
