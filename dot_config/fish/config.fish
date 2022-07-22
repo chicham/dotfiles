@@ -58,13 +58,7 @@ if test -e $local_file
   . $local_file
 end
 
-if ! command -v pack &> /dev/null
-  pack completion --shell fish | source
-end
 
-if ! command -v kubectl &> dev/null
-  kubectl completion fish | source
-end
 if ! command -v gh &> dev/null
   gh completion -s fish | source
 end
