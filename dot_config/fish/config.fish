@@ -59,7 +59,7 @@ if test -e $local_file
 end
 
 if ! command -v pack &> /dev/null
-  source (pack completion --shell fish)
+  pack completion --shell fish | source
 end
 
 if ! command -v kubectl &> dev/null
