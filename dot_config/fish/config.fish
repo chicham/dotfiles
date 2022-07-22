@@ -13,22 +13,28 @@ if status is-interactive
 end
 
 
-set -x PATH "$HOME/go/bin/:$PATH"
-
-
 #### FZF ####
-if command -sq fd
-  set -x  FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type d"
+if ! command -v fzf &> /dev/null
+  set -gx FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
+  if ! command -v bat &> /dev/null
+    set -gx FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
+  end
+  if ! command -v fd &> /dev/null
+    set -gx  FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
+  end
 end
 
-set -x FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1"
+set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+
 
 function fish_user_key_bindings
   fzf_key_bindings
 end
 
 #### DIRENV ####
-eval (direnv hook fish)
+if ! command -v direnv &> /dev/null
+  eval (direnv hook fish)
+end
 
 #### GPG-AGENT ####
 set -gx GPG_TTY (tty)
@@ -37,12 +43,10 @@ set -u SSH_AGENT_PID
 set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
 
-set -gx VISUAL nvim
-set -gx EDITOR nvim
-set -gx FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
-set -gx FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
-set FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
-set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+if ! command -v nvim &> /dev/null
+  set -gx VISUAL nvim
+  set -gx EDITOR nvim
+end
 
 set alias_file $HOME/.config/fish/aliases.fish
 if test -e $alias_file
@@ -54,11 +58,23 @@ if test -e $local_file
   . $local_file
 end
 
-source (pack completion --shell fish)
-kubectl completion fish | source
-gh completion -s fish | source
-glab completion -s fish | source
-chezmoi completion fish | source
+if ! command -v pack &> /dev/null
+  source (pack completion --shell fish)
+end
+
+if ! command -v kubectl &> dev/null
+  kubectl completion fish | source
+end
+if ! command -v gh &> dev/null
+  gh completion -s fish | source
+end
+if ! command -v glab &> /dev/null
+  glab completion -s fish | source
+end
+if ! command -v chezmoi &> /dev/null
+  chezmoi completion fish | source
+end
+
 
 function bwu
   set -gx BW_SESSION (bw unlock --raw $argv[1])
