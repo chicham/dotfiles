@@ -1,6 +1,6 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta docker docker-compose rsync direnv fzf kitty \
+pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm\
         yubikey-manager yubikey-personalization yubico-pam pam-u2f gnome-shell-extension-pop-shell xorg-xprop github-cli glab
 pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite
 {{ end -}}
