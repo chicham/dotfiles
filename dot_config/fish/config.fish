@@ -33,7 +33,7 @@ end
 
 #### DIRENV ####
 if ! command -v direnv &> /dev/null
-  eval (direnv hook fish)
+  direnv hook fish | source
 end
 
 #### GPG-AGENT ####
@@ -70,8 +70,8 @@ if ! command -v chezmoi &> /dev/null
 end
 
 
-function bwu
-  set -gx BW_SESSION (bw unlock --raw $argv[1])
+if ! set -q BW_SESSION
+  set -Ux BW_SESSION (bw unlock --raw $argv[1])
 end
 
 # >>> conda initialize >>>
