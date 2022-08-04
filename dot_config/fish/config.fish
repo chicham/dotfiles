@@ -71,7 +71,7 @@ end
 
 
 if ! set -q BW_SESSION
-  set -Ux BW_SESSION (bw unlock --raw $argv[1])
+  set -Ux BW_SESSION (bw unlock --raw)
 end
 
 # >>> conda initialize >>>

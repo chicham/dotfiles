@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# -e: exit on error
+#a -e: exit on error
 # -u: exit on unset variables
 set -eu
 

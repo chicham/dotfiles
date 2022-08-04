@@ -11,17 +11,3 @@ check_update: false
 # Whether or not to display hyperlink escapes when listing things like issues or MRs
 display_hyperlinks: false
 # configuration specific for gitlab instances
-hosts:
-    gitlab.com:
-        # What protocol to use to access the api endpoint. Supported values: http, https
-        api_protocol: https
-        # Configure host for api endpoint, defaults to the host itself
-        api_host: gitlab.com
-        # Your GitLab access token. Get an access token at https://gitlab.com/-/profile/personal_access_tokens
-        token:
-    {{ (bitwardenFields "item" "3996ff8f-7c9d-4860-bc87-aec10172920f").host.value }}:
-        token: {{ (bitwardenFields "item" "3996ff8f-7c9d-4860-bc87-aec10172920f").token.value }}
-        api_host: {{ (bitwardenFields "item" "3996ff8f-7c9d-4860-bc87-aec10172920f").host.value }}
-        git_protocol: ssh
-        api_protocol: https
-        user: {{ (bitwardenFields "item" "3996ff8f-7c9d-4860-bc87-aec10172920f").user.value }}
