@@ -10,8 +10,8 @@ curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo -E add-apt-repository ppa:neovim-ppa/stable -y\
   && sudo -E apt-add-repository ppa:fish-shell/release-3 -y\
   && sudo -E apt-get update\
-  && sudo -E apt-get install build-essential software-properties-common neovim tmux fish fd-find ripgrep git rsync direnv nodejs\
-  && [[ ! -f ~/.local/bin/fd ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
+  && sudo -E apt-get install build-essential software-properties-common neovim tmux fish fd-find ripgrep git rsync direnv nodejs
+[[ ! -f ~/.local/bin/fd ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
 curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/0.13.0/git-delta_0.13.0_amd64.deb\
         && sudo dpkg -i git-delta_0.13.0_amd64.deb\
         && rm git-delta_0.13.0_amd64.deb
