@@ -16,9 +16,9 @@ curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/0.13
         && sudo dpkg -i git-delta_0.13.0_amd64.deb\
         && rm git-delta_0.13.0_amd64.deb
 curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-v0.10.1.zip -o exa.zip
-        && unzip exa.zip -d exa
-        && mv exa/bin/exa ~/.local/bin/
-        && chmod +x ~/.local/bin/exa
+        && unzip exa.zip -d exa \
+        && mv exa/bin/exa ~/.local/bin/ \
+        && chmod +x ~/.local/bin/exa \
         && rm -rf exa exa.zip
 {{ end -}}
 {{ end -}}
