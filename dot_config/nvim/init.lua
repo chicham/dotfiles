@@ -79,6 +79,9 @@ require('packer').startup(function(use)
   use 'nvim-treesitter/nvim-treesitter' -- Highlight, edit, and navigate code
   use 'nvim-treesitter/nvim-treesitter-textobjects' -- Additional textobjects for treesitter
   use 'RRethy/nvim-treesitter-textsubjects'
+  use { 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } } -- Fuzzy Finder (files, lsp, etc)
+  -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
+  use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable "make" == 1 }
   use 'p00f/nvim-ts-rainbow'
   use 'tpope/vim-fugitive' -- Git commands in nvim
   keymap('n', '<leader>gg', ":<C-u>Git<cr><cr>")
