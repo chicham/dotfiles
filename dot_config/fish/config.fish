@@ -58,6 +58,12 @@ if test -e $local_file
   . $local_file
 end
 
+set local_bin $HOME/.local/bin
+
+if test -d $local_bin
+  set -gx PATH "$local_bin:$PATH"
+end
+
 
 if command -v gh &> /dev/null
   gh completion -s fish | source
