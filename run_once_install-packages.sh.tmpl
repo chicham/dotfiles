@@ -20,5 +20,8 @@ curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v0.10.1/exa
         && mv exa/bin/exa ~/.local/bin/ \
         && chmod +x ~/.local/bin/exa \
         && rm -rf exa exa.zip
+curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v0.21.0/bat_0.21.0_amd64.deb \
+        && sudo dpkg -i bat_0.21.0_amd64.deb \
+        && rm bat_0.21.0_amd64.deb
 {{ end -}}
 {{ end -}}
