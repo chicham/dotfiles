@@ -108,8 +108,10 @@ require('packer').startup(function(use)
   use 'williamboman/mason.nvim'
   use 'williamboman/mason-lspconfig.nvim'
   use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
+  {{ if (eq (env "BW_SESSION") "") }}
   use { 'hrsh7th/cmp-copilot', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
   use 'github/copilot.vim'
+  {{ end }}
   use { 'L3MON4D3/LuaSnip', requires = { 'saadparwaiz1/cmp_luasnip' } } -- Snippet Engine and Snippet Expansion
   use 'mjlbach/onedark.nvim' -- Theme inspired by Atom
   use 'nvim-lualine/lualine.nvim' -- Fancier statusline
