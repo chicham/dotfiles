@@ -75,9 +75,18 @@ require('packer').startup(function(use)
   -- Reopen file at last place edited
   use 'dietsche/vim-lastplace'
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
+  use({
+    "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+    config = function()
+      require("lsp_lines").setup()
+    end,
+  })
   use 'nvim-treesitter/nvim-treesitter' -- Highlight, edit, and navigate code
   use 'nvim-treesitter/nvim-treesitter-textobjects' -- Additional textobjects for treesitter
   use 'RRethy/nvim-treesitter-textsubjects'
+  use { 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } } -- Fuzzy Finder (files, lsp, etc)
+  -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
+  use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable "make" == 1 }
   use 'p00f/nvim-ts-rainbow'
   use 'tpope/vim-fugitive' -- Git commands in nvim
   keymap('n', '<leader>gg', ":<C-u>Git<cr><cr>")
@@ -103,6 +112,13 @@ require('packer').startup(function(use)
   -- Automatically install language servers to stdpath
   use 'williamboman/mason.nvim'
   use 'williamboman/mason-lspconfig.nvim'
+  use({
+    "jose-elias-alvarez/null-ls.nvim",
+    config = function()
+      require("null-ls").setup()
+    end,
+    requires = { "nvim-lua/plenary.nvim" },
+  })
   use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
   use { 'hrsh7th/cmp-copilot', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
   use 'github/copilot.vim'
@@ -110,10 +126,6 @@ require('packer').startup(function(use)
   use 'mjlbach/onedark.nvim' -- Theme inspired by Atom
   use 'nvim-lualine/lualine.nvim' -- Fancier statusline
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
-  use { 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } } -- Fuzzy Finder (files, lsp, etc)
-
-  -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
-  use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable "make" == 1 }
   use 'andymass/vim-matchup'
 
   if is_bootstrap then
@@ -179,6 +191,13 @@ require('packer').startup(function(use)
   use 'rickhowe/diffchar.vim'
 end)
 -- stylua: ignore end
+
+vim.cmd [[
+runtime! plugin/sensible.vim
+runtime! plugin/opinion.vim
+runtime! macros/sandwich/keymap/surround.vim
+]]
+
 
 -- When we are bootstrapping a configuration, it doesn't
 -- make sense to execute the rest of the init.lua.
@@ -258,6 +277,7 @@ set.showbreak = '>>'
 if vim.fn.executable('rg') == 1 then
   vim.o.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
 end
+vim.diagnostic.config({ virtual_lines = { only_current_line = true } , virtual_text = false })
 
 -- [[ Basic Keymaps ]]
 -- Set <space> as the leader key
@@ -533,12 +553,6 @@ local on_attach = function(_, bufnr)
     { desc = 'Format current buffer with LSP' })
 end
 
-vim.cmd [[
-runtime! plugin/sensible.vim
-runtime! plugin/opinion.vim
-runtime! macros/sandwich/keymap/surround.vim
-]]
-
 -- nvim-cmp supports additional completion capabilities
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 
@@ -554,12 +568,55 @@ require("mason").setup {
   }
 }
 
--- local servers = { 'clangd', 'rust_analyzer', 'pyright', 'sumneko_lua', 'grammarly-languageserver' , 'dockerls', 'texlab', 'editorconfig-checker', 'gitlint', 'flake8', 'isort', 'prettier', 'luaformatter'}
-local servers = { "sumneko_lua", "rust_analyzer", "pyright", "grammarly", "dockerls", "texlab", "editorconfig-checker",
-  "black", "gitlint", "luaformatter", "isort", "prettier" }
+local servers = { "sumneko_lua", "rust_analyzer", "grammarly", "dockerls", "texlab", "kotlin_language_server", "tsserver",
+  "pyright" }
+
 require("mason-lspconfig").setup {
   ensure_installed = servers,
 }
+
+for _, lsp in ipairs(servers) do
+  require('lspconfig')[lsp].setup {
+    on_attach = on_attach,
+    capabilities = capabilities,
+  }
+end
+
+-- local linters = {"black", "gitlint", "luaformatter", "isort", "prettier" , "editorconfig-checker", "pyright"}
+
+local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+require("null-ls").setup({
+  sources = {
+    require("null-ls").builtins.code_actions.gitsigns,
+    require("null-ls").builtins.formatting.stylua,
+    require("null-ls").builtins.formatting.black,
+    require("null-ls").builtins.formatting.isort,
+    require("null-ls").builtins.formatting.latexindent,
+    require("null-ls").builtins.formatting.prettier,
+    require("null-ls").builtins.diagnostics.eslint,
+    require("null-ls").builtins.diagnostics.chktex,
+    require("null-ls").builtins.diagnostics.fish,
+    require("null-ls").builtins.diagnostics.flake8,
+    require("null-ls").builtins.diagnostics.gitlint,
+    require("null-ls").builtins.diagnostics.luacheck,
+    require("null-ls").builtins.diagnostics.pydocstyle,
+    require("null-ls").builtins.diagnostics.trail_space,
+    require("null-ls").builtins.diagnostics.yamllint,
+  },
+  on_attach = function(client, bufnr)
+    if client.supports_method("textDocument/formatting") then
+      vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = augroup,
+        buffer = bufnr,
+        callback = function()
+          -- on 0.8, you should use vim.lsp.buf.format({ bufnr = bufnr }) instead
+          vim.lsp.buf.formatting_sync()
+        end,
+      })
+    end
+  end,
+})
 
 -- Example custom configuration for lua
 --
@@ -567,27 +624,6 @@ require("mason-lspconfig").setup {
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
-
-require('lspconfig').sumneko_lua.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-  settings = {
-    Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT)
-        version = 'LuaJIT',
-        -- Setup your lua path
-        path = runtime_path,
-      },
-      diagnostics = {
-        globals = { 'vim' },
-      },
-      workspace = { library = vim.api.nvim_get_runtime_file('', true) },
-      -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = { enable = false, },
-    },
-  },
-}
 
 -- nvim-cmp setup
 local cmp = require 'cmp'
