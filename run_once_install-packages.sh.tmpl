@@ -1,20 +1,27 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
 {{ if eq .chezmoi.osRelease.id "manjaro" -}}
-pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm bat\
+pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta exa docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm bat\
         yubikey-manager yubikey-personalization yubico-pam pam-u2f gnome-shell-extension-pop-shell xorg-xprop github-cli glab
 pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite
 {{ end -}}
 {{ if eq .chezmoi.osRelease.id "ubuntu" -}}
-sudo add-apt-repository ppa:neovim-ppa/stable -y
-sudo apt-add-repository ppa:fish-shell/release-3 -y
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-sudo apt-get update
-sudo apt-get install build-essential software-properties-common neovim tmux fish fd-find ripgrep git rsync direnv nodejs
-pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite
-ln -s $(which fdfind) ~/.local/bin/fd
-curl https://github.com/dandavison/delta/releases/download/0.13.0/git-delta_0.13.0_amd64.deb
-sudo dpkg -i git-delta_0.13.0_amd64.deb
-rm git-delta_0.13.0_amd64.deb
+curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo -E add-apt-repository ppa:neovim-ppa/stable -y\
+  && sudo -E apt-add-repository ppa:fish-shell/release-3 -y\
+  && sudo -E apt-get update\
+  && sudo -E apt-get install build-essential software-properties-common neovim tmux fish fd-find ripgrep git rsync direnv nodejs
+[[ ! -f ~/.local/bin/fd ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
+curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/0.13.0/git-delta_0.13.0_amd64.deb\
+        && sudo dpkg -i git-delta_0.13.0_amd64.deb\
+        && rm git-delta_0.13.0_amd64.deb
+curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-v0.10.1.zip -o exa.zip\
+        && unzip exa.zip -d exa\
+        && mv exa/bin/exa ~/.local/bin\
+        && chmod +x ~/.local/bin/exa\
+        && rm -rf exa exa.zip
+curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v0.21.0/bat_0.21.0_amd64.deb\
+        && sudo dpkg -i bat_0.21.0_amd64.deb\
+        && rm bat_0.21.0_amd64.deb
 {{ end -}}
 {{ end -}}

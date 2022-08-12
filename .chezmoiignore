@@ -4,5 +4,5 @@ fish_variables
 install.sh
 pre-commit
 {{ if (eq (env "BW_SESSION") "") }}
-dot_config/private_github-copilot/hosts.json.tmpl
+.config/github-copilot/hosts.json
 {{ end }}

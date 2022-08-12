@@ -14,12 +14,12 @@ end
 
 
 #### FZF ####
-if ! command -v fzf &> /dev/null
+if command -v fzf &> /dev/null
   set -gx FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
-  if ! command -v bat &> /dev/null
+  if command -v bat &> /dev/null
     set -gx FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
   end
-  if ! command -v fd &> /dev/null
+  if command -v fd &> /dev/null
     set -gx  FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
   end
 end
@@ -32,7 +32,7 @@ function fish_user_key_bindings
 end
 
 #### DIRENV ####
-if ! command -v direnv &> /dev/null
+if command -v direnv &> /dev/null
   direnv hook fish | source
 end
 
@@ -43,7 +43,7 @@ set -u SSH_AGENT_PID
 set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
 
-if ! command -v nvim &> /dev/null
+if command -v nvim &> /dev/null
   set -gx VISUAL nvim
   set -gx EDITOR nvim
 end
@@ -58,14 +58,20 @@ if test -e $local_file
   . $local_file
 end
 
+set local_bin $HOME/.local/bin
 
-if ! command -v gh &> /dev/null
+if test -d $local_bin
+  set -gx PATH "$local_bin:$PATH"
+end
+
+
+if command -v gh &> /dev/null
   gh completion -s fish | source
 end
-if ! command -v glab &> /dev/null
+if command -v glab &> /dev/null
   glab completion -s fish | source
 end
-if ! command -v chezmoi &> /dev/null
+if command -v chezmoi &> /dev/null
   chezmoi completion fish | source
 end
 
