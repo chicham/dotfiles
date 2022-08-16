@@ -422,7 +422,6 @@ pcall(require("telescope").load_extension, "fzf")
 -- See `:help telescope.builtin`
 keymap("n", "<leader>fg", "<cmd>Telescope live_grep<cr>")
 keymap("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
-keymap("n", "<leader>fh", "<cmd>Telescope help_tags<cr>")
 keymap("n", "<leader>f/", function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
   require("telescope.builtin").current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
@@ -438,9 +437,14 @@ keymap("n", "<leader>fG", require("telescope.builtin").live_grep, { desc = "Sear
 keymap("n", "<leader>fd", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
 keymap("n", "<leader>fq", require("telescope.builtin").quickfix, { desc = "Search [Q]uickfix" })
 keymap("n", "<leader>fk", require("telescope.builtin").keymaps, { desc = "Search [K]eymaps" })
-keymap("n", "<leader>fs", require("telescope.builtin").lsp_document_symbols, { desc = "Search [S]ymbols" })
+keymap("n", "<leader>fd", require("telescope.builtin").lsp_document_symbols, { desc = "[Document] Symbols" })
 keymap("n", "<leader>fi", require("telescope.builtin").lsp_incoming_calls, { desc = "[I]ncoming calls" })
 keymap("n", "<leader>fo", require("telescope.builtin").lsp_outgoing_calls, { desc = "[O]utgoing calls" })
+keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace Symbols")
+keymap("n", "<leader>fr", require("telescope.builtin").lsp_references, "Find [R]eferences")
+keymap("n", "gd", require("telescope.builtin").definitions, "[G]oto [D]efinition")
+keymap("n", "gi", require("telescope.builtin").implementations, "[G]oto [I]mplementation")
+keymap("n", "gt", require("telescope.builtin").type_definition, "[G]oto [T]ype Definition")
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -626,27 +630,13 @@ local on_attach = function(_, bufnr)
     vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
   end
 
-  nmap("<leader>cr", vim.lsp.buf.rename, "[R]ename")
-  nmap("<leader>ca", vim.lsp.buf.code_action, "Code [A]ction")
-
-  nmap("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
-  nmap("gi", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
-  nmap("gr", require("telescope.builtin").lsp_references)
-  nmap("<leader>cd", require("telescope.builtin").lsp_document_symbols, "[D]ocument Symbols")
-  nmap("<leader>cw", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace Symbols")
-
   -- See `:help K` for why this keymap
   nmap("K", vim.lsp.buf.hover, "Hover Documentation")
   nmap("H", vim.lsp.buf.signature_help, "Signature Documentation")
 
   -- Lesser used LSP functionality
-  nmap("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-  nmap("<leader>ct", vim.lsp.buf.type_definition, "[T]ype Definition")
-  -- nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-  -- nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
-  -- nmap('<leader>wl', function()
-  -- print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  -- end, '[W]orkspace [L]ist Folders')
+
+
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(
