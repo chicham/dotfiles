@@ -690,7 +690,7 @@ require("null-ls").setup({
     require("null-ls").builtins.formatting.latexindent,
     require("null-ls").builtins.formatting.prettier.with({
       filetypes = {"html", "json", "yaml", "markdown"},
-      extra_args = {"--print-width, "4"}
+      extra_args = {"--print-width", "4"},
     }),
     require("null-ls").builtins.diagnostics.eslint,
     require("null-ls").builtins.diagnostics.chktex,
