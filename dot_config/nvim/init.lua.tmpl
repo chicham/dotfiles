@@ -413,9 +413,6 @@ keymap("n", "<leader>fi", require("telescope.builtin").lsp_incoming_calls, { des
 keymap("n", "<leader>fo", require("telescope.builtin").lsp_outgoing_calls, { desc = "[O]utgoing calls" })
 keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols,{ desc =  "[W]orkspace Symbols" })
 keymap("n", "<leader>fr", require("telescope.builtin").lsp_references, { desc = "Find [R]eferences"})
-keymap("n", "gd", require("telescope.builtin").definitions, { desc = "[G]oto [D]efinition" } )
-keymap("n", "gi", require("telescope.builtin").implementations, { desc = "[G]oto [I]mplementation" })
-keymap("n", "gt", require("telescope.builtin").type_definition, { desc = "[G]oto [T]ype Definition" })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -604,6 +601,10 @@ local on_attach = function(_, bufnr)
   -- See `:help K` for why this keymap
   nmap("K", vim.lsp.buf.hover, "Hover Documentation")
   nmap("H", vim.lsp.buf.signature_help, "Signature Documentation")
+  nmap("gd", ":<c-u> Telescope lsp_definitions<cr>", "[G]oto [D]efinition" )
+  nmap("gi", ":<c-u> Telescope lsp_implementations<cr>", "[G]oto [I]mplementation" )
+  nmap("gt", ":<c-u> Telescope lsp_type_definition, "[G]oto [T]ype Definition" )
+
 
   -- Lesser used LSP functionality
 
