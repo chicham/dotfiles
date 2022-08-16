@@ -411,7 +411,7 @@ keymap("n", "<leader>fk", require("telescope.builtin").keymaps, { desc = "Search
 keymap("n", "<leader>fd", require("telescope.builtin").lsp_document_symbols, { desc = "[Document] Symbols" })
 keymap("n", "<leader>fi", require("telescope.builtin").lsp_incoming_calls, { desc = "[I]ncoming calls" })
 keymap("n", "<leader>fo", require("telescope.builtin").lsp_outgoing_calls, { desc = "[O]utgoing calls" })
-keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace Symbols")
+keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols,{ desc =  "[W]orkspace Symbols" })
 keymap("n", "<leader>fr", require("telescope.builtin").lsp_references, { desc = "Find [R]eferences"})
 keymap("n", "gd", require("telescope.builtin").definitions, { desc = "[G]oto [D]efinition" } )
 keymap("n", "gi", require("telescope.builtin").implementations, { desc = "[G]oto [I]mplementation" })
