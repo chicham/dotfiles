@@ -601,9 +601,9 @@
     -- See `:help K` for why this keymap
     nmap("K", vim.lsp.buf.hover, "Hover Documentation")
     nmap("H", vim.lsp.buf.signature_help, "Signature Documentation")
-    nmap("gd", ":<c-u> Telescope lsp_definitions<cr>", "[G]oto [D]efinition" )
-    nmap("gi", ":<c-u> Telescope lsp_implementations<cr>", "[G]oto [I]mplementation" )
-    nmap("gt", ":<c-u> Telescope lsp_type_definition<cr>, "[G]oto [T]ype Definition" )
+    nmap("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition" )
+    nmap("gi", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation" )
+    nmap("gt", require("telescope.builtin").lsp_type_definition, "[G]oto [T]ype Definition" )
 
 
     -- Create a command `:Format` local to the LSP buffer
