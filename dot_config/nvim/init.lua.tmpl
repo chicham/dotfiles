@@ -399,7 +399,7 @@
     }))
   end, { desc = "[/] Fuzzily search in current buffer]" })
 
-  keymap("n", "<leader>ff", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
+  keymap("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
   keymap("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Search [F]iles" })
   keymap("n", "<leader>fh", require("telescope.builtin").help_tags, { desc = "Search [H]elp" })
   keymap("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Search current Word" })
@@ -407,7 +407,7 @@
   keymap("n", "<leader>fd", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
   keymap("n", "<leader>fq", require("telescope.builtin").quickfix, { desc = "Search [Q]uickfix" })
   keymap("n", "<leader>fk", require("telescope.builtin").keymaps, { desc = "Search [K]eymaps" })
-  keymap("n", "<leader>fd", require("telescope.builtin").lsp_document_symbols, { desc = "[Document] Symbols" })
+  keymap("n", "<leader>fs", require("telescope.builtin").lsp_document_symbols, { desc = "Document [S]ymbols" })
   keymap("n", "<leader>fi", require("telescope.builtin").lsp_incoming_calls, { desc = "[I]ncoming calls" })
   keymap("n", "<leader>fo", require("telescope.builtin").lsp_outgoing_calls, { desc = "[O]utgoing calls" })
   keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols,{ desc =  "[W]orkspace Symbols" })
