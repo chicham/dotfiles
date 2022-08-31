@@ -616,9 +616,6 @@
     nmap("<leader>cf", ":<C-u>Format<cr>", "[C]urrent [F]ormat")
   end
 
-  -- nvim-cmp supports additional completion capabilities
-  local capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities())
-
   -- Enable the following language servers
 
   require("mason").setup({
@@ -641,6 +638,17 @@
   table.insert(runtime_path, "lua/?.lua")
   table.insert(runtime_path, "lua/?/init.lua")
 
+  -- nvim-cmp supports additional completion capabilities
+  local capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+  for _, lsp in ipairs(servers) do
+    require("lspconfig")[lsp].setup({
+      on_attach = on_attach,
+      capabilities = capabilities,
+    })
+  end
+
   require("lspconfig")["sumneko_lua"].setup({
     on_attach = on_attach,
     capabilities = capabilities,
@@ -661,13 +669,6 @@
       },
     },
   })
-
-  for _, lsp in ipairs(servers) do
-    require("lspconfig")[lsp].setup({
-      on_attach = on_attach,
-      capabilities = capabilities,
-    })
-  end
 
   -- local linters = {"black", "gitlint", "luaformatter", "isort", "prettier" , "editorconfig-checker", "pyright"}
 
@@ -694,6 +695,20 @@
       require("null-ls").builtins.diagnostics.yamllint,
     },
   })
+
+  require("lspconfig")[".emmet_ls"].setup({
+    -- on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
+    init_options = {
+      html = {
+        options = {
+          -- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
+          ["bem.enabled"] = true,
+        },
+      },
+    }
+})
 
   -- Example custom configuration for lua
 
