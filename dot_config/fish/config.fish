@@ -75,14 +75,16 @@ if command -v chezmoi &> /dev/null
   chezmoi completion fish | source
 end
 
-
+if command -v bw &> /dev/null
 if ! set -q BW_SESSION
+  if com
   set -Ux BW_SESSION (bw unlock --raw)
 end
+env
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-eval /opt/miniconda3/bin/conda "shell.fish" "hook" $argv | source
+eval conda "shell.fish" "hook" $argv | source
 # <<< conda initialize <<<
 #
 
