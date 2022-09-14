@@ -80,7 +80,7 @@ if ! set -q BW_SESSION
   if com
   set -Ux BW_SESSION (bw unlock --raw)
 end
-env
+end
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
