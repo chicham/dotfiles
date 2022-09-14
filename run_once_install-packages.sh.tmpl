@@ -11,7 +11,7 @@ curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo -E add-apt-repository ppa:neovim-ppa/stable -y\
   && sudo -E apt-add-repository ppa:fish-shell/release-3 -y\
   && sudo -E apt-get update\
-  && sudo -E apt-get install build-essential software-properties-common neovim tmux fish fd-find ripgrep git rsync direnv nodejs sshpass
+  && sudo -E apt-get install build-essential software-properties-common neovim tmux fish git rsync direnv nodejs sshpass
 
 curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
 GIT_DELTA_VERSION=0.13.0
@@ -22,7 +22,7 @@ RIPGREP_VERSION=13.0.0
 curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb\
         && sudo dpkg -i fd_${FD_VERSION}_amd64.deb\
         && rm fd_${FD_VERSION}_amd64.deb
-        &&  [[ ! -f ~/.local/bin/fd ]] && [[ -x "$(which fdfind)" ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
+        &&  [[ ! -f ~/.local/bin/fd && -x "$(which fdfind)" ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
 curl -fsSL --insecure https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/ripgrep_${RIPGREP_VERSION}_amd64.deb\
         && sudo dpkg -i ripgrep_${RIPGREP_VERSION}_amd64.deb\
         && rm ripgrep_${RIPGREP_VERSION}_amd64.deb
