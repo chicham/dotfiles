@@ -19,6 +19,11 @@ EXA_VERSION=0.10.1
 BAT_VERSION=0.21.0
 FD_VERSION=8.4.0
 RIPGREP_VERSION=13.0.0
+NEOVIM_VERSION=0.7.2
+
+curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb\
+        && sudo dpkg -i nvim-linux64.deb\
+        && rm nvim-linux64.deb
 curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb\
         && sudo dpkg -i fd_${FD_VERSION}_amd64.deb\
         && rm fd_${FD_VERSION}_amd64.deb
