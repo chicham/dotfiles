@@ -1,11 +1,11 @@
-{{- if eq .chezmoi.os "linux" -}}
+{{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-{{- if eq .chezmoi.osRelease.id "manjaro" -}}
+{{ if eq .chezmoi.osRelease.id "manjaro" -}}
 pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta exa docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm bat zoxide\
         yubikey-manager yubikey-personalization yubico-pam pam-u2f gnome-shell-extension-pop-shell xorg-xprop github-cli glab
 pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite
-{{- end -}}
-{{- if eq .chezmoi.osRelease.id "ubuntu" -}}
+{{ end -}}
+{{ if eq .chezmoi.osRelease.id "ubuntu" -}}
 
 curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo -E add-apt-repository ppa:neovim-ppa/stable -y\
@@ -37,5 +37,5 @@ curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v${EXA_VERS
 curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
         && sudo dpkg -i bat_${BAT_VERSION}_amd64.deb\
         && rm bat_${BAT_VERSION}_amd64.deb
-{{- end -}}
-{{- end -}}
+{{ end -}}
+{{ end -}}
