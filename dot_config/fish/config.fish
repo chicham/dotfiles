@@ -68,7 +68,7 @@ if test -d $HOME/miniconda3/
   set -gx PATH "$HOME/minconda3/bin:$PATH"
 end
 
-if command -v fisher &> /dev/null
+if ! command -v fisher &> /dev/null
   curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
 end
 
