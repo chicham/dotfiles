@@ -68,6 +68,9 @@ if test -d $HOME/miniconda3/
   set -gx PATH "$HOME/minconda3/bin:$PATH"
 end
 
+if command -v fisher &> /dev/null
+  curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
+end
 
 if command -v gh &> /dev/null
   gh completion -s fish | source
@@ -85,11 +88,6 @@ if command -v bw &> /dev/null
   end
 end
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-eval conda "shell.fish" "hook" $argv | source
-# <<< conda initialize <<<
-#
 
 function autotmux --on-variable TMUX_SESSION_NAME
         if test -n "$TMUX_SESSION_NAME" #only if set
@@ -102,3 +100,4 @@ function autotmux --on-variable TMUX_SESSION_NAME
     end
   end
 end
+
