@@ -26,11 +26,6 @@ end
 
 set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
-
-function fish_user_key_bindings
-  fzf_key_bindings
-end
-
 #### DIRENV ####
 if command -v direnv &> /dev/null
   direnv hook fish | source
