@@ -3,7 +3,7 @@
 # only run in interactive (not automated SSH for example)
 if status is-interactive
 
-  if "$TERM" != "tmux-256-color" # don't nest inside another tmux
+  if test "$TERM" != "tmux-256-color" # don't nest inside another tmux
   # Adapted from https://unix.stackexchange.com/a/176885/347104
   # Create session 'main' or attach to 'main' if already exists.
     if not set -q TMUX_SESSION_NAME
