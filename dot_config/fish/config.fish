@@ -76,10 +76,9 @@ if command -v chezmoi &> /dev/null
 end
 
 if command -v bw &> /dev/null
-if ! set -q BW_SESSION
-  if com
-  set -Ux BW_SESSION (bw unlock --raw)
-end
+  if ! set -q BW_SESSION
+    set -Ux BW_SESSION (bw unlock --raw)
+  end
 end
 
 # >>> conda initialize >>>
