@@ -64,6 +64,10 @@ if test -d $local_bin
   set -gx PATH "$local_bin:$PATH"
 end
 
+if test -d $HOME/miniconda3/
+  set -gx PATH "$HOME/minconda3/bin:$PATH"
+end
+
 
 if command -v gh &> /dev/null
   gh completion -s fish | source
