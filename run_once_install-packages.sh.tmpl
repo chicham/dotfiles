@@ -20,25 +20,25 @@ FD_VERSION=8.4.0
 RIPGREP_VERSION=13.0.0
 NEOVIM_VERSION=0.7.2
 
-curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
+[[ -x "$(which nvim)" ]] && curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
         && sudo apt --fix-broken install ./nvim-linux64.deb\
         && rm ./nvim-linux64.deb
-curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb -o fd_${FD_VERSION}_amd64.deb\
+[[ -x "$(which fd)" ]] && curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb -o fd_${FD_VERSION}_amd64.deb\
         && sudo apt --fix-broken install  ./fd_${FD_VERSION}_amd64.deb\
         && rm ./fd_${FD_VERSION}_amd64.deb
 [[ ! -f ~/.local/bin/fd && -x "$(which fdfind)" ]] && mkdir -p ~/.local/bin/ && ln -s $(which fdfind) ~/.local/bin/fd
-curl -fsSL --insecure https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/ripgrep_${RIPGREP_VERSION}_amd64.deb -o ripgrep_${RIPGREP_VERSION}_amd64.deb\
+[[ -x "$(which rg)" ]] && curl -fsSL --insecure https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/ripgrep_${RIPGREP_VERSION}_amd64.deb -o ripgrep_${RIPGREP_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./ripgrep_${RIPGREP_VERSION}_amd64.deb\
         && rm ./ripgrep_${RIPGREP_VERSION}_amd64.deb
-curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_amd64.deb -o git-delta_${GIT_DELTA_VERSION}_amd64.deb\
+[[ -x "$(which delta)" ]] && curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_amd64.deb -o git-delta_${GIT_DELTA_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./git-delta_${GIT_DELTA_VERSION}_amd64.deb\
         && rm ./git-delta_${GIT_DELTA_VERSION}_amd64.deb
-curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v${EXA_VERSION}/exa-linux-x86_64-v${EXA_VERSION}.zip -o exa.zip\
+[[ -x "$(which exa)" ]] && curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v${EXA_VERSION}/exa-linux-x86_64-v${EXA_VERSION}.zip -o exa.zip\
         && unzip exa.zip -d exa\
         && mv exa/bin/exa ~/.local/bin\
         && chmod +x ~/.local/bin/exa\
         && rm -rf exa exa.zip
-curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
+[[ -x "$(which bat)" ]] && curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./bat_${BAT_VERSION}_amd64.deb\
         && rm ./bat_${BAT_VERSION}_amd64.deb
 {{ end -}}
