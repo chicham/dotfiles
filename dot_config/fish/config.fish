@@ -64,7 +64,7 @@ if test -d $HOME/miniconda3/
 end
 
 if ! command -v fisher &> /dev/null
-  curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
+  curl -sL https://git.io/fisher | source
 end
 
 if command -v gh &> /dev/null
