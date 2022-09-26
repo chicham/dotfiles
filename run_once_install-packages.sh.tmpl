@@ -19,6 +19,7 @@ BAT_VERSION=0.21.0
 FD_VERSION=8.4.0
 RIPGREP_VERSION=13.0.0
 NEOVIM_VERSION=0.7.2
+MINIO_VERSION=20220916091647.0.0
 
 [[ -x "$(which nvim)" ]] && curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
         && sudo apt --fix-broken install ./nvim-linux64.deb\
@@ -41,6 +42,10 @@ NEOVIM_VERSION=0.7.2
 [[ -x "$(which bat)" ]] && curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./bat_${BAT_VERSION}_amd64.deb\
         && rm ./bat_${BAT_VERSION}_amd64.deb
+        
+[[ -x "$(which mc)" ]] && wget https://dl.min.io/client/mc/release/linux-amd64/mcli_${MINIO_VERSION}_amd64.deb\
+        && sudo apt --fix-broken install ./mcli_${MINIO_VERSION}_amd64.deb\
+        && rm -f  ./mcli_${MINIO_VERSION}_amd64.deb
 {{ end -}}
 {{ end -}}
 
