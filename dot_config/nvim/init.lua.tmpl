@@ -402,15 +402,16 @@
 
   -- [[ Configure Telescope ]]
   -- See `:help telescope` and `:help telescope.setup()`
+  local trouble = require("trouble.providers.telescope")
   require("telescope").setup({
     defaults = {
       mappings = {
         i = {
           ["<c-h>"] = "which_key",
-          ["<c-t>"] = require("trouble").open_with_trouble,
+          ["<c-t>"] = trouble.open_with_trouble,
         },
         n = { 
-          ["<c-t>"] = require("trouble").open_with_trouble,
+          ["<c-t>"] = trouble.open_with_trouble,
         },
       },
       pickers = {
