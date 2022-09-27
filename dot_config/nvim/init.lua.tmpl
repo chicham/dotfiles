@@ -194,15 +194,16 @@
     use 'rickhowe/diffchar.vim'
     use 'alker0/chezmoi.vim'
     use 'chentoast/marks.nvim'
-    use {
+    use ({
       "folke/trouble.nvim",
       config = function()
         require("trouble").setup {
           use_diagnostic_signs = true,
           mode = "document_diagnostics",
-        },
+        }
        end
-    }
+    })
+
     vim.keymap.set("n", "<leader>tt", "<cmd>TroubleToggle<cr>",
       {silent = true, noremap = true}
     )
