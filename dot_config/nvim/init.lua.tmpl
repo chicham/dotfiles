@@ -194,6 +194,33 @@
     use 'rickhowe/diffchar.vim'
     use 'alker0/chezmoi.vim'
     use 'chentoast/marks.nvim'
+    use {
+      "folke/trouble.nvim",
+      config = function()
+        require("trouble").setup {
+          use_diagnostic_signs = true -- enabling this will use the signs defined in your lsp client,
+          mode = "document_diagnostics",
+        }
+       end
+    vim.keymap.set("n", "<leader>tt", "<cmd>TroubleToggle<cr>",
+      {silent = true, noremap = true}
+    )
+    vim.keymap.set("n", "<leader>tw", "<cmd>TroubleToggle workspace_diagnostics<cr>",
+      {silent = true, noremap = true}
+    )
+    vim.keymap.set("n", "<leader>td", "<cmd>TroubleToggle document_diagnostics<cr>",
+      {silent = true, noremap = true}
+    )
+    vim.keymap.set("n", "<leader>tl", "<cmd>TroubleToggle loclist<cr>",
+      {silent = true, noremap = true}
+    )
+    vim.keymap.set("n", "<leader>tq", "<cmd>TroubleToggle quickfix<cr>",
+      {silent = true, noremap = true}
+    )
+    vim.keymap.set("n", "gR", "<cmd>TroubleToggle lsp_references<cr>",
+      {silent = true, noremap = true}
+    )
+}
   end)
   -- stylua: ignore end
 
@@ -376,7 +403,11 @@
     defaults = {
       mappings = {
         i = {
-          ["<C-h>"] = "which_key",
+          ["<c-h>"] = "which_key",
+          ["<c-t>"] = trouble.open_with_trouble,
+        },
+        n = { 
+          ["<c-t>"] = trouble.open_with_trouble,
         },
       },
       pickers = {
@@ -507,8 +538,8 @@
         enable = true,
         border = "none",
         peek_definition_code = {
-          ["<leader>df"] = "@function.outer",
-          ["<leader>dF"] = "@class.outer",
+          ["<leader>kf"] = "@function.outer",
+          ["<leader>kc"] = "@class.outer",
         },
       },
     },
@@ -579,8 +610,6 @@
   -- Diagnostic keymaps
   vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
   vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
-  -- vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
-  -- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
 
   -- LSP settings.
   --  This function gets run when an LSP connects to a particular buffer.
