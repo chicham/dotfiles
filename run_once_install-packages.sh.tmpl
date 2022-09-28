@@ -10,7 +10,7 @@ pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gno
 curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -\
   && sudo -E apt-add-repository ppa:fish-shell/release-3 -y\
   && sudo -E apt-get update\
-  && sudo -E apt-get install build-essential software-properties-common tmux fish git rsync direnv nodejs sshpass
+  && sudo -E apt-get install build-essential software-properties-common tmux fish git rsync direnv nodejs sshpass yamllint luarocks
 
 curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
 GIT_DELTA_VERSION=0.13.0
