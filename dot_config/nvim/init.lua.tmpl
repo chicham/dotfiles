@@ -122,7 +122,6 @@
     })
     use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
     {{- if (ne (env "BW_SESSION") "") }}
-    use { 'hrsh7th/cmp-copilot', requires = { 'hrsh7th/cmp-nvim-lsp' } } -- Autocompletion
     use 'github/copilot.vim'
     {{- end }}
     use { 'L3MON4D3/LuaSnip', requires = { 'saadparwaiz1/cmp_luasnip' } } -- Snippet Engine and Snippet Expansion
@@ -131,9 +130,7 @@
     use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
     use 'andymass/vim-matchup'
 
-    if is_bootstrap then
-      require('packer').sync()
-    end
+
     use 'morhetz/gruvbox'
     use { "windwp/nvim-autopairs", wants = "nvim-treesitter", config = function() require("nvim-autopairs").setup {
         disable_in_macro = true,
@@ -224,8 +221,14 @@
     vim.keymap.set("n", "tr", "<cmd>TroubleToggle lsp_references<cr>",
       {silent = true, noremap = true}
     )
+    use({"petertriho/cmp-git", requires = "nvim-lua/plenary.nvim"})
+    use "hrsh7th/cmp-nvim-lsp-signature-help"
+    if is_bootstrap then
+      require('packer').sync()
+    end
   end)
   -- stylua: ignore end
+
 
   vim.cmd([[
   runtime! plugin/sensible.vim
@@ -796,8 +799,16 @@
     sources = {
       { name = "nvim_lsp" },
       { name = "luasnip" },
-      { name = "copilot" },
+      { name = 'nvim_lsp_signature_help' },
     },
+  })
+  -- Set configuration for specific filetype.
+  cmp.setup.filetype('gitcommit', {
+    sources = cmp.config.sources({
+      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+    }, {
+      { name = 'buffer' },
+    })
   })
 
   require("nvim-autopairs").setup({
