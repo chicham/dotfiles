@@ -45,7 +45,9 @@ MINIO_VERSION=20220916091647.0.0
 [[ -x "$(which mcli)" ]] && echo "minio-cli already installed" || ( wget https://dl.min.io/client/mc/release/linux-amd64/mcli_${MINIO_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./mcli_${MINIO_VERSION}_amd64.deb\
         && rm -f  ./mcli_${MINIO_VERSION}_amd64.deb )
-[[ -x "$(which git-extras)" ]] && echo "git-extras already installed || ( curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh | sudo bash ) 
+[[ -x "$(which git-extras)" ]] && echo "git-extras already installed" || ( curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh -o git_extras.sh\
+        && sudo bash git_extras.sh\
+        && rm -f git_extras.sh ) 
 
 {{ end -}}
 {{ end -}}
