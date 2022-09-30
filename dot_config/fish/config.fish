@@ -29,11 +29,13 @@ if command -v direnv &> /dev/null
 end
 
 #### GPG-AGENT ####
-set -gx GPG_TTY (tty)
-set -u SSH_AGENT_PID
-# gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
-set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-gpgconf --launch gpg-agent
+if test -q USE_GPG 
+  set -gx GPG_TTY (tty)
+  set -u SSH_AGENT_PID
+  # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
+  set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
+  gpgconf --launch gpg-agent
+end
 
 if command -v nvim &> /dev/null
   set -gx VISUAL nvim
