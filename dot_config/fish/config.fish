@@ -29,7 +29,7 @@ if command -v direnv &> /dev/null
 end
 
 #### GPG-AGENT ####
-if test -q USE_GPG 
+if test $USE_GPG -eq 1
   set -gx GPG_TTY (tty)
   set -u SSH_AGENT_PID
   # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
