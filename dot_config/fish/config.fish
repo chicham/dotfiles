@@ -29,7 +29,8 @@ end
 
 #### GPG-AGENT ####
 
-if test -n "$SSH_CLIENT"
+if test -z "$SSH_CLIENT"
+  echo "Not a ssh connection"
   gpgconf --launch gpg-agent
   set -u SSH_AGENT_PID
   set -gx GPG_TTY (tty)
