@@ -28,12 +28,14 @@ if command -v direnv &> /dev/null
 end
 
 #### GPG-AGENT ####
-gpgconf --launch gpg-agent
-set -u SSH_AGENT_PID
-set -gx GPG_TTY (tty)
-set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-if not test (string match -- "*/run/*" $SSH_AUTH_SOCK)
-  gpg-connect-agent updatestartuptty /bye >/dev/null
+
+if test -n (string match "*gpg-agent*" $SSH_AUTH_SOCK)
+  gpgconf --launch gpg-agent
+  set -u SSH_AGENT_PID
+  set -gx GPG_TTY (tty)
+  set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-socket)
+  set -l SSH_ID_FILES (ls ~/.ssh/id_*)
+  gpg-connect-agent updatestartuptty /bye >/dev/null                                                                                                                                                             1 ┊ gpg-connect-agent updatestartuptty /bye >/dev/null # to allow using ssh-add
 end
 
 
