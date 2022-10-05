@@ -9,7 +9,6 @@ if status is-interactive
   end
 end
 
-
 #### FZF ####
 if command -v fzf &> /dev/null
   set -gx FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
@@ -33,8 +32,7 @@ gpgconf --launch gpg-agent
 set -u SSH_AGENT_PID
 set -gx GPG_TTY (tty)
 set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-set -l SSH_ID_FILES (ls ~/.ssh/id_*)
-if ! test -z "$SSH_ID_FILES"
+if not test (string match -- "*/run/*" $SSH_AUTH_SOCK)
   gpg-connect-agent updatestartuptty /bye >/dev/null                                                                                                                                                             1 ┊ gpg-connect-agent updatestartuptty /bye >/dev/null # to allow using ssh-add
 end
 
