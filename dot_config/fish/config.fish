@@ -1,7 +1,7 @@
 #### TMUX ####
 # Adapted from https://github.com/fish-shell/fish-shell/issues/4434#issuecomment-332626369
 # only run in interactive (not automated SSH for example)
-if status is-interactive 
+if status is-interactive
   if not test (string match -- "*tmux*" $TERM)
     if not set -q TMUX_SESSION_NAME
       tmux new-session -A -s main
@@ -96,4 +96,3 @@ function autotmux --on-variable TMUX_SESSION_NAME
     end
   end
 end
-
