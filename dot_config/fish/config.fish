@@ -29,12 +29,11 @@ end
 
 #### GPG-AGENT ####
 
-if test -n (string match "*gpg-agent*" $SSH_AUTH_SOCK)
+if test -n "$SSH_CLIENT"
   gpgconf --launch gpg-agent
   set -u SSH_AGENT_PID
   set -gx GPG_TTY (tty)
   set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-socket)
-  set -l SSH_ID_FILES (ls ~/.ssh/id_*)
   gpg-connect-agent updatestartuptty /bye >/dev/null
 end
 
