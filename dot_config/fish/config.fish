@@ -33,7 +33,7 @@ if test -n "$SSH_CLIENT"
   gpgconf --launch gpg-agent
   set -u SSH_AGENT_PID
   set -gx GPG_TTY (tty)
-  set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-socket)
+  set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
   gpg-connect-agent updatestartuptty /bye >/dev/null
 end
 
