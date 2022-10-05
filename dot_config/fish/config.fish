@@ -33,7 +33,7 @@ set -u SSH_AGENT_PID
 set -gx GPG_TTY (tty)
 set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 if not test (string match -- "*/run/*" $SSH_AUTH_SOCK)
-  gpg-connect-agent updatestartuptty /bye >/dev/null                                                                                                                                                             1 ┊ gpg-connect-agent updatestartuptty /bye >/dev/null # to allow using ssh-add
+  gpg-connect-agent updatestartuptty /bye >/dev/null
 end
 
 
