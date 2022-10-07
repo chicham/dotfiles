@@ -176,13 +176,6 @@
     vim.keymap.set('n', 'n', ':norm! nzzzv<Plug><Plug>Pulse<cr>', { remap = true })
     vim.keymap.set('n', 'N', ':norm! Nzzzv<Plug><Plug>Pulse<cr>', { remap = true })
 
-    use 'vim-pandoc/vim-pandoc'
-    use 'vim-pandoc/vim-pandoc-syntax'
-    use 'vim-pandoc/vim-criticmarkup'
-    vim.g['pandoc#keyboard#use_default_mappings'] = false
-    vim.g['pandoc#formatting#mode'] = false
-    vim.g['pandoc#syntax#conceal#use'] = false
-    vim.g['pandoc#biblio#use_bibtool'] = true
     use 'goerz/jupytext.vim'
     vim.g.jupytext_enable = true
     vim.g.jupytext_fmt = 'py:percent'
