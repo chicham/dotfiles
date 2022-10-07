@@ -129,14 +129,7 @@
     use 'nvim-lualine/lualine.nvim' -- Fancier statusline
     use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
     use 'andymass/vim-matchup'
-    use {
-      'ellisonleao/gruvbox.nvim',
-      config = function()
-        require("gruvbox").setup {
-          contrast = "hard",
-          italic = false
-        }
-      end }
+    use 'ellisonleao/gruvbox.nvim'
     use { "windwp/nvim-autopairs", wants = "nvim-treesitter", config = function() require("nvim-autopairs").setup {
         disable_in_macro = true,
         check_ts = true
@@ -305,7 +298,6 @@
 
   -- Set colorscheme
   set.termguicolors = true
-  vim.cmd([[colorscheme gruvbox]])
 
   -- Set completeopt to have a better completion experience
   set.completeopt = "menuone,longest"
@@ -363,7 +355,13 @@
 
   -- Switch mro
   vim.keymap.set("n", "<leader><leader>", "<C-^>")
-
+  
+  
+  require("gruvbox").setup ({
+    contrast = "",
+    italic = false
+  })
+  vim.cmd([[colorscheme gruvbox]])
   -- [[ Highlight on yank ]]
   -- See `:help vim.highlight.on_yank()`
   local highlight_group = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
@@ -393,7 +391,7 @@
   -- See `:help indent_blankline.txt`
   require("indent_blankline").setup({
     char = "┊",
-    show_trailing_blankline_indent = true,
+    show_current_context = true,
   })
 
   -- Gitsigns
