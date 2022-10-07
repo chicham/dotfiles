@@ -130,14 +130,13 @@
     use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
     use 'andymass/vim-matchup'
     use {
-      'morhetz/gruvbox',
-      config = fuction()
-        require("gpuvbox").setup {
+      'ellisonleao/gruvbox',
+      config = function()
+        require("gruvbox").setup {
           contrast = "hard",
-          italic = false,
+          italic = false
         }
-      end
-    }
+      end }
     use { "windwp/nvim-autopairs", wants = "nvim-treesitter", config = function() require("nvim-autopairs").setup {
         disable_in_macro = true,
         check_ts = true
