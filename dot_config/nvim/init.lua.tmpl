@@ -129,8 +129,15 @@
     use 'nvim-lualine/lualine.nvim' -- Fancier statusline
     use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
     use 'andymass/vim-matchup'
-
-
+    use {
+      'morhetz/gruvbox',
+      config = fuction()
+        require("gpuvbox").setup {
+          contrast = "hard",
+          italic = false,
+        }
+      end
+    }
     use 'morhetz/gruvbox'
     use { "windwp/nvim-autopairs", wants = "nvim-treesitter", config = function() require("nvim-autopairs").setup {
         disable_in_macro = true,
