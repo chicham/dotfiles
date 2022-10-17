@@ -441,7 +441,12 @@
   keymap("n", "<leader>fd", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
   keymap("n", "<leader>fq", require("telescope.builtin").quickfix, { desc = "Search [Q]uickfix" })
   keymap("n", "<leader>fk", require("telescope.builtin").keymaps, { desc = "Search [K]eymaps" })
-  keymap("n", "<leader>fs", require("telescope.builtin").lsp_document_symbols, { desc = "Document [S]ymbols" })
+  keymap("n", "<leader>fs",
+    function()
+    require("telescope.builtin").lsp_document_symbols{symbols={"class", "method", "function", "module"}}
+    end, 
+    { desc = "Document [S]ymbols" }
+  )
   keymap("n", "<leader>fi", require("telescope.builtin").lsp_incoming_calls, { desc = "[I]ncoming calls" })
   keymap("n", "<leader>fo", require("telescope.builtin").lsp_outgoing_calls, { desc = "[O]utgoing calls" })
   keymap("n", "<leader>fw", require("telescope.builtin").lsp_dynamic_workspace_symbols,{ desc =  "[W]orkspace Symbols" })
