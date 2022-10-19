@@ -13,7 +13,7 @@
 	defaultBranch = main
     templateDir = ~/.git_template
 [push]
-	default = upstream
+	default = current
 	autoSetupRemote = true
 [core]
     pager = delta
@@ -47,3 +47,5 @@
     line-numbers = false
 [alias]
     ll = log --graph --abbrev-commit --pretty=format:'%C(bold blue)%h%Creset%C(bold yellow)%d%Creset %Cgreen(%cr) %C(dim white)<%an>%Creset%n        %s'
+[remote]
+    pushDefault = origin
