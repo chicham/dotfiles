@@ -30,9 +30,8 @@ end
 #### GPG-AGENT ####
 
 if test -z "$SSH_CLIENT"
-  echo "Not a ssh connection"
   gpgconf --launch gpg-agent
-  set -u SSH_AGENT_PID
+  set -gx SSH_AGENT_PID
   set -gx GPG_TTY (tty)
   set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
   gpg-connect-agent updatestartuptty /bye >/dev/null
@@ -79,7 +78,8 @@ if command -v chezmoi &> /dev/null
 end
 
 if command -v bw &> /dev/null
-  if ! set -q BW_SESSION
+  bw unlock --check
+  if test $status -eq 1
     set -Ux BW_SESSION (bw unlock --raw)
   end
 end
