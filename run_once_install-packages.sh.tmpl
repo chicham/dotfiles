@@ -52,6 +52,8 @@ MINIO_VERSION=20220916091647.0.0
 {{ end -}}
 {{ end -}}
 
+[[ -x "$(which bw)" ]] && echo "bitwarden already installed" || npm install -g @bitwarden/cli
+
 [[ ! -d ~/.miniconda3 ]] && curl -fsSL --insecure https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh\
          && sh ./miniconda.sh -b -u -p ~/.miniconda3\
          && rm -f ./miniconda.sh\
