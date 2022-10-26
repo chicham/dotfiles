@@ -12,3 +12,9 @@ Host {{ (bitwarden "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").name }}
   User {{ (bitwarden "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").login.username }}
   ForwardAgent yes
   RemoteForward /run/user/{{ (bitwardenFields "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").userId.value }}/gnupg/S.gpg-agent.ssh /home/hicham/.gnupg/S.gpg-agent.extra
+
+Host {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").name }}
+  HostName {{ (index (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").login.uris 0).uri }}
+  User {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").login.username }}
+  ForwardAgent yes
+  RemoteForward /run/user/{{ (bitwardenFields "item" "2adb749c-a008-418f-991a-af3a00d58a2c").userId.value }}/gnupg/S.gpg-agent.ssh /home/hicham/.gnupg/S.gpg-agent.extra
