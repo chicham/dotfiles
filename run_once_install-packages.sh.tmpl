@@ -55,7 +55,7 @@ MINIO_VERSION=20220916091647.0.0
 
 [[ -x "$(which bw)" ]] && echo "bitwarden already installed" || npm install -g @bitwarden/cli
 
-[[ -d "$HOME/.tmux/ ]] || ( git clone https://github.com/gpakosz/.tmux.git ~/.tmux && ln -s -f ~/.tmux/.tmux.conf ~/.tmux.conf )
+[[ -d "$HOME/.tmux/" ]] || ( git clone https://github.com/gpakosz/.tmux.git ~/.tmux && ln -s -f ~/.tmux/.tmux.conf ~/.tmux.conf )
 
 
 [[ ! -d ~/.miniconda3 ]] && curl -fsSL --insecure https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh\
