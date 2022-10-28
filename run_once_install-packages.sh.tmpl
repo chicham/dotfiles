@@ -22,9 +22,6 @@ NEOVIM_VERSION=0.8.0
 MINIO_VERSION=20220916091647.0.0
 
 [[ -x "$(which zoxide)" ]] && echo "zoxide already installed" || ( curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash )
-[[ -x "$(which nvim)" ]] && echo "nvim already installed" || ( curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
-        && sudo apt --fix-broken install ./nvim-linux64.deb\
-        && rm ./nvim-linux64.deb )
 [[ -x "$(which fd)" ]] && echo "fd already installed"|| ( curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb -o fd_${FD_VERSION}_amd64.deb\
         && sudo apt --fix-broken install  ./fd_${FD_VERSION}_amd64.deb\
         && rm ./fd_${FD_VERSION}_amd64.deb )
@@ -42,17 +39,25 @@ MINIO_VERSION=20220916091647.0.0
 [[ -x "$(which bat)" ]] && echo "bat already installed" || ( curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./bat_${BAT_VERSION}_amd64.deb\
         && rm ./bat_${BAT_VERSION}_amd64.deb )
+
 [[ -x "$(which mcli)" ]] && echo "minio-cli already installed" || ( wget https://dl.min.io/client/mc/release/linux-amd64/mcli_${MINIO_VERSION}_amd64.deb\
         && sudo apt --fix-broken install ./mcli_${MINIO_VERSION}_amd64.deb\
         && rm -f  ./mcli_${MINIO_VERSION}_amd64.deb )
 [[ -x "$(which git-extras)" ]] && echo "git-extras already installed" || ( curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh -o git_extras.sh\
         && sudo bash git_extras.sh\
         && rm -f git_extras.sh ) 
+[[ -x "$(which nvim)" ]] && echo "nvim already installed" || ( curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
+        && sudo apt --fix-broken install ./nvim-linux64.deb\
+        && rm ./nvim-linux64.deb )
 
 {{ end -}}
 {{ end -}}
 
 [[ -x "$(which bw)" ]] && echo "bitwarden already installed" || npm install -g @bitwarden/cli
+
+[[ -d "$HOME/.tmux/ ]] || ( "git clone https://github.com/gpakosz/.tmux.git ~/.tmux\
+        && ln -s -f ~/.tmux/.tmux.conf ~/.tmux.conf )
+
 
 [[ ! -d ~/.miniconda3 ]] && curl -fsSL --insecure https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh\
          && sh ./miniconda.sh -b -u -p ~/.miniconda3\
