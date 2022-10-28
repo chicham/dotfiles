@@ -1,4 +1,3 @@
-{{ if hasPrefix "HWX1192260" .chezmoi.hostname -}}
 Host *
   ControlPath ~/.ssh/sockets/%r@%h-%p
 
@@ -19,4 +18,3 @@ Host {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").name }}
   User {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").login.username }}
   ForwardAgent yes
   RemoteForward /run/user/{{ (bitwardenFields "item" "2adb749c-a008-418f-991a-af3a00d58a2c").userId.value }}/gnupg/S.gpg-agent.ssh /home/hicham/.gnupg/S.gpg-agent.extra
-{{ end }}
