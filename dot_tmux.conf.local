@@ -1,3 +1,4 @@
+
 # : << EOF
 # https://github.com/gpakosz/.tmux
 # (‑●‑●)> dual licensed under the WTFPL v2 license and the MIT license,
@@ -199,10 +200,10 @@ tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_2"
 tmux_conf_theme_window_status_last_attr="none"
 
 # status left/right sections separators
-tmux_conf_theme_left_separator_main=''
-tmux_conf_theme_left_separator_sub=''
-tmux_conf_theme_right_separator_main=''
-tmux_conf_theme_right_separator_sub=''
+tmux_conf_theme_left_separator_main=""
+tmux_conf_theme_left_separator_sub=""
+tmux_conf_theme_right_separator_main=""
+tmux_conf_theme_right_separator_sub=""
 #tmux_conf_theme_left_separator_main='\uE0B0'  # /!\ you don't need to install Powerline
 #tmux_conf_theme_left_separator_sub='\uE0B1'   #   you only need fonts patched with
 #tmux_conf_theme_right_separator_main='\uE0B2' #   Powerline symbols or the standalone
@@ -335,7 +336,7 @@ tmux_conf_copy_to_os_clipboard=true
 # this is the place to override or undo settings
 
 # increase history size
-set -g history-limit 100000
+set -g history-limit 50000
 
 # start with mouse mode enabled
 set -g mouse on
@@ -355,26 +356,22 @@ bind C-a send-prefix
 # if you don't want Oh my tmux! to alter a binding, use #!important
 # bind v new-window -c #{pane_current_path} #!important
 unbind |
-bind | split-window -h
+bind | split-window -h #!important
 unbind _
-bind _ split-window -v
-bind -r Left select-pane -L  # move left
-bind -r Down select-pane -D  # move down
-bind -r Up select-pane -U  # move up
-bind -r right select-pane -R  # move right
-
-bind -r M-Left resize-pane -L 3
-bind -r M-Down resize-pane -D 2
-bind -r M-Up resize-pane -U 2
-bind -r M-Right resize-pane -R 2
+bind _ split-window -v #!important
+bind -r Left select-pane -L #!important
+bind -r Down select-pane -D #!important
+bind -r Up select-pane -U #!important
+bind -r right select-pane -R #!important
+bind -r M-Left resize-pane -L 2 #!important
+bind -r M-Down resize-pane -D 2 #!important
+bind -r M-Up resize-pane -U 2 #!important
+bind -r M-Right resize-pane -R 2 #!important
 
 unbind Tab
 unbind S-Tab
-bind -r S-Tab previous-window # select previous window
-bind -r Tab next-window     # select next window
-
-
-set -g bell-action none
+bind -r S-Tab previous-window #!important
+bind -r Tab next-window #!important
 # move status line to top
 set -g status-position bottom
 
