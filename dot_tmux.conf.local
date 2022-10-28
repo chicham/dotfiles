@@ -203,11 +203,10 @@ tmux_conf_theme_left_separator_main=''
 tmux_conf_theme_left_separator_sub=''
 tmux_conf_theme_right_separator_main=''
 tmux_conf_theme_right_separator_sub=''
-
-#tmux_conf_theme_left_separator_main=''  # /!\ you don't need to install Powerline
-#tmux_conf_theme_left_separator_sub=''   #   you only need fonts patched with
-#tmux_conf_theme_right_separator_main='' #   Powerline symbols or the standalone
-#tmux_conf_theme_right_separator_sub=''  #   PowerlineSymbols.otf font
+#tmux_conf_theme_left_separator_main='\uE0B0'  # /!\ you don't need to install Powerline
+#tmux_conf_theme_left_separator_sub='\uE0B1'   #   you only need fonts patched with
+#tmux_conf_theme_right_separator_main='\uE0B2' #   Powerline symbols or the standalone
+#tmux_conf_theme_right_separator_sub='\uE0B3'  #   PowerlineSymbols.otf font, see README.md
 
 # status left/right content:
 #   - separate main sections with "|"
@@ -228,13 +227,14 @@ tmux_conf_theme_right_separator_sub=''
 #     - #{pairing}
 #     - #{prefix}
 #     - #{root}
-#     - #{uptime_d}
+#     - #{synchronized}
+#     - #{uptime_y}
+#     - #{uptime_d} (modulo 365 when #{uptime_y} is used)
 #     - #{uptime_h}
-#      - #{uptime_m}
+#     - #{uptime_m}
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-# tmux_conf_theme_status_left=" ❐ #S "
 tmux_conf_theme_status_left=" 💻 #S "
 tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} | #{username}#{root} | #{hostname} "
 
@@ -335,7 +335,7 @@ tmux_conf_copy_to_os_clipboard=true
 # this is the place to override or undo settings
 
 # increase history size
-set -g history-limit 10000
+set -g history-limit 100000
 
 # start with mouse mode enabled
 set -g mouse on
@@ -346,20 +346,18 @@ set -g mouse on
 #set -g mode-keys vi
 
 # replace C-b by C-a instead of using both prefixes
-# set -gu prefix2
-# unbind C-a
-# unbind C-b
-# set -g prefix C-a
-# bind C-a send-prefix
+set -gu prefix2
+unbind C-a
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
 
 # if you don't want Oh my tmux! to alter a binding, use #!important
-unbind C-c
-
-unbind -
+# bind v new-window -c #{pane_current_path} #!important
+unbind |
 bind | split-window -h
 unbind _
 bind _ split-window -v
-
 bind -r Left select-pane -L  # move left
 bind -r Down select-pane -D  # move down
 bind -r Up select-pane -U  # move up
@@ -377,9 +375,7 @@ bind -r Tab next-window     # select next window
 
 
 set -g bell-action none
-
 # move status line to top
-#set -g status-position top
 set -g status-position bottom
 
 
