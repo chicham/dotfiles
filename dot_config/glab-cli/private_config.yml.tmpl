@@ -13,9 +13,9 @@ display_hyperlinks: false
 # configuration specific for gitlab instances
 
 hosts:
-    {{ (bitwardenFields "item" "e05d8601-79d1-4284-b942-af3900d9a0f8").host.value }}:
-        token: {{ (bitwardenFields "item" "e05d8601-79d1-4284-b942-af3900d9a0f8").token.value }}
-        api_host: {{ (bitwardenFields "item" "e05d8601-79d1-4284-b942-af3900d9a0f8").api_host.value }}
+    {{ onepasswordRead "op://huawei/gitlab/host" }}:
+        token: {{ onepasswordRead "op://huawei/gitlab/token" }}
+        api_host: {{  onepasswordRead "op://huawei/gitlab/api_host"  }}
         git_protocol: ssh
         api_protocol: https
-        user: {{ (bitwardenFields "item" "e05d8601-79d1-4284-b942-af3900d9a0f8").user.value }}
+        user: {{ onepasswordRead "op://huawei/gitlab/user" }}

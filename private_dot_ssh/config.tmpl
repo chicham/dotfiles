@@ -1,20 +1,12 @@
 Host *
   ControlPath ~/.ssh/sockets/%r@%h-%p
 
-Host {{ (bitwarden "item" "a4063c96-7ca9-4f5c-8a28-af100100b110").name }}
-  HostName {{ (index (bitwarden "item" "a4063c96-7ca9-4f5c-8a28-af100100b110").login.uris 0).uri }}
-  User {{ (bitwarden "item" "a4063c96-7ca9-4f5c-8a28-af100100b110").login.username }}
+Host {{ onepasswordRead "op://huawei/vm-work/Title" }}
+  HostName {{ onepasswordRead "op://huawei/vm-work/hostname" }}
+  User {{ onepasswordRead "op://huawei/vm-work/username"  }}
   ForwardAgent yes
-  RemoteForward /run/user/{{ (bitwardenFields "item" "a4063c96-7ca9-4f5c-8a28-af100100b110").userId.value }}/gnupg/S.gpg-agent /home/hicham/.gnupg/S.gpg-agent.extra
 
-Host {{ (bitwarden "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").name }}
-  HostName {{ (index (bitwarden "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").login.uris 0).uri }}
-  User {{ (bitwarden "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").login.username }}
+Host {{ onepasswordRead "op://huawei/gpu-tower2/Title" }}
+  HostName {{ onepasswordRead "op://huawei/gpu-tower2/hostname" }}
+  User {{ onepasswordRead "op://huawei/gpu-tower2/username"  }}
   ForwardAgent yes
-  RemoteForward /run/user/{{ (bitwardenFields "item" "8d90f9c9-e82e-4e2d-8a28-af390101575f").userId.value }}/gnupg/S.gpg-agent.ssh /home/hicham/.gnupg/S.gpg-agent.extra
-
-Host {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").name }}
-  HostName {{ (index (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").login.uris 0).uri }}
-  User {{ (bitwarden "item" "2adb749c-a008-418f-991a-af3a00d58a2c").login.username }}
-  ForwardAgent yes
-  RemoteForward /run/user/{{ (bitwardenFields "item" "2adb749c-a008-418f-991a-af3a00d58a2c").userId.value }}/gnupg/S.gpg-agent.ssh /home/hicham/.gnupg/S.gpg-agent.extra

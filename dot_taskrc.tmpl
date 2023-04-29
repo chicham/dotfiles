@@ -33,9 +33,7 @@ taskd.certificate=/home/hicham/.task/pem/private.certificate.pem
 taskd.key=/home/hicham/.task/pem/private.key.pem
 taskd.ca=/home/hicham/.task/pem/ca.crt
 taskd.server=inthe.am:53589
-{{ if not (eq (env "BW_SESSION") "") }}
-taskd.credentials={{ (bitwardenFields "item" "b374b8b0-4fee-4366-8e04-ae1800bf1516").credentials.value  }}
-{{ end }}
+taskd.credentials={{ onepasswordRead "op://Personal/inthe.am/token" }}
 taskd.trust=ignore hostname
 uda.reviewed.type=date
 uda.reviewed.label=Reviewed

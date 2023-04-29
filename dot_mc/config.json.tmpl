@@ -1,10 +1,10 @@
 {
     "version": "10",
     "aliases": {
-        "{{ (bitwardenFields "item" "92f2b449-9a26-4fab-9fb1-af3900da3d47").alias.value }}": {
-            "url":  "{{ (bitwardenFields "item" "92f2b449-9a26-4fab-9fb1-af3900da3d47").url.value }}",
-            "accessKey": "{{ (bitwardenFields "item" "92f2b449-9a26-4fab-9fb1-af3900da3d47").accessKey.value }}",
-            "secretKey": "{{ (bitwardenFields "item" "92f2b449-9a26-4fab-9fb1-af3900da3d47").secretKey.value }}",
+        "{{ onepasswordRead "op://huawei/augmented-reality-bucket/accessKey"  }}": {
+            "url": "{{   onepasswordRead "op://huawei/augmented-reality-bucket/url"  }}",
+            "accessKey": "{{ onepasswordRead "op://huawei/augmented-reality-bucket/accessKey" }}",
+            "secretKey": "{{ onepasswordRead "op://huawei/augmented-reality-bucket/accessKey" }}",
             "api": "s3v4",
             "path": "auto"
         }
