@@ -3,7 +3,7 @@
 {{ if eq .chezmoi.osRelease.id "manjaro" -}}
 pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta exa docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm bat zoxide\
         yubikey-manager yubikey-personalization yubico-pam pam-u2f gnome-shell-extension-pop-shell xorg-xprop github-cli glab
-pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite
+pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite 1password 1password-cli
 {{ end -}}
 {{ if eq .chezmoi.osRelease.id "ubuntu" -}}
 
@@ -62,3 +62,7 @@ MINIO_VERSION=20220916091647.0.0
          && sh ./miniconda.sh -b -u -p ~/.miniconda3\
          && rm -f ./miniconda.sh\
          && ~/.miniconda3/bin/conda init bash fish
+
+
+
+[[ -x "$(which github-copilot-cli)" ]] && echo "github-copilot-cli already installed" || npm install -g @githubnext/github-copilot-cli

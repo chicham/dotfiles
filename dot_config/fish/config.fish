@@ -2,12 +2,16 @@
 # Adapted from https://github.com/fish-shell/fish-shell/issues/4434#issuecomment-332626369
 # only run in interactive (not automated SSH for example)
 if status is-interactive
-  if not test (string match -- "*tmux*" $TERM)
+
+  if not set -q TMUX # don't nest inside another tmux
+  # Adapted from https://unix.stackexchange.com/a/176885/347104
+  # Create session 'main' or attach to 'main' if already exists.
     if not set -q TMUX_SESSION_NAME
       tmux new-session -A -s main
     end
   end
 end
+
 
 #### FZF ####
 if command -v fzf &> /dev/null
@@ -22,6 +26,11 @@ end
 
 set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
+
+function fish_user_key_bindings
+  fzf_key_bindings
+end
+
 #### DIRENV ####
 if command -v direnv &> /dev/null
   direnv hook fish | source
@@ -29,14 +38,16 @@ end
 
 #### GPG-AGENT ####
 
-if test -z "$SSH_CLIENT"
-  gpgconf --launch gpg-agent
-  set -gx SSH_AGENT_PID
+if command -v 1password &> /dev/null
+  set -x SSH_AUTH_SOCK ~/.1password/agent.sock
+else
+  #### GPG-AGENT ####
   set -gx GPG_TTY (tty)
+  set -u SSH_AGENT_PID
+  # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
   set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-  gpg-connect-agent updatestartuptty /bye >/dev/null
+  gpgconf --launch gpg-agent
 end
-
 
 if command -v nvim &> /dev/null
   set -gx VISUAL nvim
@@ -59,13 +70,6 @@ if test -d $local_bin
   set -gx PATH "$local_bin:$PATH"
 end
 
-if test -d $HOME/miniconda3/
-  set -gx PATH "$HOME/minconda3/bin:$PATH"
-end
-
-if ! command -v fisher &> /dev/null
-  curl -sL https://git.io/fisher | source
-end
 
 if command -v gh &> /dev/null
   gh completion -s fish | source
@@ -77,13 +81,15 @@ if command -v chezmoi &> /dev/null
   chezmoi completion fish | source
 end
 
-if command -v bw &> /dev/null
-  bw unlock --check
-  if test $status -eq 1
-    set -Ux BW_SESSION (bw unlock --raw)
-  end
+if command -v starship &> /dev/null
+  starship init fish | source
 end
 
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+eval /opt/miniconda3/bin/conda "shell.fish" "hook" $argv | source
+# <<< conda initialize <<<
+#
 
 function autotmux --on-variable TMUX_SESSION_NAME
         if test -n "$TMUX_SESSION_NAME" #only if set
