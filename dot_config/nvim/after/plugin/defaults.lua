@@ -80,14 +80,16 @@ bind('n', '<leader>gv', ":<C-u>Gvdiff<cr>")
 bind('n', '<leader>gs', require('telescope.builtin').git_stash)
 
 bind('n', '<leader>fo', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-bind("n", "<leader>f/", require("telescope.builtin").treesitter, { desc = "[/] Search symbols in current buffer]" })
-bind('n', 'g/', function()
-  -- You can pass additional configuration to telescope to change theme, layout, etc.
-  require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-    winblend = 10,
-    previewer = false,
-  })
-end, { desc = '[/] Fuzzily search in current buffer]' })
+-- bind("n", "<leader>f/", require("telescope.builtin").treesitter, { desc = "[/] Search symbols in current buffer]" })
+bind("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Search current Word" })
+-- bind('n', 'g/', function()
+--   -- You can pass additional configuration to telescope to change theme, layout, etc.
+--   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+--     winblend = 10,
+--     previewer = false,
+--   })
+bind("n", "/", require('telescope.builtin').current_buffer_fuzzy_find)
+bind("n", "*", function() require('telescope.builtin').current_buffer_fuzzy_find({default_text=vim.fn.expand("<cword>")}) end)
 
 bind("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
 bind("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Search [F]iles" })

@@ -87,10 +87,11 @@ end
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-if test -f "/home/hicham/.miniconda3/etc/fish/conf.d/mamba.fish"
-    source "/home/hicham/.miniconda3/etc/fish/conf.d/mamba.fish"
+if test -f /home/hicham/.miniconda3/bin/conda
+    eval /home/hicham/.miniconda3/bin/conda "shell.fish" "hook" $argv | source
 end
-# <<< conda initialize <<<
+
+# <<< conda initialize <<<:
 #
 
 function autotmux --on-variable TMUX_SESSION_NAME
