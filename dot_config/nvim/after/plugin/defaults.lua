@@ -89,7 +89,7 @@ bind("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Sear
 --     previewer = false,
 --   })
 bind("n", "/", require('telescope.builtin').current_buffer_fuzzy_find)
-bind("n", "*", function() require('telescope.builtin').current_buffer_fuzzy_find({default_text=vim.fn.expand("<cword>")}) end)
+bind("n", "g*", function() require('telescope.builtin').current_buffer_fuzzy_find({default_text=vim.fn.expand("<cword>")}) end)
 
 bind("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
 bind("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Search [F]iles" })
