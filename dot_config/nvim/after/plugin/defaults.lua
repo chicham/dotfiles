@@ -94,7 +94,6 @@ bind("n", "g*", function() require('telescope.builtin').current_buffer_fuzzy_fin
 bind("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
 bind("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Search [F]iles" })
 bind("n", "<leader>fh", require("telescope.builtin").help_tags, { desc = "Search [H]elp" })
-bind("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Search current Word" })
 bind("n", "<leader>fG", require("telescope.builtin").live_grep, { desc = "Search by [G]rep" })
 bind("n", "<leader>fd", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
 bind("n", "<leader>fq", require("telescope.builtin").quickfix, { desc = "Search [Q]uickfix" })
