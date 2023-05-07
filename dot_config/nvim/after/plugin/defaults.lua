@@ -77,6 +77,7 @@ bind('n', '<leader>g3', ":diffget //3<cr>")
 bind('n', '<leader>g2', ":diffget //2<cr>")
 bind('n', '<leader>gv', ":<C-u>Gvdiff<cr>")
 bind('n', '<leader>gs', require('telescope.builtin').git_stash)
+bind('n', '<leader>gl', ":<C-u>0G log --abbrev-commit --pretty=format:'%C(bold blue)%h%Creset%C(bold yellow)%d%Creset %Cgreen(%cr) %C(dim white)<%an>%Creset%n        %s'<cr>")
 
 bind('n', '<leader>fo', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
 -- bind("n", "<leader>f/", require("telescope.builtin").treesitter, { desc = "[/] Search symbols in current buffer]" })
@@ -142,20 +143,8 @@ require('nvim-treesitter.configs').setup {
       -- You can use the capture groups defined in textobjects.scm
       ['aa'] = '@attribute.outer',
       ['ia'] = '@attribute.inner',
-      ['ax'] = '@block.outer',
-      ['ix'] = '@block.inner',
-      ['at'] = '@call.outer',
-      ['it'] = '@call.inner',
-      ['ac'] = '@class.outer',
-      ['ic'] = '@class.inner',
       ['a/'] = '@comment.outer',
       ['i/'] = '@comment.inner',
-      ['ad'] = '@conditional.outer',
-      ['id'] = '@conditional.inner',
-      ['af'] = '@function.outer',
-      ['if'] = '@function.inner',
-      ['al'] = '@loop.outer',
-      ['il'] = '@loop.inner',
       ['ap'] = '@parameter.outer',
       ['ip'] = '@parameter.inner',
     },
