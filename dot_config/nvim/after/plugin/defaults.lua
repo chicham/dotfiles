@@ -1,36 +1,35 @@
-local options = vim.opt
 -- Set highlight on search
-options.hlsearch = false
+vim.opt.hlsearch = false
 
 -- Make line numbers default
-options.number = true
-options.relativenumber = true
+vim.opt.number = true
+vim.opt.relativenumber = true
 
 -- Save undo history
-options.undofile = true
+vim.opt.undofile = true
 
 -- Decrease update time
-options.updatetime = 250
-options.signcolumn = "yes"
+vim.opt.updatetime = 250
+vim.opt.signcolumn = "yes"
 
 -- Clipboard
-options.clipboard = "unnamedplus"
+vim.opt.clipboard = "unnamedplus"
 
 -- Set colorscheme
-options.termguicolors = true
+vim.opt.termguicolors = true
 
 -- Set completeopt to have a better completion experience
-options.completeopt = "menuone,longest,noinsert"
-options.cursorline = true
+vim.opt.completeopt = "menuone,longest,noinsert"
+vim.opt.cursorline = true
 
-options.list = true
-options.listchars = { tab = "▸ ", trail = "·" }
-options.wrap = true
-options.linebreak = true
-options.showbreak = ">>"
+vim.opt.list = true
+vim.opt.listchars = { tab = "▸ ", trail = "·" }
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.showbreak = ">>"
 
 if vim.fn.executable("rg") == 1 then
-  vim.o.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
+  vim.opt.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
 end
 vim.diagnostic.config({ virtual_lines = { only_current_line = true }, virtual_text = false })
 
@@ -67,15 +66,15 @@ bind("v", ">", ">gv")
 bind("n", "<leader><leader>", "<C-^>")
 
 -- fugitive bindings
-bind('n', '<leader>gg', ':<C-u>Git<cr>', { silent = true })
+bind('n', '<leader>gg', ':<C-u>0Git<cr>', { silent = true })
 bind('n', '<leader>gw', ':<C-u>Gwrite<cr>')
 bind('n', '<leader>gW', ':<C-u>Gwrite!<cr>')
 bind('n', '<leader>g+', ':<C-u>Git stash<cr>:e<cr>')
 bind('n', '<leader>g-', ':<C-u>Git stash pop<cr>:e<cr>')
 bind('n', '<leader>gp', ':<C-u>Git push -u')
 bind('n', '<leader>go', ":execute line('.') . ',GBrowse'<cr>", { silent = true })
-bind('n', '<leader>gl', ":diffget //3<cr>")
-bind('n', '<leader>gr', ":diffget //2<cr>")
+bind('n', '<leader>g3', ":diffget //3<cr>")
+bind('n', '<leader>g2', ":diffget //2<cr>")
 bind('n', '<leader>gv', ":<C-u>Gvdiff<cr>")
 bind('n', '<leader>gs', require('telescope.builtin').git_stash)
 
