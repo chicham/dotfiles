@@ -1,5 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types: [pre-commit, commit-msg]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -26,3 +27,9 @@ repos:
     rev: v1.31.0
     hooks:
       - id: yamllint
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1 # Fill in a tag / sha here (e.g. v0.18.0)
+    hooks:
+      - id: gitlint
+        args:
+          - --msg-filename
