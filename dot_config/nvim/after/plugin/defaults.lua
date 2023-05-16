@@ -177,9 +177,37 @@ require("cmp").setup({
     { name = 'luasnip' },
     { name = 'git' },
     { name = "path" },
-		{ name = 'copilot' },
+    { name = "treesitter" },
   },
 })
+
+
+local null_ls = require("null-ls")
+null_ls.setup({
+  sources = {
+    null_ls.builtins.code_actions.gitsigns,
+		null_ls.builtins.code_actions.eslint_d,
+		null_ls.builtins.code_actions.gitrebase,
+		null_ls.builtins.formatting.stylua,
+		null_ls.builtins.formatting.black,
+		null_ls.builtins.formatting.ruff,
+		null_ls.builtins.formatting.latexindent,
+		null_ls.builtins.formatting.beautysh,
+		null_ls.builtins.formatting.prettier.with({
+			filetypes = { "html", "json", "yaml", "markdown" },
+			extra_args = { "--print-width", "4" },
+		}),
+		null_ls.builtins.diagnostics.eslint,
+		null_ls.builtins.diagnostics.chktex,
+		null_ls.builtins.diagnostics.fish,
+		null_ls.builtins.diagnostics.gitlint,
+		null_ls.builtins.diagnostics.luacheck,
+		null_ls.builtins.diagnostics.trail_space,
+		null_ls.builtins.diagnostics.yamllint,
+		null_ls.builtins.diagnostics.ruff
+  }
+})
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

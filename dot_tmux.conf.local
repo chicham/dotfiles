@@ -374,6 +374,7 @@ bind -r Tab next-window #!important
 # move status line to top
 set -g status-position bottom
 
+set -g default-terminal xterm-kitty
 
 # -- tpm -----------------------------------------------------------------------
 
