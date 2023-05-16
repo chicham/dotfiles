@@ -36,6 +36,10 @@ if command -v direnv &> /dev/null
   direnv hook fish | source
 end
 
+if command -v zoxide &> /dev/null
+  zoxide init --cmd cd fish | source
+end
+
 #### GPG-AGENT ####
 
 if command -v 1password &> /dev/null

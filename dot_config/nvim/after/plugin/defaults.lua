@@ -77,6 +77,7 @@ bind('n', '<leader>g3', ":diffget //3<cr>")
 bind('n', '<leader>g2', ":diffget //2<cr>")
 bind('n', '<leader>gv', ":<C-u>Gvdiff<cr>")
 bind('n', '<leader>gs', require('telescope.builtin').git_stash)
+bind('n', '<leader>gl', ":<C-u>0G log --abbrev-commit --pretty=format:'%C(bold blue)%h%Creset%C(bold yellow)%d%Creset %Cgreen(%cr) %C(dim white)<%an>%Creset%n        %s'<cr>")
 
 bind('n', '<leader>fo', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
 -- bind("n", "<leader>f/", require("telescope.builtin").treesitter, { desc = "[/] Search symbols in current buffer]" })
@@ -142,20 +143,8 @@ require('nvim-treesitter.configs').setup {
       -- You can use the capture groups defined in textobjects.scm
       ['aa'] = '@attribute.outer',
       ['ia'] = '@attribute.inner',
-      ['ax'] = '@block.outer',
-      ['ix'] = '@block.inner',
-      ['at'] = '@call.outer',
-      ['it'] = '@call.inner',
-      ['ac'] = '@class.outer',
-      ['ic'] = '@class.inner',
       ['a/'] = '@comment.outer',
       ['i/'] = '@comment.inner',
-      ['ad'] = '@conditional.outer',
-      ['id'] = '@conditional.inner',
-      ['af'] = '@function.outer',
-      ['if'] = '@function.inner',
-      ['al'] = '@loop.outer',
-      ['il'] = '@loop.inner',
       ['ap'] = '@parameter.outer',
       ['ip'] = '@parameter.inner',
     },
@@ -188,9 +177,37 @@ require("cmp").setup({
     { name = 'luasnip' },
     { name = 'git' },
     { name = "path" },
-		{ name = 'copilot' },
+    { name = "treesitter" },
   },
 })
+
+
+local null_ls = require("null-ls")
+null_ls.setup({
+  sources = {
+    null_ls.builtins.code_actions.gitsigns,
+		null_ls.builtins.code_actions.eslint_d,
+		null_ls.builtins.code_actions.gitrebase,
+		null_ls.builtins.formatting.stylua,
+		null_ls.builtins.formatting.black,
+		null_ls.builtins.formatting.ruff,
+		null_ls.builtins.formatting.latexindent,
+		null_ls.builtins.formatting.beautysh,
+		null_ls.builtins.formatting.prettier.with({
+			filetypes = { "html", "json", "yaml", "markdown" },
+			extra_args = { "--print-width", "4" },
+		}),
+		null_ls.builtins.diagnostics.eslint,
+		null_ls.builtins.diagnostics.chktex,
+		null_ls.builtins.diagnostics.fish,
+		null_ls.builtins.diagnostics.gitlint,
+		null_ls.builtins.diagnostics.luacheck,
+		null_ls.builtins.diagnostics.trail_space,
+		null_ls.builtins.diagnostics.yamllint,
+		null_ls.builtins.diagnostics.ruff
+  }
+})
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
