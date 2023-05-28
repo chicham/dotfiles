@@ -2,7 +2,7 @@ return {
   "folke/todo-comments.nvim",
   dependencies = {"nvim-lua/plenary.nvim"},
   config = function ()
-    vim.keymap.set("n", "<leader>ft", ":<C-u>TodoTelescope<cr>")
+    vim.keymap.set("n", "<leader>td", ":<C-u>TodoTelescope<cr>")
     require("todo-comments").setup {
       -- your configuration comes here
       -- or leave it empty to use the default settings
