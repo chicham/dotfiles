@@ -13,7 +13,7 @@ display_hyperlinks: false
 # configuration specific for gitlab instances
 
 hosts:
-    {{ onepasswordRead "op://huawei/gitlab/host" }}:
+    {{ onepasswordRead "op://huawei/gitlab/api_host" }}:
         token: {{ onepasswordRead "op://huawei/gitlab/token" }}
         api_host: {{  onepasswordRead "op://huawei/gitlab/api_host"  }}
         git_protocol: ssh

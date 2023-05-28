@@ -175,9 +175,8 @@ require("cmp").setup({
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
-    { name = 'git' },
-    { name = "path" },
     { name = "treesitter" },
+    { name = "path" },
   },
 })
 

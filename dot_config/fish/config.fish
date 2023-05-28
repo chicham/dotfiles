@@ -89,15 +89,6 @@ if command -v starship &> /dev/null
   starship init fish | source
 end
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-if test -f /home/hicham/.miniconda3/bin/conda
-    eval /home/hicham/.miniconda3/bin/conda "shell.fish" "hook" $argv | source
-end
-
-# <<< conda initialize <<<:
-#
-
 function autotmux --on-variable TMUX_SESSION_NAME
         if test -n "$TMUX_SESSION_NAME" #only if set
     if test -z $TMUX #not if in TMUX
@@ -109,3 +100,10 @@ function autotmux --on-variable TMUX_SESSION_NAME
     end
   end
 end
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+if test -f /opt/mambaforge/bin/conda
+    eval /opt/mambaforge/bin/conda "shell.fish" "hook" $argv | source
+end
+# <<< conda initialize <<<

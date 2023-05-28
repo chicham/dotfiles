@@ -334,9 +334,6 @@ tmux_conf_copy_to_os_clipboard=true
 # -- user customizations -------------------------------------------------------
 # this is the place to override or undo settings
 
-# increase history size
-set -g history-limit 50000
-
 # start with mouse mode enabled
 set -g mouse on
 
@@ -345,19 +342,8 @@ set -g mouse on
 #set -g status-keys vi
 #set -g mode-keys vi
 
-# replace C-b by C-a instead of using both prefixes
-set -gu prefix2
-unbind C-a
-unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
-
 # if you don't want Oh my tmux! to alter a binding, use #!important
 # bind v new-window -c #{pane_current_path} #!important
-unbind |
-bind | split-window -h #!important
-unbind _
-bind _ split-window -v #!important
 bind -r Left select-pane -L #!important
 bind -r Down select-pane -D #!important
 bind -r Up select-pane -U #!important
@@ -373,8 +359,9 @@ bind -r S-Tab previous-window #!important
 bind -r Tab next-window #!important
 # move status line to top
 set -g status-position bottom
+# Middcle click to paste
+bind -n MouseDown2Pane run "tmux set-buffer -b primary_selection \"$(xsel -o)\"; tmux paste-buffer -b primary_selection; tmux delete-buffer -b primary_selection"
 
-set -g default-terminal xterm-kitty
 
 # -- tpm -----------------------------------------------------------------------
 
@@ -411,7 +398,11 @@ tmux_conf_uninstall_plugins_on_reload=true
 
 # to enable a plugin, use the 'set -g @plugin' syntax:
 # visit https://github.com/tmux-plugins for available plugins
-#set -g @plugin 'tmux-plugins/tmux-copycat'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-pain-control'
+set -g @plugin 'noscript/tmux-mighty-scroll'
+set -g @plugin 'tmux-plugins/tmux-yank'
+# set -g @plugin 'tmux-plugins/tmux-copycat'
 #set -g @plugin 'tmux-plugins/tmux-cpu'
 #set -g @plugin 'tmux-plugins/tmux-resurrect'
 #set -g @plugin 'tmux-plugins/tmux-continuum'
