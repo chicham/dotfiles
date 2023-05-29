@@ -82,20 +82,27 @@ bind('n', '<leader>gl', ":<C-u>0G log --abbrev-commit --pretty=format:'%C(bold b
 bind('n', '<leader>fo', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
 -- bind("n", "<leader>f/", require("telescope.builtin").treesitter, { desc = "[/] Search symbols in current buffer]" })
 bind("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Search current Word" })
--- bind('n', 'g/', function()
---   -- You can pass additional configuration to telescope to change theme, layout, etc.
---   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
---     winblend = 10,
---     previewer = false,
---   })
-bind("n", "/", require('telescope.builtin').current_buffer_fuzzy_find)
+bind('n', 'g/', function()
+  -- You can pass additional configuration to telescope to change theme, layout, etc.
+  require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+    winblend = 10,
+    previewer = false,
+  })
+end
+)
+-- bind("n", "/", require('telescope.builtin').current_buffer_fuzzy_find)
 bind("n", "g*", function() require('telescope.builtin').current_buffer_fuzzy_find({default_text=vim.fn.expand("<cword>")}) end)
 
 bind("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Search [B]uffers" })
 bind("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Search [F]iles" })
 bind("n", "<leader>fh", require("telescope.builtin").help_tags, { desc = "Search [H]elp" })
 bind("n", "<leader>fG", require("telescope.builtin").live_grep, { desc = "Search by [G]rep" })
-bind("n", "<leader>fd", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
+bind("n", "<leader>fD", require("telescope.builtin").diagnostics, { desc = "Search [D]iagnostics" })
+bind("n", "<leader>fd",
+  function ()
+    require("telescope.builtin").diagnostics{ bufnr=0 }
+  end,
+  { desc = "Search [D]iagnostics" })
 bind("n", "<leader>fq", require("telescope.builtin").quickfix, { desc = "Search [Q]uickfix" })
 bind("n", "<leader>fk", require("telescope.builtin").keymaps, { desc = "Search [K]eymaps" })
 bind("n", "<leader>fs",
@@ -174,8 +181,8 @@ require('nvim-treesitter.configs').setup {
 require("cmp").setup({
   sources = {
     { name = 'nvim_lsp' },
-    { name = 'luasnip' },
     { name = "treesitter" },
+    { name = 'luasnip' },
     { name = "path" },
   },
 })
