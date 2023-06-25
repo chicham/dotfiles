@@ -13,18 +13,7 @@ if status is-interactive
 end
 
 
-#### FZF ####
-if command -v fzf &> /dev/null
-  set -gx FZF_DEFAULT_OPTS "--layout=reverse --inline-info --height '80%' --select-1 --exit-0"
-  if command -v bat &> /dev/null
-    set -gx FZF_PREVIEW_FILE '--ansi --preview-window "right:60%" --preview "bat --color=always --style=header,grid "'
-  end
-  if command -v fd &> /dev/null
-    set -gx  FZF_DEFAULT_COMMAND "fd --hidden --follow --exclude .git --type f"
-  end
-end
-
-set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+  set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
 
 function fish_user_key_bindings
@@ -44,13 +33,6 @@ end
 
 if command -v 1password &> /dev/null
   set -x SSH_AUTH_SOCK ~/.1password/agent.sock
-else
-  #### GPG-AGENT ####
-  set -gx GPG_TTY (tty)
-  set -u SSH_AGENT_PID
-  # gpg-connect-agent UPDATESTARTUPTTY /bye >/dev/null
-  set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-  gpgconf --launch gpg-agent
 end
 
 if command -v nvim &> /dev/null

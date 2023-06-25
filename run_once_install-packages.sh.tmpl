@@ -1,68 +1,34 @@
-{{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-{{ if eq .chezmoi.osRelease.id "manjaro" -}}
-pamac install --no-confirm --no-upgrade neovim tmux fish fd sd ripgrep git git-delta exa docker docker-compose rsync direnv fzf kitty nodejs-lts-gallium npm bat zoxide\
-        yubikey-manager yubikey-personalization yubico-pam pam-u2f gnome-shell-extension-pop-shell xorg-xprop github-cli glab
-pamac build --no-confirm google-chrome nerd-fonts-source-code-pro miniconda3 gnome-shell-extension-unite 1password 1password-cli
-{{ end -}}
-{{ if eq .chezmoi.osRelease.id "ubuntu" -}}
 
-curl -fsSL --insecure https://deb.nodesource.com/setup_lts.x | sudo -E bash -\
-  && sudo -E apt-add-repository ppa:fish-shell/release-3 -y\
-  && sudo -E apt-get update\
-  && sudo -E apt-get install build-essential software-properties-common tmux fish git rsync direnv nodejs sshpass yamllint luarocks
+PREFIX=~/.local/bin
+mkdir -p $PREFIX
 
-curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
-GIT_DELTA_VERSION=0.13.0
-EXA_VERSION=0.10.1
-BAT_VERSION=0.21.0
-FD_VERSION=8.4.0
+FD_VERSION=8.7.0
+curl -L https://github.com/sharkdp/fd/releases/download/v$FD_VERSION/fd-v$FD_VERSION-x86_64-unknown-linux-musl.tar.gz > /tmp/fd-$FD_VERSION.tar.gz && mkdir -p /tmp/fd-$FD_VERSION && tar -xf /tmp/fd-$FD_VERSION.tar.gz -C /tmp/fd-$FD_VERSION --strip-components=1 && mv /tmp/fd-$FD_VERSION/fd ~/.local/bin && chmod u+x ~/.local/bin/fd && rm -rf /tmp/fd-$FD_VERSION*
+
 RIPGREP_VERSION=13.0.0
-NEOVIM_VERSION=0.8.0
-MINIO_VERSION=20220916091647.0.0
+curl -L https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-x86_64-unknown-linux-musl.tar.gz > /tmp/ripgrep-$RIPGREP_VERSION.tar.gz && mkdir -p /tmp/ripgrep-$RIPGREP_VERSION && tar -xf /tmp/ripgrep-$RIPGREP_VERSION.tar.gz -C /tmp/ripgrep-$RIPGREP_VERSION --strip-components=1 && mv /tmp/ripgrep-$RIPGREP_VERSION/rg ~/.local/bin && chmod u+x ~/.local/bin/rg && rm -rf /tmp/ripgrep-$RIPGREP_VERSION*
 
-[[ -x "$(which zoxide)" ]] && echo "zoxide already installed" || ( curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash )
-[[ -x "$(which fd)" ]] && echo "fd already installed"|| ( curl -fsSL --insecure https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb -o fd_${FD_VERSION}_amd64.deb\
-        && sudo apt --fix-broken install  ./fd_${FD_VERSION}_amd64.deb\
-        && rm ./fd_${FD_VERSION}_amd64.deb )
-[[ -x "$(which rg)" ]] && echo "rg already installed" || ( curl -fsSL --insecure https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/ripgrep_${RIPGREP_VERSION}_amd64.deb -o ripgrep_${RIPGREP_VERSION}_amd64.deb\
-        && sudo apt --fix-broken install ./ripgrep_${RIPGREP_VERSION}_amd64.deb\
-        && rm ./ripgrep_${RIPGREP_VERSION}_amd64.deb )
-[[ -x "$(which delta)" ]] && echo "delta already installed" || ( curl -fsSL --insecure https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_amd64.deb -o git-delta_${GIT_DELTA_VERSION}_amd64.deb\
-        && sudo apt --fix-broken install ./git-delta_${GIT_DELTA_VERSION}_amd64.deb\
-        && rm ./git-delta_${GIT_DELTA_VERSION}_amd64.deb )
-[[ -x "$(which exa)" ]] && echo "exa already installed" || ( curl -fsSL --insecure https://github.com/ogham/exa/releases/download/v${EXA_VERSION}/exa-linux-x86_64-v${EXA_VERSION}.zip -o exa.zip\
-        && unzip exa.zip -d exa\
-        && mv exa/bin/exa ~/.local/bin\
-        && chmod +x ~/.local/bin/exa\
-        && rm -rf exa exa.zip )
-[[ -x "$(which bat)" ]] && echo "bat already installed" || ( curl -fsSL --insecure https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb\
-        && sudo apt --fix-broken install ./bat_${BAT_VERSION}_amd64.deb\
-        && rm ./bat_${BAT_VERSION}_amd64.deb )
+DELTA_VERSION=0.16.5
+curl -L https://github.com/dandavison/delta/releases/download/$DELTA_VERSION/delta-$DELTA_VERSION-x86_64-unknown-linux-musl.tar.gz  > /tmp/delta-$DELTA_VERSION.tar.gz && mkdir -p /tmp/delta-$DELTA_VERSION && tar -xf /tmp/delta-$DELTA_VERSION.tar.gz -C /tmp/delta-$DELTA_VERSION --strip-components=1 && mv /tmp/delta-$DELTA_VERSION/delta ~/.local/bin && chmod u+x ~/.local/bin/delta && rm -rf /tmp/delta-$DELTA_VERSION*
 
-[[ -x "$(which mcli)" ]] && echo "minio-cli already installed" || ( wget https://dl.min.io/client/mc/release/linux-amd64/mcli_${MINIO_VERSION}_amd64.deb\
-        && sudo apt --fix-broken install ./mcli_${MINIO_VERSION}_amd64.deb\
-        && rm -f  ./mcli_${MINIO_VERSION}_amd64.deb )
-[[ -x "$(which git-extras)" ]] && echo "git-extras already installed" || ( curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh -o git_extras.sh\
-        && sudo bash git_extras.sh\
-        && rm -f git_extras.sh ) 
-[[ -x "$(which nvim)" ]] && echo "nvim already installed" || ( curl -fsSL --insecure https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux64.deb -o nvim-linux64.deb\
-        && sudo apt --fix-broken install ./nvim-linux64.deb\
-        && rm ./nvim-linux64.deb )
+EXA_VERSION=0.10.1
+curl -L https://github.com/ogham/exa/releases/download/v$EXA_VERSION/exa-linux-x86_64-musl-v$EXA_VERSION.zip > /tmp/exa-$EXA_VERSION.zip && mkdir -p /tmp/exa-$EXA_VERSION && unzip /tmp/exa-$EXA_VERSION.zip -d /tmp/exa-$EXA_VERSION && mv /tmp/exa-$EXA_VERSION/bin/exa ~/.local/bin && chmod u+x ~/.local/bin/exa && rm -rf /tmp/exa-$EXA_VERSION*
 
-{{ end -}}
-{{ end -}}
-
-[[ -x "$(which bw)" ]] && echo "bitwarden already installed" || npm install -g @bitwarden/cli
-
-[[ -d "$HOME/.tmux/" ]] || ( git clone https://github.com/gpakosz/.tmux.git ~/.tmux && ln -s -f ~/.tmux/.tmux.conf ~/.tmux.conf )
+BAT_VERSION=0.23.0
+curl -L https://github.com/sharkdp/bat/releases/download/v$BAT_VERSION/bat-v$BAT_VERSION-i686-unknown-linux-musl.tar.gz > /tmp/bat-$BAT_VERSION.tar.gz && mkdir -p /tmp/bat-$BAT_VERSION && tar -xf /tmp/bat-$BAT_VERSION.tar.gz -C /tmp/bat-$BAT_VERSION --strip-components=1 && mv /tmp/bat-$BAT_VERSION/bat ~/.local/bin && chmod u+x ~/.local/bin/bat && rm -rf /tmp/bat-$BAT_VERSION*
 
 
-[[ ! -d ~/.miniconda3 ]] && curl -fsSL --insecure https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh\
-         && sh ./miniconda.sh -b -u -p ~/.miniconda3\
-         && rm -f ./miniconda.sh\
-         && ~/.miniconda3/bin/conda init bash fish
+OP_VERSION=2.18.0
+curl -l https://cache.agilebits.com/dist/1P/op2/pkg/v$OP_VERSION/op_linux_amd64_v$OP_VERSION.zip  > /tmp/op-$OP_VERSION.zip && unzip /tmp/op-$OP_VERSION.zip -d /tmp/op-$OP_VERSION && mv /tmp/op-$OP_VERSION/op ~/.local/bin && chmod u+x ~/.local/bin/op && rm -rf /tmp/op-$OP_VERSION*
 
 
-
-[[ -x "$(which github-copilot-cli)" ]] && echo "github-copilot-cli already installed" || npm install -g @githubnext/github-copilot-cli
+bin_path=$PREFIX
+curl -sfL https://direnv.net/install.sh | bash
+curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir $PREFIX --yes
+curl micro.mamba.pm/install.sh | bash
+## ## curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh | sudo bash /dev/stdin
+## ## curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+##
+##
