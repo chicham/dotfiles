@@ -15,6 +15,7 @@ end
 -- For example, changing the color scheme:
 config.color_scheme = 'Gruvbox Material (Gogh)'
 config.hide_tab_bar_if_only_one_tab = true
+config.force_reverse_video_cursor = true
 
 -- and finally, return the configuration to wezterm
 return config

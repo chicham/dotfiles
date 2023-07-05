@@ -128,7 +128,7 @@ require("telescope").setup({
 require('lualine').setup {
   options = {
     icons_enabled = true,
-    theme = 'jellybeans',
+    theme = 'gruvbox-material',
     component_separators = '|',
     section_separators = '',
   },
