@@ -47,7 +47,7 @@ end
 
 set local_file $HOME/.config.local.fish
 if test -e $local_file
-  . $local_file
+  source $local_file
 end
 
 set local_bin $HOME/.local/bin

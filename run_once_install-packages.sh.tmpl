@@ -22,13 +22,11 @@ curl -L https://github.com/sharkdp/bat/releases/download/v$BAT_VERSION/bat-v$BAT
 OP_VERSION=2.18.0
 curl -l https://cache.agilebits.com/dist/1P/op2/pkg/v$OP_VERSION/op_linux_amd64_v$OP_VERSION.zip  > /tmp/op-$OP_VERSION.zip && unzip /tmp/op-$OP_VERSION.zip -d /tmp/op-$OP_VERSION && mv /tmp/op-$OP_VERSION/op ~/.local/bin && chmod u+x ~/.local/bin/op && rm -rf /tmp/op-$OP_VERSION*
 
+GIT_BUG=0.8.0
+curl -l https://github.com/MichaelMure/git-bug/releases/download/v0.8.0/git-bug_linux_amd64 > ~/.local/bin/git-bug && chmod u+x ~/.local/bin/git-bug
 
 bin_path=$PREFIX
 curl -sfL https://direnv.net/install.sh | bash
 curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
 curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir $PREFIX --yes
 curl micro.mamba.pm/install.sh | bash
-## ## curl -sSL https://raw.githubusercontent.com/tj/git-extras/master/install.sh | sudo bash /dev/stdin
-## ## curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-##
-##

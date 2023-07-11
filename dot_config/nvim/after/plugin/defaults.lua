@@ -176,16 +176,6 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
-require("cmp").setup({
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = "treesitter" },
-    { name = 'luasnip' },
-    { name = "path" },
-  },
-})
-
-
 local null_ls = require("null-ls")
 null_ls.setup({
   sources = {
@@ -194,7 +184,6 @@ null_ls.setup({
 		null_ls.builtins.code_actions.gitrebase,
 		null_ls.builtins.formatting.stylua,
 		null_ls.builtins.formatting.black,
-		null_ls.builtins.formatting.ruff,
 		null_ls.builtins.formatting.latexindent,
 		null_ls.builtins.formatting.beautysh,
 		null_ls.builtins.formatting.prettier.with({
@@ -254,6 +243,25 @@ require("gitsigns").setup{
     map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
   end
 }
+
+require('mason-lspconfig').setup {
+  ensure_installed = {
+    pyright = {},
+    rust_analyzer = {},
+    lua_ls = {
+      Lua = {
+        workspace = { checkThirdParty = false },
+        telemetry = { enable = false },
+      },
+    },
+    black = {},
+    ruff = {},
+  },
+  automatic_installation = true,
+}
+
+require('orgmode').setup_ts_grammar()
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
