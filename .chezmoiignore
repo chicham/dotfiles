@@ -1,8 +1,2 @@
-coc-settings.json
-fish_plugins
-fish_variables
 install.sh
 pre-commit
-{{ if (eq (env "BW_SESSION") "") }}
-.config/github-copilot/hosts.json
-{{ end }}

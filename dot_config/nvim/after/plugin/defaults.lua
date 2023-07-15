@@ -254,8 +254,6 @@ require('mason-lspconfig').setup {
         telemetry = { enable = false },
       },
     },
-    black = {},
-    ruff = {},
   },
   automatic_installation = true,
 }

@@ -1,24 +1,21 @@
 #### TMUX ####
 # Adapted from https://github.com/fish-shell/fish-shell/issues/4434#issuecomment-332626369
 # only run in interactive (not automated SSH for example)
-if status is-interactive
-
-  if not set -q TMUX # don't nest inside another tmux
-  # Adapted from https://unix.stackexchange.com/a/176885/347104
-  # Create session 'main' or attach to 'main' if already exists.
-    if not set -q TMUX_SESSION_NAME
-      tmux new-session -A -s main
+if command -v tmux &> /dev/null
+  if status is-interactive
+    if not set -q TMUX # don't nest inside another tmux
+    # Adapted from https://unix.stackexchange.com/a/176885/347104
+    # Create session 'main' or attach to 'main' if already exists.
+      if not set -q TMUX_SESSION_NAME
+        tmux new-session -A -s main
+      end
     end
   end
 end
 
 
-  set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
-
-function fish_user_key_bindings
-  fzf_key_bindings
-end
 
 #### DIRENV ####
 if command -v direnv &> /dev/null
@@ -26,7 +23,7 @@ if command -v direnv &> /dev/null
 end
 
 if command -v zoxide &> /dev/null
-  zoxide init --cmd cd fish | source
+  zoxide init fish --cmd z | source
 end
 
 #### GPG-AGENT ####
