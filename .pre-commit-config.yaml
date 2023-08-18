@@ -16,15 +16,15 @@ repos:
     rev: v1.4.0
     hooks:
       - id: detect-secrets
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.9-for-vscode
-    hooks:
-      - id: prettier
-        stages:
-          - commit
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: v3.0.2
+  #   hooks:
+  #     - id: prettier
+  #       stages:
+  #         - commit
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.31.0
+    rev: v1.32.0
     hooks:
       - id: yamllint
   - repo: https://github.com/jorisroovers/gitlint

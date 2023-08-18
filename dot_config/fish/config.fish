@@ -1,29 +1,58 @@
-#### TMUX ####
-# Adapted from https://github.com/fish-shell/fish-shell/issues/4434#issuecomment-332626369
-# only run in interactive (not automated SSH for example)
-if command -v tmux &> /dev/null
-  if status is-interactive
-    if not set -q TMUX # don't nest inside another tmux
-    # Adapted from https://unix.stackexchange.com/a/176885/347104
-    # Create session 'main' or attach to 'main' if already exists.
-      if not set -q TMUX_SESSION_NAME
-        tmux new-session -A -s main
-      end
-    end
-  end
+# #### TMUX ####
+# # Adapted from https://github.com/fish-shell/fish-shell/issues/4434#issuecomment-332626369
+# # only run in interactive (not automated SSH for example)
+# if command -v tmux &> /dev/null
+#   if status is-interactive
+#     if not set -q TMUX # don't nest inside another tmux
+#     # Adapted from https://unix.stackexchange.com/a/176885/347104
+#     # Create session 'main' or attach to 'main' if already exists.
+#       if not set -q TMUX_SESSION_NAME
+#         tmux new-session -A -s main
+#       end
+#     end
+#   end
+# end
+
+# set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
+
+if status is-interactive
+  eval (zellij setup --generate-auto-start fish | string collect)
 end
-
-
-set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
-
 
 #### DIRENV ####
 if command -v direnv &> /dev/null
   direnv hook fish | source
 end
 
+if command -v sk &> /dev/null
+  skim_key_bindings
+end
+
 if command -v zoxide &> /dev/null
-  zoxide init fish --cmd z | source
+  zoxide init fish --cmd cd | source
+  function __zoxide_z
+      set -l argc (count $argv)
+      if test $argc -eq 0
+          __zoxide_cd $HOME
+      else if test "$argv" = -
+          __zoxide_cd -
+      else if test $argc -eq 1 -a -d $argv[1]
+          __zoxide_cd $argv[1]
+      else if set -l result (string replace --regex $__zoxide_z_prefix_regex '' $argv[-1]); and test -n $result
+          __zoxide_cd $result
+      else
+          set --local result (command zoxide query --exclude (__zoxide_pwd) --list -- "$argv" \
+          | sk \
+                      --no-sort \
+                      --keep-right \
+                      --height='40%' \
+                      --layout='reverse' \
+                      --exit-0 \
+                      --select-1 \
+                      --bind='ctrl-z:ignore' )
+          and __zoxide_cd $result
+      end
+  end
 end
 
 #### GPG-AGENT ####
@@ -57,9 +86,11 @@ end
 if command -v gh &> /dev/null
   gh completion -s fish | source
 end
+
 if command -v glab &> /dev/null
   glab completion -s fish | source
 end
+
 if command -v chezmoi &> /dev/null
   chezmoi completion fish | source
 end
@@ -70,15 +101,4 @@ end
 
 if command -v micromamba &> /dev/null
   micromamba shell hook --shell=fish | source
-end
-function autotmux --on-variable TMUX_SESSION_NAME
-        if test -n "$TMUX_SESSION_NAME" #only if set
-    if test -z $TMUX #not if in TMUX
-      if tmux has-session -t $TMUX_SESSION_NAME
-        exec tmux new-session -t "$TMUX_SESSION_NAME"
-      else
-        exec tmux new-session -s "$TMUX_SESSION_NAME"
-      end
-    end
-  end
 end
