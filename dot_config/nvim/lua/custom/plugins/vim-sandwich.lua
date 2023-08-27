@@ -1,4 +1,3 @@
-
 return {
 	"machakann/vim-sandwich",
 	config = function ()

@@ -1,0 +1,6 @@
+snippet umamba
+	eval "$(micromamba shell hook --shell ${1:bash})"
+	micromamba activate ${0}
+
+snippets ipdb
+	export PYTHONBREAKPOINT="ipdb.set_trace"

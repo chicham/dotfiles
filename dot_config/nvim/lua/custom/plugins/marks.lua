@@ -4,7 +4,10 @@ return {
 		require("marks").setup {
 			mappings = {
 				set_next = "m.",
-				preview = "m,",
+				delete_line = "m:",
+				preview = "gm",
+				delete_buf = "m<space>",
+				toggle = "m,"
 			}
 		}
 	end

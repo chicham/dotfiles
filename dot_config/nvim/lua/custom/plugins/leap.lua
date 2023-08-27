@@ -1,10 +1,12 @@
 return {
-	"ggandor/leap.nvim",
-	config = function ()
+	'ggandor/leap.nvim',
+	config = function()
 		require('leap').setup {
-			labels = { 'e', 'i', 'u', 't', 's', 'r',  'a', 'm', 'k', 'q', 'x', 'g' },
+			safe_labels = { 't', 's', 'r', 'n', 'm', 'e', 'i', 'u', 'a' },
+			labels = { 't', 's', 'r', 'n', 'm', 'e', 'i', 'u', 'a', 'v', 'd', 'l', 'j', 'z', 'b', 'é', 'p', 'o' },
 		}
 		vim.keymap.set({ 'n', 'x', 'o' }, ',', '<Plug>(leap-forward-to)')
 		vim.keymap.set({ 'n', 'x', 'o' }, ';', '<Plug>(leap-backward-to)')
-	end
+		vim.keymap.set({ 'n', 'x', 'o' }, 'g,', '<Plug>(leap-from-window)')
+	end,
 }
