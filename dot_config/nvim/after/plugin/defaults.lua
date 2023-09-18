@@ -15,7 +15,6 @@ vim.opt.signcolumn = "yes"
 -- Clipboard
 vim.opt.clipboard = 'unnamedplus'
 
--- Set colorscheme
 vim.opt.termguicolors = true
 
 -- Set completeopt to have a better completion experience
@@ -93,7 +92,11 @@ bind('n', 'g*', function()
 end)
 
 bind('n', '<leader>fb', require('telescope.builtin').buffers, { desc = 'Search [B]uffers' })
-bind('n', '<leader>ff', require('telescope.builtin').find_files, { desc = 'Search [F]iles' })
+bind('n', '<leader>ff', function(opts)
+  opts = opts or {}
+  opts.cwd = vim.fn.systemlist('git root')[1]
+  require('telescope.builtin').find_files(opts)
+end, { desc = 'Search [F]iles' })
 bind('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = 'Search [H]elp' })
 bind('n', '<leader>fG', require('telescope.builtin').live_grep, { desc = 'Search by [G]rep' })
 bind('n', '<leader>fD', require('telescope.builtin').diagnostics, { desc = 'Search [D]iagnostics' })
@@ -113,6 +116,7 @@ bind('n', '<leader>fw', require('telescope.builtin').lsp_dynamic_workspace_symbo
 bind('n', '<leader>fr', require('telescope.builtin').lsp_references, { desc = 'Find [R]eferences' })
 bind('n', '<leader>fm', require('telescope.builtin').marks, { desc = 'Find [M]arks' })
 bind('n', '<leader>fc', require('telescope.builtin').command_history, { desc = 'Find [C]ommands' })
+bind('n', 'gd', require('telescope.builtin').lsp_definitions, { desc = '[G]oto [D]efinition' })
 
 require('telescope').setup {
   defaults = {
@@ -187,9 +191,9 @@ require('nvim-treesitter.configs').setup {
   },
   textsubjects = {
     enable = true,
-    prev_selection = '?', -- (Optional) keymap to select the previous selection
+    prev_selection = ',', -- (Optional) keymap to select the previous selection
     keymaps = {
-      ['!'] = 'textsubjects-smart',
+      ['.'] = 'textsubjects-smart',
       ['ac'] = 'textsubjects-container-outer',
       ['ic'] = 'textsubjects-container-inner',
     },
@@ -199,30 +203,6 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
-local null_ls = require 'null-ls'
-null_ls.setup {
-  sources = {
-    null_ls.builtins.code_actions.gitsigns,
-    null_ls.builtins.code_actions.eslint_d,
-    null_ls.builtins.code_actions.gitrebase,
-    null_ls.builtins.formatting.stylua,
-    -- null_ls.builtins.formatting.black,
-    null_ls.builtins.formatting.latexindent,
-    null_ls.builtins.formatting.beautysh,
-    null_ls.builtins.formatting.prettier.with {
-      filetypes = { 'html', 'json', 'yaml', 'markdown' },
-      extra_args = { '--print-width', '4' },
-    },
-    null_ls.builtins.diagnostics.eslint,
-    null_ls.builtins.diagnostics.chktex,
-    null_ls.builtins.diagnostics.fish,
-    null_ls.builtins.diagnostics.gitlint,
-    null_ls.builtins.diagnostics.luacheck,
-    null_ls.builtins.diagnostics.trail_space,
-    null_ls.builtins.diagnostics.yamllint,
-    -- null_ls.builtins.diagnostics.ruff
-  },
-}
 
 require('gitsigns').setup {
   on_attach = function(bufnr)
@@ -287,7 +267,6 @@ require('mason-lspconfig').setup {
   },
   automatic_installation = true,
 }
-
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
