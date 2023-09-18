@@ -1,3 +1,20 @@
-snippet eapp
+snippet ifapp
 	from absl import app, logging
-	from etils import eapp, edc, epath${0}
+	from etils import eapp, edc
+	from dataclasses import dataclass
+
+
+	@edc.dataclass
+	@dataclass
+	class AppConfig:
+		pass
+
+
+	def ${1:main}(cfg: AppConfig):
+		logging.info("\n%s", cfg)
+		$0
+
+
+	if __name__ == "__main__":
+		eapp.better_logging()
+		app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))

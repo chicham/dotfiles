@@ -169,3 +169,15 @@ snippet coverage_config
       "if TYPE_CHECKING:",
     ]
     $0
+
+
+snippets pip-tools
+  [tool.hatch.envs.deps]
+  detached = true
+  dependencies = [
+    "pip-tools",
+  ]
+
+  [tool.hatch.envs.deps.scripts]
+  compile = "pip-compile -o requirements.txt pyproject.toml"
+  $0
