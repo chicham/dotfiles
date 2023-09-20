@@ -1,4 +1,4 @@
-alias ls="exa"
+alias ls="eza"
 alias cat="bat"
 alias ll="ls -al --icons"
 alias ln="ln -v"

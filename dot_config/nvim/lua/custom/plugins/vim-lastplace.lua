@@ -1,3 +1,3 @@
 return {
-	"dietsche/vim-lastplace"
+  "dietsche/vim-lastplace",
 }

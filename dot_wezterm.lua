@@ -1,5 +1,5 @@
 -- Pull in the wezterm API
-local wezterm = require 'wezterm'
+local wezterm = require("wezterm")
 
 -- This table will hold the configuration.
 local config = {}
@@ -13,7 +13,7 @@ end
 -- This is where you actually apply your config choices
 
 -- For example, changing the color scheme:
-config.color_scheme = 'Gruvbox Material (Gogh)'
+config.color_scheme = "Gruvbox Material (Gogh)"
 config.hide_tab_bar_if_only_one_tab = true
 config.force_reverse_video_cursor = true
 config.enable_kitty_keyboard = true

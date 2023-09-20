@@ -1,3 +1,3 @@
 return {
-	"https://github.com/vim-utils/vim-vertical-move"
+  "https://github.com/vim-utils/vim-vertical-move",
 }

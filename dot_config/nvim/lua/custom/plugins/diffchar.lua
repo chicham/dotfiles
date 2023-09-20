@@ -1,3 +1,3 @@
 return {
-	"https://github.com/rickhowe/diffchar.vim"
+  "https://github.com/rickhowe/diffchar.vim",
 }
