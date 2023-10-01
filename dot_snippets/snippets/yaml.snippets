@@ -37,7 +37,14 @@ snippet pyupgrade_hook
            hooks:
            -   id: pyupgrade
                args: [--py${1:310}-plus]
-        ${0}
+
+snippet reorder_imports_hook
+   -  repo: https://github.com/asottile/reorder-python-imports
+      rev: v3.11.0
+      hooks:
+      -   id: reorder-python-imports
+	  args: [--py${1:310}-plus]
+
 snippet pre_commit_hook
    -  repo: $1
       rev: $2

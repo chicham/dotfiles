@@ -17,4 +17,6 @@ snippet ifapp
 
 	if __name__ == "__main__":
 		eapp.better_logging()
-		app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))
+		raise SystemExit(
+			app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))
+		)
