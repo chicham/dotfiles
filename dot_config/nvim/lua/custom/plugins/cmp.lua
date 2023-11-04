@@ -21,6 +21,14 @@ return {
         { name = "path" },
         { name = "orgmode" },
       },
+      view = {
+        docs = {
+          auto_open = false,
+        },
+      },
+      experimental = {
+        ghost_text = true,
+      },
     })
   end,
 }

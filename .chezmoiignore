@@ -1,2 +1,4 @@
 install.sh
 pre-commit
+.git/
+./dot_config/nvim/lazy-lock.json

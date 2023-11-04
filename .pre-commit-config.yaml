@@ -20,6 +20,7 @@ repos:
     rev: v1.32.0
     hooks:
       - id: yamllint
+        args: [-d, relaxed]
   - repo: https://github.com/jorisroovers/gitlint
     rev: v0.19.1 # Fill in a tag / sha here (e.g. v0.18.0)
     hooks:

@@ -1,14 +1,9 @@
-snippet ifapp
+snippet eapp
 	from absl import app, logging
 	from etils import eapp, edc
-	from dataclasses import dataclass
+	import dataclasses
 
-
-	@edc.dataclass
-	@dataclass
-	class AppConfig:
-		pass
-
+	appconfig$2
 
 	def ${1:main}(cfg: AppConfig):
 		logging.info("\n%s", cfg)
@@ -20,3 +15,434 @@ snippet ifapp
 		raise SystemExit(
 			app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))
 		)
+
+snippet train_jax
+	from absl import app, logging
+	from etils import eapp, edc
+	from etils.enp import lazy
+	import dataclasses
+	import jax
+
+	jax.config.parse_flags_with_absl()
+
+	appconfig$2
+
+	train_state$8
+
+	create_dataset$4
+
+	def create_model(config: ModelConfig):
+		$6
+		return model, variables
+
+	def create_optimizer(config: OptimizerConfig):
+		$7
+		return optimizer
+
+	train_step$16
+
+	eval_step$17
+
+	def ${1:main}(cfg: AppConfig):
+		jax.distributed.initialize()
+
+		if lazy.has_tf():
+			lazy.tf.config.set_visible_devices([], "GPU")
+
+		logging.info("\n%s", cfg)
+		data_loading$5
+		model = create_model(cfg.model)
+		optimizer = create_optimizer(cfg.optimizer)
+		devices$9
+		named_sharding$10
+		checkpoints$10
+		writer$12
+		periodic_hooks$13
+
+		with metrics_writers.ensure_flushes(writer):
+			for step, batch in enumerate(ds_train, start=state.step):
+				is_last_step = step == cfg.loop.num_train_steps - 1
+				with jax.profiler.StepTraceAnnotation("train", step_num=step):
+					shared_batch = jax.device_put(batch, data_sharding)
+					new_state, step_metrics = train_step(state, batch$18)
+					train_metrics = etree.map_structure(lambda x: x[0], new_metrics)
+					# write metrics at every n step
+					train_metrics = train_metrics.merge(step_metrics)
+					logging.log_first_n(logging.INFO, "Finished training step %d.", 5, step)
+					for h in hooks:
+						h(step)
+
+					if step % cfg.loop.eval_every_steps == 0 or is_last_step:
+						with report_progress.timed("training_metrics"):
+							writer.write_scalars(step, train_metrics.compute())
+						with report_progress.timed("eval"):
+							for batch in eval_ds:
+								shared_batch = jax.device_put(batch, data_sharding)
+								step_metrics = eval_step(state, batch)
+								eval_metrics = eval_metrics.merge(step_metrics)
+							writer.write_scalars(step, eval_metrics.compute())
+
+
+	if __name__ == "__main__":
+		eapp.better_logging()
+		raise SystemExit(
+			app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))
+		)
+
+snippet train_loop
+	with metrics_writers.ensure_flushes(${1:writer}):
+		for step, batch in enumerate(${2:ds_train}, start=state.step):
+
+
+snippet train_step
+	@jax.jit
+	def train_step(state: ${1:TrainState}, batch: ${2:ArrayTree}$3) -> tuple[$1, $8]:
+		def loss_fn(params):
+			${3:logits}${4:, non_trainable_variables} = state.apply_fn(params$4, batch["${5:samples}"])
+			loss = state.loss_fn($3, batch["${6:targets}"])
+			return loss.mean(), ($3$4)
+
+		grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
+		(batch_loss, ($3$4)), grads = grad_fn(state.trainable_variables)
+		new_state = state.apply_gradients(grads=grads, ${5:non_trainable_variables=$non_trainable_variables})
+
+		mask = batch.get("mask", jnp.ones(len(batch["$5"])))
+		step_metrics = ${8:Metrics}.single_from_model_output(logits=$3, loss=batch_loss, labels=batch["$4"], mask=mask, axis_name="${9:batch}")
+		return new_state, step_metrics
+
+snippet eval_step
+	@jax.jit
+	def eval_step(state: ${1:TrainState}, batch: ArrayTree, rng_key: array_types.PRNGKey) -> $7:
+		${2:logits}${3:, _} = state.apply_fn(state.trainable_variables${4:, state.non_trainable_variables}, batch["${5:samples}"])
+		loss = state.loss_fn($2, batch["${6:targets}"])
+		mask = batch.get("mask", jnp.ones(len(batch["token_ids"])))
+		return ${8:Metrics}.single_from_model_output(logits=$2, loss=batch_loss, labels=batch["$6"], mask=mask, axis_name="${9:batch}")
+
+snippet preprocess_ops
+	${1:preprocess_fn} = preprocess_spec.parse(spec, available_ops=preprocess_spec.get_all_ops(${2:__name__}))
+
+snippet preprocess_spec
+	@edc.dataclass
+	@dataclasses.dataclass
+	class $1:
+		name: str
+
+		def __call__(self, features: preprocess_spec.Features) -> preprocess_spec.Features:
+			return {k: self.process_fn(v) if k == self.name else v for k,v in features.items()}
+
+		@enp.check_and_normalize_arrays
+		def process_fn(self, array: array_types.${3:Array}, xnp: enp.NpModule = ${2:...}):
+			$2
+
+snippet metric_collection
+	@edc.dataclass
+	@pytree
+	class Metrics(metrics.Collection):
+		loss: metrics.Average.from_output("loss")
+		$0
+
+snippet periodic_hooks
+	hooks = []
+	report_progress = periodic_actions.ReportProgress(
+			num_train_steps=${1:cfg.loop.num_steps},
+			every_steps=${2:cfg.loop.eval_every_steps},
+			writer=${3:writer},
+			)
+	if jax.process_index() == 0:
+		hooks += [
+				report_progress,
+				periodic_actions.Profile(
+						logdir=${4:cfg.workdir},
+						num_profile_steps=${5:cfg.profile.steps},
+				)
+		]
+
+snippet create_dataset
+	def create_dataset(
+			name: str,
+			rng: array_types.PRNGKey,
+			data_dir: epath.PathLike | None = None,
+			split: str ="train",
+			filter_fn: Callable[[preprocess_spec.Features], bool] | None = None,
+			preprocess_fn: Callable[[preprocess_spec.Features], preprocess_spec.Features] | None = None,
+			cache: bool = False,
+			num_epochs: int | None = None,
+			shuffle: bool =True,
+			shuffle_buffer_size: int =1000,
+			pad_up_to_batches = None,
+			cardinality: int | None = None,
+			drop_remainder: bool = True,
+			batch_size=8,
+	):
+		batch_dims =((batch_size//jax.device_count()) * jax.device_count(),)
+		logging.info("Batch dims %s", batch_dims)
+		builder = tfds.builder(name, data_dir=data_dir)
+		tfds_split = tfds.split_for_jax_process(split)
+		_, sub_key = jax.random.split(rng)
+		ds = deterministic_data.create_dataset(
+			builder,
+			split=tfds_split,
+			batch_dims=batch_dims,
+			rng=rng,
+			filter_fn=filter_fn,
+			preprocess_fn=preprocess_fn,
+			cache=cache,
+			shuffle=shuffle,
+			shuffle_buffer_size=shuffle_buffer_size,
+			prefetch_size = 4*batch_size,
+			pad_up_to_batches = pad_up_to_batches,
+			cardinality=cardinality,
+			drop_remainder=drop_remainder,
+		)
+		return tfds.as_numpy(ds), builder.info
+
+snippet data_loading
+	builder = tfds.builder(${1:cfg.dataset.name})
+	key = jax.randow.key(${2:cfg.seed})
+	key, train_key = jax.random.split(key)
+	train_preprocess_fn = preprocess_spec.parse(
+			cfg.dataset.train.preprocess_spec,
+			available_ops=preprocess_spec.get_all_ops(__name__)
+	)
+	ds_train, info = ${3:create_dataset}(
+		builder=builder,
+		key=train_key,
+		shuffle_buffer_size=${4:cfg.dataset.train.shuffle_buffer_size},
+		batch_size=${5:cfg.dataset.train.batch_size},
+		preprocess_fn=train_preprocess_fn,
+		shuffle=${7:cfg.dataset.train.shuffle},
+	)
+	key, val_key = jax.random.split(key)
+	val_preprocess_fn = preprocess_spec.parse(
+			cfg.dataset.test.preprocess_spec,
+			available_ops=preprocess_spec.get_all_ops(__name__)
+	)
+	ds_val, _ = $3(
+		builder=builder,
+		key=val_key,
+		shuffle_buffer_size=${8:cfg.dataset.test.shuffle_buffer_size},
+		batch_size=${9:cfg.dataset.test.batch_size},
+		num_epochs=1,
+		preprocess_fn=val_preprocess_fn,
+		shuffle=${10:cfg.dataset.test.shuffle},
+	)
+
+snippet checkpoints
+	checkpoint_options = ocp.CheckpointManagerOptions(
+			max_to_keep=${1:cfg.checkpoints.max_to_keep},
+			save_interval_steps=${2:cfg.checkpoints.save_interval_steps},
+		)
+	${3:workdir_path = epath.Path(cfg.workdir).resolve() / hex(hash(cfg))}
+	mngr = ocp.CheckpointManager(
+			${4:workdir_path} / ${5:cfg.checkpoints.path},
+			{
+				"state": ocp.PyTreeCheckpointer(),
+				"train_metrics": ocp.PyTreeCheckpointer(), # metrics is reserved
+				"val_metrics": ocp.PyTreeCheckpointer(), # metrics is reserved
+			},
+			options=checkpoint_options,
+		)
+
+	state = ${6:TrainState}.create(
+		apply_fn=${7:model.stateless_call},
+		trainable_variables=${8:model.trainable_variables},
+		tx=${8:optimizer},
+		$9
+	)
+	train_metrics = Metrics.empty()
+	val_metrics = Metrics.empty()
+
+	if ${10:cfg.checkpoints.restore}:
+		# https://orbax.readthedocs.io/en/latest/orbax_checkpoint_101.html
+		restored = mngr.restore(mngr.latest_step())
+		state_dict = restored["state"], restored["metrics_state"]
+		state = state.replace(**state_dict)
+		train_metrics_dict = restored["train_metrics"]
+		train_metrics = train_metrics.replace(**train_metrics_dict)
+		val_metrics_dict = restored["val_metrics"]
+		val_metrics = val_metrics.replace(**val_metrics_dict)
+
+snippet writer
+	writer = metric_writers.create_default_writer(
+			${1:cfg.workdir}, just_logging=jax.process_index() > 0
+	)
+	if ${2:state.step} == 0:
+		writer.write_hparams(dataclasses.asdict(${3:cfg}))
+
+snippet devices
+	devices = mesh_utils.create_device_mesh((jax.device_count(),))
+
+snippet named_sharding
+	$1_sharding = NamedSharding(Mesh(devices, axis_names=("$1")), PartitionSpec("$1"))
+
+snippet tf_device
+	tf.config.experimental.set_visible_devices(${1:[]}, "${2:GPU}")
+
+snippet arraytree
+	ArrayTree = Union[array_types.Array, Iterable['ArrayTree'], Mapping[Any, 'ArrayTree']]
+
+snippet train_state
+	@edc.dataclass
+	@pytree
+	class TrainState:
+		trainable_variables: ArrayTree
+		non_trainable_variables: ArrayTree
+		opt_state: ArrayTree
+		loss_fn: Callable = edc.field(metadata={"pytree_node": False})
+		apply_fn: Callable = edc.field(metadata={'pytree_node': False})
+		tx: optax.GradientTransformation = edc.field(metadata={'pytree_node': False})
+		step: int = edc.field(metadata={'pytree_node': False}, default=0)
+
+		def apply_gradients(self, *, grads, **kwargs):
+			updates, new_opt_state = self.tx.update(
+					grads,
+					self.opt_state,
+					self.trainable_variables
+			)
+			new_trainable_variables = optax.apply_updates(
+					self.trainable_variables,
+					updates
+			)
+			return self.replace(
+					step=self.step + 1,
+					trainable_variables=new_trainable_variables,
+					opt_state=new_opt_state,
+					**kwargs,
+			)
+
+		@classmethod
+		def create(cls, *, apply_fn, trainable_variables, tx, **kwargs):
+			opt_state = tx.init(trainable_variables)
+			return cls(
+					step=0,
+					apply_fn=apply_fn,
+					trainable_variables=trainable_variables,
+					tx=tx,
+					opt_state=opt_state,
+					**kwargs,
+			)
+
+snippet appconfig
+	@edc.dataclass
+	@dataclasses.dataclass(frozen=True)
+	class ${1:AppConfig}:
+		@dataclasses.dataclass(frozen=True)
+		class ${2:LoopConfig}:
+			num_steps: int = 0
+			eval_every_steps: int = 10
+			$3
+
+		@dataclasses.dataclass(frozen=True)
+		class ${4:ProfileConfig}:
+			steps: int = 5
+			$5
+
+		@dataclasses.dataclass(frozen=True)
+		class ${6:DatasetConfig}:
+			name: str
+			shuffle_buffer_size: int = 1000
+			$7
+
+			@dataclasses.dataclass(frozen=True)
+			class SplitConfig:
+				batch_size: int = 8
+				shuffle: bool = True
+				preprocess_spec: str = ""
+				shuffle_buffer_size: int = 1000
+				$8
+
+			train: SplitConfig = SplitConfig()
+			test: SplitConfig = SplitConfig(shuffle=False)
+
+		@dataclasses.dataclass(frozen=True)
+		class ${9:CheckPointConfig}:
+			max_to_keep: int = 3
+			save_interval_steps: int  = 5
+			restore: bool = False
+			path: str = "checkpoints"
+			$10
+
+		@dataclasses.dataclass(frozen=True)
+		class ${11:OptimizerConfig}:
+			name: str
+			$12
+
+		@dataclasses.dataclass(frozen=True)
+		class ${13:ModelConfig}:
+			name: str
+			$14
+
+		loop: $2
+		profile: $4
+		dataset: $6
+		checkpoints: $9
+		optimizer = $11
+		model = $13
+		workdir: str ="workdir"
+		seed: int = 42
+
+snippet pytest_param
+	@pytest.mark.parametrize(
+			"${1:var1}${2:,var2}",
+			[
+				($3),
+			]
+	)
+
+snippet test_case
+	class $1Test(${2:absltest}.TestCase):
+		${3:def setUp(self):
+			super().setUp()
+			$4}
+
+		def test_$5(self):
+			$0
+
+snippet chain_optax
+	optimizer = optax.chain(
+		optax.clip(${1:1.0}),
+		$0,
+	)
+
+snippet pytree
+	@dataclass_transform()
+	def pytree(clz):
+		data_clz = dataclasses.dataclass(frozen=True)(clz)
+
+		data_fields = []
+		aux_fields = []
+
+		for field_info in dataclasses.fields(data_clz):
+				is_pytree_node = field_info.metadata.get("pytree_node", True)
+				name = field_info.name
+				if is_pytree_node:
+					 data_fields.append(name)
+				else:
+					 aux_fields.append(name)
+
+		def iterate_clz_with_keys(x):
+			aux = tuple(getattr(x, name) for name in aux_fields)
+			data = tuple(
+					(jax.tree_util.GetAttrKey(name), getattr(x, name))
+					for name in data_fields
+			)
+			return data, aux
+
+		def clz_from_iterable(aux, data):
+				aux_args = tuple(zip(aux_fields, aux))
+				data_args = tuple(zip(data_fields, data))
+				kwargs = dict(aux_args + data_args)
+				return data_clz(**kwargs)
+
+		jax.tree_util.register_pytree_with_keys(
+				data_clz,
+				iterate_clz_with_keys,
+				clz_from_iterable
+		)
+
+		return data_clz
+
+
+snippet generate_predictions
+	def generate(rng: array_types.PRNGKey, state: ${1:TrainState}, batch: ${2:ArrayTree}):
+		pass

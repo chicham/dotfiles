@@ -102,3 +102,29 @@ end
 if command -v micromamba &> /dev/null
   micromamba shell hook --shell=fish | source
 end
+
+function nfd -w fd -d 'fuzzy open one or multiple files in nvim'
+  set result (sk --ansi --exit-0 --select-1 --print0 \
+     --cmd="fd --type file --follow --unrestricted --color=always $argv"\
+     --preview 'bat --color=always {}')
+  if test -n "$result"
+    nvim $result
+  else
+    return 1
+  end
+end
+
+
+function nrg -w rg -d 'fuzzy find pattern in one or multiple files in nvim'
+  set result (sk --ansi --exit-0 --select-1 --print0 \
+  --delimiter : \
+  --preview 'bat --color=always --highlight-line {2} {1}'\
+  --preview-window '+{2}-/2' \
+  --cmd="rg --color=always --line-number --no-heading --smart-case $argv" )
+
+  if test -n "$result"
+    echo $result | awk -v var="$result" -F: '{ printf "%s +%d", $1, $2;}' | xargs nvim
+  else
+    return 1
+  end
+end
