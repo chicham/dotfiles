@@ -11,18 +11,28 @@ return {
       org_todo_keywords = { "TODO(t)", "WAITING(w)", "|", "DONE(d)", "CANCELED(c)" },
       org_agenda_skip_scheduled_if_done = true,
       org_capture_templates = {
-        t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/todo.org" },
-        s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/todo.org" },
-        c = { description = "Coding Task", template = "* TODO %?\n  %a", target = "~/.orgmode/todo.org" },
+        t = {
+          description = "Task",
+          subtemplates = {
+            t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/todo.org" },
+            f = { description = "Task with file", template = "* TODO %?\n  %a", target = "~/.orgmode/todo.org" },
+            s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/todo.org" },
+          },
+        },
         j = {
           description = "Journal",
-          template = "\n* %<%Y-%m-%d> %<%A>\n - %?",
-          target = "~/.orgmode/journal.org",
-        },
-        e = {
-          description = "Journal entry",
-          template = " - %?",
-          target = "~/.orgmode/journal.org",
+          subtemplates = {
+            j = {
+              description = "Journal",
+              template = "\n* %<%Y-%m-%d> %<%A>\n - %?",
+              target = "~/.orgmode/journal/%<%Y-%m>.org",
+            },
+            e = {
+              description = "Journal entry",
+              template = " - %?",
+              target = "~/.orgmode/journal/%<%Y-%m>.org",
+            },
+          },
         },
       },
       mappings = {
