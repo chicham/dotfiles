@@ -25,6 +25,9 @@ snippet train_jax
 
 	jax.config.parse_flags_with_absl()
 
+	jax.config.update("jax_transfer_guard", "disallow")
+	jax.config.update("jax_threefry_partitionable", True)
+
 	appconfig$2
 
 	train_state$8
@@ -36,8 +39,10 @@ snippet train_jax
 		return model, variables
 
 	def create_optimizer(config: OptimizerConfig):
-		$7
+		$8
 		return optimizer
+
+	sharding_class$15
 
 	train_step$16
 
@@ -51,36 +56,56 @@ snippet train_jax
 
 		logging.info("\n%s", cfg)
 		data_loading$5
-		model = create_model(cfg.model)
+		model, ${7:params} = create_model(cfg.model)
 		optimizer = create_optimizer(cfg.optimizer)
-		devices$9
-		named_sharding$10
-		checkpoints$10
+		checkpoints$9
+
 		writer$12
 		periodic_hooks$13
+		evaluate_callback$14
 
+		sharding = Sharding()
+
+		state = sharding.device_put(state, sharding.${18:REPLICATED})
+		train_metrics = sharding.device_put(train_metrics, sharding.${19:REPLICATED})
+
+		iter_ds = iter(ds_train)
 		with metrics_writers.ensure_flushes(writer):
-			for step, batch in enumerate(ds_train, start=state.step):
-				is_last_step = step == cfg.loop.num_train_steps - 1
+			for _ in range(state.step, cfg.loop.num_steps, 1):
+				batch = next(iter_ds)
+				step = int(state.step) + 1
 				with jax.profiler.StepTraceAnnotation("train", step_num=step):
-					shared_batch = jax.device_put(batch, data_sharding)
-					new_state, step_metrics = train_step(state, batch$18)
-					train_metrics = etree.map_structure(lambda x: x[0], new_metrics)
-					# write metrics at every n step
-					train_metrics = train_metrics.merge(step_metrics)
-					logging.log_first_n(logging.INFO, "Finished training step %d.", 5, step)
-					for h in hooks:
-						h(step)
+					shared_batch = sharding.device_put(batch, sharding.${20:SHARDED})
+					state, step_metrics = train_step(state, batch)
 
-					if step % cfg.loop.eval_every_steps == 0 or is_last_step:
-						with report_progress.timed("training_metrics"):
-							writer.write_scalars(step, train_metrics.compute())
-						with report_progress.timed("eval"):
-							for batch in eval_ds:
-								shared_batch = jax.device_put(batch, data_sharding)
-								step_metrics = eval_step(state, batch)
-								eval_metrics = eval_metrics.merge(step_metrics)
-							writer.write_scalars(step, eval_metrics.compute())
+				train_metrics = train_metrics.merge(step_metrics)
+				for h in hooks:
+					h(step)
+
+				triggered = evaluate_callback(step, state=state)
+
+				if triggered:
+						summary = {
+								**train_metrics.summarize(prefix="train"),
+								**evaluate_callback.get_last_callback_result().summarize(
+										prefix="val"
+								),
+						}
+						writer.write_scalars(step, summary)
+						mngr.save(
+								step,
+								{
+										"state": etree.map(
+												ocp.utils.fully_replicated_host_local_array_to_global_array,
+												state,
+										),
+										"train_metrics": etree.map(
+												ocp.utils.fully_replicated_host_local_array_to_global_array,
+												train_metrics,
+										),
+								},
+						)
+
 
 
 	if __name__ == "__main__":
@@ -88,11 +113,6 @@ snippet train_jax
 		raise SystemExit(
 			app.run($1, flags_parser=eapp.make_flags_parser(AppConfig))
 		)
-
-snippet train_loop
-	with metrics_writers.ensure_flushes(${1:writer}):
-		for step, batch in enumerate(${2:ds_train}, start=state.step):
-
 
 snippet train_step
 	@jax.jit
@@ -232,25 +252,33 @@ snippet checkpoints
 			max_to_keep=${1:cfg.checkpoints.max_to_keep},
 			save_interval_steps=${2:cfg.checkpoints.save_interval_steps},
 		)
-	${3:workdir_path = epath.Path(cfg.workdir).resolve() / hex(hash(cfg))}
+
+	if ${3:cfg.checkpoints.restore} is None:
+			workdir_path = epath.Path(cfg.workdir).resolve() / f"{hash(cfg) & (0xFFFFFFFF)):x}"
+			if workdir_path.exists():
+					raise RuntimeError("Workdir path already exists")
+	else:
+			workdir_path = epath.Path(cfg.checkpoints.restore).resolve()
+
+	logging.info("Working directory %s", workdir_path)
 	mngr = ocp.CheckpointManager(
-			${4:workdir_path} / ${5:cfg.checkpoints.path},
+			workdir_path / "checkpoints",
 			{
 				"state": ocp.PyTreeCheckpointer(),
 				"train_metrics": ocp.PyTreeCheckpointer(), # metrics is reserved
-				"val_metrics": ocp.PyTreeCheckpointer(), # metrics is reserved
 			},
 			options=checkpoint_options,
 		)
 
 	state = ${6:TrainState}.create(
 		apply_fn=${7:model.stateless_call},
-		trainable_variables=${8:model.trainable_variables},
-		tx=${8:optimizer},
-		$9
+		loss_fn=$8,
+		trainable_variables=${9:model.trainable_variables},
+		non_trainable_variables=${10:model.non_trainable_variables},
+		tx=${11:optimizer},
+		$12
 	)
 	train_metrics = Metrics.empty()
-	val_metrics = Metrics.empty()
 
 	if ${10:cfg.checkpoints.restore}:
 		# https://orbax.readthedocs.io/en/latest/orbax_checkpoint_101.html
@@ -259,12 +287,10 @@ snippet checkpoints
 		state = state.replace(**state_dict)
 		train_metrics_dict = restored["train_metrics"]
 		train_metrics = train_metrics.replace(**train_metrics_dict)
-		val_metrics_dict = restored["val_metrics"]
-		val_metrics = val_metrics.replace(**val_metrics_dict)
 
 snippet writer
 	writer = metric_writers.create_default_writer(
-			${1:cfg.workdir}, just_logging=jax.process_index() > 0
+			${1:workdir_path / "events"}, just_logging=jax.process_index() > 0
 	)
 	if ${2:state.step} == 0:
 		writer.write_hparams(dataclasses.asdict(${3:cfg}))
@@ -273,7 +299,7 @@ snippet devices
 	devices = mesh_utils.create_device_mesh((jax.device_count(),))
 
 snippet named_sharding
-	$1_sharding = NamedSharding(Mesh(devices, axis_names=("$1")), PartitionSpec("$1"))
+	NamedSharding(Mesh(devices, axis_names=("${1:_}")), PartitionSpec($2))
 
 snippet tf_device
 	tf.config.experimental.set_visible_devices(${1:[]}, "${2:GPU}")
@@ -324,26 +350,26 @@ snippet train_state
 
 snippet appconfig
 	@edc.dataclass
-	@dataclasses.dataclass(frozen=True)
+	@dataclasses.dataclass(frozen=True, eq=True)
 	class ${1:AppConfig}:
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${2:LoopConfig}:
 			num_steps: int = 0
 			eval_every_steps: int = 10
 			$3
 
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${4:ProfileConfig}:
 			steps: int = 5
 			$5
 
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${6:DatasetConfig}:
 			name: str
 			shuffle_buffer_size: int = 1000
 			$7
 
-			@dataclasses.dataclass(frozen=True)
+			@dataclasses.dataclass(frozen=True, eq=True)
 			class SplitConfig:
 				batch_size: int = 8
 				shuffle: bool = True
@@ -354,7 +380,7 @@ snippet appconfig
 			train: SplitConfig = SplitConfig()
 			test: SplitConfig = SplitConfig(shuffle=False)
 
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${9:CheckPointConfig}:
 			max_to_keep: int = 3
 			save_interval_steps: int  = 5
@@ -362,12 +388,12 @@ snippet appconfig
 			path: str = "checkpoints"
 			$10
 
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${11:OptimizerConfig}:
 			name: str
 			$12
 
-		@dataclasses.dataclass(frozen=True)
+		@dataclasses.dataclass(frozen=True, eq=True)
 		class ${13:ModelConfig}:
 			name: str
 			$14
@@ -443,6 +469,99 @@ snippet pytree
 		return data_clz
 
 
-snippet generate_predictions
-	def generate(rng: array_types.PRNGKey, state: ${1:TrainState}, batch: ${2:ArrayTree}):
-		pass
+snippet evaluate_callback
+	def evaluate(step: int, t: float${1:, state: TrainState}):
+			val_metrics = ${2:Metrics}.empty()
+			val_metrics = sharding.device_put(val_metrics, sharding.${3:REPLICATED})
+			ds_iter = iter(ds_eval)
+			with report_progress.timed("eval"):
+					for eval_batch in ds_iter:
+							sharded_eval_batch = sharding.device_put(eval_batch, sharding.${4:SHARDED})
+							step_metrics = ${5:eval_step(state, sharded_eval_batch)}
+							val_metrics = val_metrics.merge(step_metrics)
+			return val_metrics
+
+	evaluate_callback = periodic_actions.PeriodicCallback(
+			every_steps=cfg.loop.eval_every_steps,
+			on_steps=[cfg.loop.num_steps - 1],
+			callback_fn=evaluate,
+	)
+
+
+snippet deserialize:
+	def deserialize(obj, clazz):
+			# Get the dataclass fields
+			fields = dataclasses.fields(clazz)
+
+			new_fields = {}
+
+			# Iterate through the fields and set the values of the instance
+			for field in fields:
+					# Get the value of the field from the dictionary
+					value = obj[field.name]
+
+					# If the value is a nested dictionary, recursively deserialize it
+					if (
+							value is not None
+							and isinstance(value, dict)
+							and dataclasses.is_dataclass(field.type)
+					):
+							value = deserialize(value, field.type)
+
+					new_fields[field.name] = value
+
+			return clazz(**new_fields)
+
+
+snippet sharding_class
+	class Sharding:
+		def __init__(self):
+			local_mesh = mesh_utils.create_device_mesh(
+					mesh_shape=(jax.local_devices_count(),),
+					devices=jax.local_devices(),
+			)
+			global_mesh = mesh_utils.create_device_mesh(
+					mesh_shape=(jax.devices_count(),),
+					devices=jax.devices(),
+			)
+			self.REPLICATED = jax.sharding.NamedSharding(
+					global_mesh, jax.sharding.PartitionSpec()
+			)
+			self.SHARDED = jax.sharding.NamedSharding(
+					global_mesh, jax.sharding.PartitionSpec('devices')
+			)
+			self._LOCAL_REPLICATED = jax.sharding.NamedSharding(
+					self.local_mesh, jax.sharding.PartitionSpec()
+			)
+			self._LOCAL_SHARDED = jax.sharding.NamedSharding(
+					self._local_mesh, jax.sharding.PartitionSpec('devices')
+			)
+
+			self._process_count = jax.process_count()
+
+		ef device_put(self, arrays: ArrayTree, sharding: jax.sharding.NamedSharding) -> ArrayTree:
+			return jax.tree_map(
+					functools.partial(self._put_device_single, sharding=sharding), arrays
+			)
+
+		def _put_device_single(
+				self,
+				array: ArrayTree,
+				*,
+				sharding: jax.sharding.NamedSharding,
+		) -> _T:
+			"""Shard single element."""
+			if sharding is self.SHARDED:
+				array = jax.device_put(array, self._LOCAL_SHARDED)
+				global_shape = (array.shape[0] * self._process_count,) + array.shape[1:]
+			elif sharding is self.REPLICATED:
+				array = jax.device_put(array, self._LOCAL_REPLICATED)
+				global_shape = array.shape
+			else:
+				raise ValueError(f'Unsupported sharding: {sharding!r}')
+
+			return jax.make_array_from_single_device_arrays(
+					global_shape,
+					sharding,
+					array.device_buffers,
+			)

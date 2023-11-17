@@ -66,13 +66,6 @@ bind("n", "<leader>pp", ":let @+ = join([expand('%:p'), line('.')], ':')<cr>", {
 require("mason-lspconfig").setup({
   ensure_installed = {
     rust_analyzer = {},
-    pylsp = {
-      plugins = {
-        ruff = {
-          enabled = true,
-        },
-      },
-    },
     lua_ls = {
       Lua = {
         workspace = { checkThirdParty = false },

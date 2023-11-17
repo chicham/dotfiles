@@ -13,8 +13,7 @@ curl -L https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION
 DELTA_VERSION=$(curl -Ls https://api.github.com/repos/dandavison/delta/releases/latest | jq -r ".tag_name")
 curl -L https://github.com/dandavison/delta/releases/download/$DELTA_VERSION/delta-$DELTA_VERSION-x86_64-unknown-linux-musl.tar.gz  > /tmp/delta-$DELTA_VERSION.tar.gz && mkdir -p /tmp/delta-$DELTA_VERSION && tar -xf /tmp/delta-$DELTA_VERSION.tar.gz -C /tmp/delta-$DELTA_VERSION --strip-components=1 && mv /tmp/delta-$DELTA_VERSION/delta ~/.local/bin && chmod u+x ~/.local/bin/delta && rm -rf /tmp/delta-$DELTA_VERSION*
 
-# EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
-EZA_VERSION=v0.12.0
+EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
 
 curl -L https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_x86_64-unknown-linux-musl.zip > /tmp/eza-$EZA_VERSION.zip && mkdir -p /tmp/eza-$EZA_VERSION && unzip /tmp/eza-$EZA_VERSION.zip -d /tmp/eza-$EZA_VERSION && mv /tmp/eza-$EZA_VERSION/eza ~/.local/bin && chmod u+x ~/.local/bin/eza && rm -rf /tmp/eza-$EZA_VERSION*
 

@@ -11,7 +11,9 @@ return {
       org_todo_keywords = { "TODO(t)", "WAITING(w)", "|", "DONE(d)", "CANCELED(c)" },
       org_agenda_skip_scheduled_if_done = true,
       org_capture_templates = {
-        t = { description = "Task", template = "* TODO %?\n  %a\n  %u", target = "~/.orgmode/todo.org" },
+        t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/todo.org" },
+        s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/todo.org" },
+        c = { description = "Coding Task", template = "* TODO %?\n  %a", target = "~/.orgmode/todo.org" },
         j = {
           description = "Journal",
           template = "\n* %<%Y-%m-%d> %<%A>\n - %?",
@@ -26,17 +28,15 @@ return {
       mappings = {
         capture = {
           org_capture_finalize = "<Leader>w",
-          org_capture_refile = "R",
-          org_capture_kill = "Q",
         },
         note = {
           org_note_finalize = "<Leader>w",
-          org_note_kill = "Q",
         },
         org = {
           org_toggle_checkbox = "cix",
           org_promote_subtree = "<<",
           org_demote_subtree = ">>",
+          org_edit_special = "<Leader>os",
         },
       },
     })
