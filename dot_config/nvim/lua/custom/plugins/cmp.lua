@@ -16,8 +16,8 @@ return {
     require("cmp").setup({
       sources = {
         { name = "nvim_lsp" },
-        { name = "treesitter" },
         { name = "luasnip" },
+        { name = "treesitter" },
         { name = "path" },
         { name = "orgmode" },
         { name = "otter" },
