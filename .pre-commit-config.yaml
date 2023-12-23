@@ -3,7 +3,7 @@
 default_install_hook_types: [pre-commit, commit-msg]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -17,18 +17,12 @@ repos:
     hooks:
       - id: detect-secrets
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.32.0
+    rev: v1.33.0
     hooks:
       - id: yamllint
         args: [-d, relaxed]
-  - repo: https://github.com/jorisroovers/gitlint
-    rev: v0.19.1 # Fill in a tag / sha here (e.g. v0.18.0)
-    hooks:
-      - id: gitlint
-        args:
-          - --msg-filename
   - repo: https://github.com/JohnnyMorganz/StyLua
-    rev: v0.18.2
+    rev: v0.19.1
     hooks:
       - id: stylua # or stylua-system / stylua-github
         args:
