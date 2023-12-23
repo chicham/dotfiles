@@ -20,6 +20,7 @@ return {
         { name = "luasnip" },
         { name = "path" },
         { name = "orgmode" },
+        { name = "otter" },
       },
       view = {
         docs = {

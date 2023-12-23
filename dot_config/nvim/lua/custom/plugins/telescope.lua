@@ -5,12 +5,7 @@ return {
       pickers = {
         find_files = {
           theme = " dropdown",
-          hidden = true,
-        },
-        live_grep = {
-          additional_args = function(_ts)
-            return { "--hidden" }
-          end,
+          hidden = "true",
         },
       },
     },

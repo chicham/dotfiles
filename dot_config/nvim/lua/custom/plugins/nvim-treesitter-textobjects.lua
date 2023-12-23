@@ -1,5 +1,6 @@
 return {
   "nvim-treesitter/nvim-treesitter-textobjects",
+  dependencies = "nvim-treesitter/nvim-treesitter",
   config = function()
     require("nvim-treesitter.configs").setup({
       textobjects = {
@@ -20,6 +21,8 @@ return {
             ["ak"] = "@assignment.inner",
             ["iv"] = "@assignment.rhs",
             ["av"] = "@assignment.outer",
+            ["ip"] = { query = "@block.inner", desc = "in block" },
+            ["ap"] = { query = "@block.outer", desc = "a block" },
           },
         },
         move = {
