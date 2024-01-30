@@ -6,6 +6,7 @@ return {
     orgmode.setup({
       org_agenda_files = { "~/.orgmode/**/*" },
       org_default_notes_file = "~/.orgmode/inbox.org",
+
       org_todo_keywords = { "TODO(t)", "WAITING(w)", "NEXT(n)", "|", "DONE(d)", "CANCELED(c)" },
       org_agenda_skip_scheduled_if_done = true,
       org_indent_mode = "indent",
@@ -14,9 +15,10 @@ return {
         t = {
           description = "Task",
           subtemplates = {
-            t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/todo.org" },
-            f = { description = "Task with file", template = "* TODO %?\n  %a", target = "~/.orgmode/todo.org" },
-            s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/todo.org" },
+            t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/inbox.org" },
+            T = { description = "Task with file", template = "* TODO %?\n  %a", target = "~/.orgmode/inbox.org" },
+            s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/inbox.org" },
+            S = { description = "SubTask with file", template = "- [ ] %?\n  %a", target = "~/.orgmode/inbox.org" },
           },
         },
         j = {
@@ -50,6 +52,14 @@ return {
         },
       },
     })
-    -- require("org---[[  ]]bullets").setup({
   end,
+  keys = {
+    {
+      "<leader>oi",
+      function()
+        vim.cmd.edit("~/.orgmode/inbox.org")
+      end,
+      mode = { "n" },
+    },
+  },
 }

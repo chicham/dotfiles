@@ -1,7 +1,7 @@
 return {
   "chrisgrieser/nvim-spider",
   opts = {
-    skipInsignificantPunctuation = true,
+    skipInsignificantPunctuation = false,
   },
   keys = {
     {

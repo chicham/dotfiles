@@ -15,8 +15,28 @@
 
 # set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
+function zz
+  set ZJ_SESSION (sk --ansi --interactive --exit-0 --select-1 -c \
+  "zellij list-sessions -n -s")
+
+  if test -z "$ZJ_SESSION"
+    zellij attach -c
+  else
+    zellij attach $ZJ_SESSION
+  end
+end
+
 if status is-interactive
-  eval (zellij setup --generate-auto-start fish | string collect)
+  if command -v zellij &> /dev/null
+    # Configure auto-attach/exit to your likings (default is off).
+    # set ZELLIJ_AUTO_ATTACH true
+    # set ZELLIJ_AUTO_EXIT true
+    # zellij setup --generate-auto-start fish | source
+    if not set -q ZELLIJ
+      zz
+    end
+    zellij setup --generate-completion fish | source
+  end
 end
 
 #### DIRENV ####
@@ -102,6 +122,7 @@ end
 if command -v micromamba &> /dev/null
   micromamba shell hook --shell=fish | source
 end
+
 
 function nfd -w fd -d 'fuzzy open one or multiple files in nvim'
   set result (sk --ansi --exit-0 --select-1 --print0 \
