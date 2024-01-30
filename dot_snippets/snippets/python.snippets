@@ -539,7 +539,7 @@ snippet sharding_class
 
 			self._process_count = jax.process_count()
 
-		ef device_put(self, arrays: ArrayTree, sharding: jax.sharding.NamedSharding) -> ArrayTree:
+		def device_put(self, arrays: ArrayTree, sharding: jax.sharding.NamedSharding) -> ArrayTree:
 			return jax.tree_map(
 					functools.partial(self._put_device_single, sharding=sharding), arrays
 			)
