@@ -119,11 +119,6 @@ if command -v starship &> /dev/null
   starship init fish | source
 end
 
-if command -v micromamba &> /dev/null
-  micromamba shell hook --shell=fish | source
-end
-
-
 function nfd -w fd -d 'fuzzy open one or multiple files in nvim'
   set result (sk --ansi --exit-0 --select-1 --print0 \
      --cmd="fd --type file --follow --unrestricted --color=always $argv"\

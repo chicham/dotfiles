@@ -111,6 +111,10 @@ shopt -s cdable_vars
 # export documents="$HOME/Documents"
 # export dropbox="$HOME/Dropbox"
 
+export VISUAL=nvim
+export EDITOR=nvim
+export PATH="$HOME/.local/bin:$PATH"
+
 # # ex - archive extractor
 # # usage: ex <file>
 ex ()
