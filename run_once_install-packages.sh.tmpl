@@ -28,6 +28,9 @@ curl -l https://github.com/MichaelMure/git-bug/releases/download/$GIT_BUG/git-bu
 
 # git-appraise install
 
+
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage && mv nvim.appimage $HOME/.local/bin/nvim.appimage && chmod u+x $HOME/.local/bin/nvim.appimage
+
 bin_path=$PREFIX
 curl -sfL https://direnv.net/install.sh | bash
 curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
