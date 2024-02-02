@@ -143,6 +143,6 @@ eval "$(starship init bash)"
 eval "$(direnv hook bash)"
 eval "$(zoxide init --cmd cd bash)"
 
-alias ls="exa"
+alias ls="eza"
 alias cat="bat"
 alias ll="ls -al --icons"
