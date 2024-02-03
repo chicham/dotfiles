@@ -30,7 +30,14 @@ curl -l https://github.com/MichaelMure/git-bug/releases/download/$GIT_BUG/git-bu
 # git-appraise install
 
 
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage && mv nvim.appimage /tmp/ && chmod u+x /tmp/nvim.appimage && cd /tmp/ && ./nvim.appimage --appimage-extract && mv ./squashfs-root/usr/bin/nvim $HOME/.local/bin
+pushd $HOME/.local/
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage\
+	 && mv nvim.appimage /tmp/ \
+	 && chmod u+x /tmp/nvim.appimage\
+	 && cd /tmp/ \
+	 && ./nvim.appimage --appimage-extract \
+	 && ln -s ./squashfs-root/AppRun $HOME/.local/bin/nvim
+popd
 
 bin_path=$PREFIX
 curl -sfL https://direnv.net/install.sh | bash
