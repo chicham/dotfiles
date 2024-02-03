@@ -36,7 +36,7 @@ curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
 	 && chmod u+x /tmp/nvim.appimage\
 	 && cd /tmp/ \
 	 && ./nvim.appimage --appimage-extract \
-	 && ln -s ./squashfs-root/AppRun $HOME/.local/bin/nvim
+	 && ln -s $HOME/.local/squashfs-root/AppRun $HOME/.local/bin/nvim
 popd
 
 bin_path=$PREFIX
