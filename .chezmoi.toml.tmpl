@@ -1,0 +1,23 @@
+{{- $codespaces:= env "CODESPACES" | not | not -}}
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
+[merge]
+  command = 'nvim'
+  args = ["-d", "{{ `{{ .Destination }}` }}", "{{ `{{ .Source }}` }}", "{{ `{{ .Target }}` }}"]
+[diff]
+  pager = "delta"
+
+[git]
+  autoCommit = true
+  autoPush = true
+  commitMessageTemplate = "{{ `{{ promptString \"Commit message\" | quote }}` }}"
+
+[data]
+  codespaces = {{ $codespaces }}
+{{- if $codespaces }}{{/* Codespaces dotfiles setup is non-interactive, so set an email address */}}
+  name = "Hicham"
+  email = "your@email.com"
+{{- else }}{{/* Interactive setup, so prompt for an email address */}}
+  name = {{ promptString "name" | quote }}
+  email = {{ promptString "email" | quote }}
+{{- end }}
