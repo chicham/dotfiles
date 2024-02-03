@@ -32,9 +32,7 @@ curl -l https://github.com/MichaelMure/git-bug/releases/download/$GIT_BUG/git-bu
 
 pushd $HOME/.local/
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage\
-	 && mv nvim.appimage /tmp/ \
-	 && chmod u+x /tmp/nvim.appimage\
-	 && cd /tmp/ \
+	 && chmod u+x nvim.appimage\
 	 && ./nvim.appimage --appimage-extract \
 	 && ln -s $HOME/.local/squashfs-root/AppRun $HOME/.local/bin/nvim
 popd
