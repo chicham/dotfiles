@@ -4,8 +4,13 @@
 # -u: exit on unset variables
 set -eu
 
-OP_VERSION=2.24.0
-curl -l https://cache.agilebits.com/dist/1P/op2/pkg/v$OP_VERSION/op_linux_amd64_v$OP_VERSION.zip  > /tmp/op-$OP_VERSION.zip && unzip /tmp/op-$OP_VERSION.zip -d /tmp/op-$OP_VERSION && mv /tmp/op-$OP_VERSION/op ~/.local/bin && chmod u+x ~/.local/bin/op && rm -rf /tmp/op-$OP_VERSION*
+# https://developer.1password.com/docs/cli/install-server/
+OP_VERSION="v$(curl https://app-updates.agilebits.com/check/1/0/CLI2/en/2.0.0/N -s | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')" \
+	&& curl -l https://cache.agilebits.com/dist/1P/op2/pkg/v$OP_VERSION/op_linux_amd64_v$OP_VERSION.zip > /tmp/op-$OP_VERSION.zip\
+	&& unzip /tmp/op-$OP_VERSION.zip -d /tmp/op-$OP_VERSION\
+	&& mv /tmp/op-$OP_VERSION/op ~/.local/bin\
+	&& chmod u+x ~/.local/bin/op\
+	&& rm -rf /tmp/op-$OP_VERSION*
 
 if ! chezmoi="$(command -v chezmoi)"; then
 	bin_dir="${HOME}/.local/bin"
