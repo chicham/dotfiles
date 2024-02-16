@@ -78,5 +78,17 @@ require("mason-lspconfig").setup({
 
 require("luasnip.loaders.from_snipmate").lazy_load({ paths = { "~/.snippets/snippets" } })
 
+require("hlargs").setup()
+require("todo-comments").setup({
+  highlight = {
+    pattern = [[.*<(KEYWORDS)(\(\w+\))=\:]],
+    keyword = "bg",
+    after = "empty",
+  },
+  search = {
+    pattern = [[\b(KEYWORDS)(\(\S+\))?:]],
+  },
+})
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

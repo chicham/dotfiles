@@ -57,7 +57,7 @@ return {
       { desc = "Search [D]iagnostics" },
     },
     {
-      "<leader>fs",
+      "<leader>ff",
       function()
         require("telescope.builtin").lsp_document_symbols({
           symbols = { "class", "method", "function", "module", "variable", "constant" },

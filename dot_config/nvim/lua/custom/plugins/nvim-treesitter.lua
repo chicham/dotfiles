@@ -22,7 +22,6 @@ return {
       "proto",
       "regex",
       "rst",
-      "todotxt",
       "toml",
       "org",
       "yaml",

@@ -9,16 +9,21 @@ return {
 
       org_todo_keywords = { "TODO(t)", "WAITING(w)", "NEXT(n)", "|", "DONE(d)", "CANCELED(c)" },
       org_agenda_skip_scheduled_if_done = true,
-      org_indent_mode = "indent",
+      org_startup_indent = true,
       win_split_mode = "float",
       org_capture_templates = {
         t = {
           description = "Task",
           subtemplates = {
-            t = { description = "Task", template = "* TODO %?", target = "~/.orgmode/inbox.org" },
-            T = { description = "Task with file", template = "* TODO %?\n  %a", target = "~/.orgmode/inbox.org" },
-            s = { description = "SubTask", template = "- [ ] %?", target = "~/.orgmode/inbox.org" },
-            S = { description = "SubTask with file", template = "- [ ] %?\n  %a", target = "~/.orgmode/inbox.org" },
+            t = { description = "Todo", template = "* TODO %?", target = "~/.orgmode/inbox.org" },
+            T = { description = "Todo with file", template = "* TODO %?\n  %a", target = "~/.orgmode/inbox.org" },
+            c = { description = "Subtask checkbox", template = "- [ ] %?", target = "~/.orgmode/inbox.org" },
+            C = {
+              description = "Subtask checkbox with file",
+              template = "- [ ] %?\n  %a",
+              target = "~/.orgmode/inbox.org",
+            },
+            p = { description = "Paste line todo", template = "* TODO %x %?\n  %a", target = "~/.orgmode/inbox.org" },
           },
         },
         j = {
@@ -26,7 +31,7 @@ return {
           subtemplates = {
             j = {
               description = "Journal",
-              template = "\n* %<%Y-%m-%d> %<%A>\n - %?",
+              template = "\n* %<%Y-%m-%d> %<%A>%?",
               target = "~/.orgmode/journal/%<%Y-%m>.org",
             },
             e = {
