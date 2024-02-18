@@ -17,6 +17,7 @@ config.color_scheme = "Gruvbox Material (Gogh)"
 config.hide_tab_bar_if_only_one_tab = true
 config.force_reverse_video_cursor = true
 config.enable_kitty_keyboard = true
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
 
 -- and finally, return the configuration to wezterm
 return config
