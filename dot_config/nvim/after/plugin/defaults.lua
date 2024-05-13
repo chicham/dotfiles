@@ -32,6 +32,9 @@ if vim.fn.executable("rg") == 1 then
 end
 vim.diagnostic.config({ virtual_lines = { only_current_line = true }, virtual_text = false })
 
+vim.opt.diffopt = "filler,internal,algorithm:histogram,indent-heuristic"
+vim.opt.conceallevel = 1
+
 local bind = vim.keymap.set
 
 bind("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
@@ -39,8 +42,10 @@ bind("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 --Windows management
 bind("n", "<leader><Bar>", "\"<C-W>v<C-W><C-w>zt\"", { expr = true, silent = true })
+bind("n", "<leader>wv", "\"<C-W>v<C-W><C-w>zt\"", { expr = true, silent = true })
 bind("n", "<leader>-", "\"<C-W>s<C-W><C-W>zt\"", { expr = true, silent = true })
 bind("n", "<leader>_", "\"<C-W>s<C-W><C-W>zt\"", { expr = true, silent = true })
+bind("n", "<leader>ws", "\"<C-W>s<C-W><C-w>zt\"", { expr = true, silent = true })
 bind("n", "<leader><Up>", "<C-w><Up>")
 bind("n", "<leader><Down>", "<C-w><Down>")
 bind("n", "<leader><Right>", "<C-w><Right>")

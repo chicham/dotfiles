@@ -568,3 +568,11 @@ snippet sharding_class
 
 snippet attr
 	self.$1 = $1
+
+snippet absl_test
+	from absl.testing import absltest
+
+	test_case$0
+
+	if __name__ == "__main__":
+		absltest.main()

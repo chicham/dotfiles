@@ -41,10 +41,14 @@ return {
     { "<leader>fc", require("telescope.builtin").command_history, { desc = "Find [C]ommands" } },
     { "gd", require("telescope.builtin").lsp_definitions, { desc = "[G]oto [D]efinition" } },
     {
-      "<leader>ff",
+      "<leader>fe",
       function(opts)
         opts = opts or {}
-        opts.cwd = vim.fn.systemlist("git root")[1]
+        local cwd = vim.fn.systemlist("git root")[1]
+        if cwd == nil or cwd == "" then
+          cwd = vim.fn.getcwd()
+        end
+        opts.cwd = cwd
         require("telescope.builtin").find_files(opts)
       end,
       { desc = "Search [F]iles" },

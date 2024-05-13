@@ -19,7 +19,6 @@ return {
         { name = "luasnip" },
         { name = "treesitter" },
         { name = "path" },
-        { name = "orgmode" },
         { name = "otter" },
       },
       view = {

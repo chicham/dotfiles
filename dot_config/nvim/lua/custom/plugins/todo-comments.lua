@@ -17,7 +17,7 @@ return {
         end,
         desc = "Prev Todo",
       },
-      { "<leader>ft", "<Cmd>exe ':TodoLocList cwd=' .. fnameescape(expand('%:p'))<CR>", desc = "Telescope todo" },
+      { "<leader>ft", "<Cmd>exe ':TodoQuickFix cwd=' .. fnameescape(expand('%:p'))<CR>", desc = "Telescope todo" },
       { "<leader>fT", "<Cmd>TodoTelescope<CR>", desc = "Telescope todo" },
     }
   end,
