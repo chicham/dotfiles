@@ -1,0 +1,3 @@
+return {
+  "dietsche/vim-lastplace",
+}

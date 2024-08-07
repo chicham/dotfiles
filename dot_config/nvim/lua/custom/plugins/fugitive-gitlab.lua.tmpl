@@ -1,0 +1,9 @@
+{{- if eq .chezmoi.hostname "WWX1114800-cGaK" }}
+return {
+    "shumphrey/fugitive-gitlab.vim",
+    config = function()
+      vim.g.fugitive_gitlab_domains = { "{{ onepasswordRead "op://huawei/gitlab/api_host" }} "}
+ }}
+    end
+}
+{{- end}}

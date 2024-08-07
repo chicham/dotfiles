@@ -1,0 +1,15 @@
+Host *
+  # ControlPath ~/.ssh/sockets/%r@%h-%p
+  IdentityAgent ~/.1password/agent.sock
+
+{{- if eq .chezmoi.hostname "WWX1114800-cGaK" }}
+Host {{ onepasswordRead "op://huawei/vm-work/Title" }}
+  HostName {{ onepasswordRead "op://huawei/vm-work/hostname" }}
+  User {{ onepasswordRead "op://huawei/vm-work/username"  }}
+  ForwardAgent yes
+
+Host {{ onepasswordRead "op://huawei/gpu-tower2/Title" }}
+  HostName {{ onepasswordRead "op://huawei/gpu-tower2/hostname" }}
+  User {{ onepasswordRead "op://huawei/gpu-tower2/username"  }}
+  ForwardAgent yes
+{{- end}}
