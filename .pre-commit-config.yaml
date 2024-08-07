@@ -38,7 +38,7 @@ repos:
     hooks:
       - id: git-cliff
         name: git-cliff
-        entry: git-cliff -o CHANGELOG.md --with-commit "$PRE_COMMIT_SOURCE" --strip footer
+        entry: git-cliff -o CHANGELOG.md --with-commit="$PRE_COMMIT_SOURCE $PRE_COMMIT_COMMIT_MSG_SOURCE"
         language: system
         always_run: true
         pass_filenames: false
