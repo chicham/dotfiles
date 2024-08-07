@@ -34,11 +34,12 @@ repos:
           - Spaces
           - --indent-width
           - "2"
-  - repo: local
-    hooks:
-      - id: git-cliff
-        name: git-cliff
-        language: system
-        entry: git-cliff
-        require_serial: true
-        stages: [post-commit]
+  # - repo: local
+  #   hooks:
+  #     - id: git-cliff
+  #       name: git-cliff
+  #       entry: git-cliff -o CHANGELOG.md
+  #       language: system
+  #       always_run: true
+  #       pass_filenames: false
+  #       stages: [post-commit]
