@@ -1,22 +1,23 @@
 #!/bin/bash
 
+set -exo pipefail
+
 PREFIX=~/.local/bin
 mkdir -p $PREFIX
 
+DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
+curl -L https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-x86_64-unknown-linux-gnu.tar.gz > /tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz && mkdir -p /tmp/difftastic-$DIFFTASTIC_VERSION && tar -xf /tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz -C /tmp/difftastic-$DIFFTASTIC_VERSION && mv /tmp/difftastic-$DIFFTASTIC_VERSION/difft ~/.local/bin && chmod u+x ~/.local/bin/difft && rm -rf /tmp/difftastic-$DIFFTASTIC_VERSION*
 
 FD_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/fd/releases/latest | jq -r ".tag_name")
-
 curl -L https://github.com/sharkdp/fd/releases/download/$FD_VERSION/fd-$FD_VERSION-x86_64-unknown-linux-musl.tar.gz > /tmp/fd-$FD_VERSION.tar.gz && mkdir -p /tmp/fd-$FD_VERSION && tar -xf /tmp/fd-$FD_VERSION.tar.gz -C /tmp/fd-$FD_VERSION --strip-components=1 && mv /tmp/fd-$FD_VERSION/fd ~/.local/bin && chmod u+x ~/.local/bin/fd && rm -rf /tmp/fd-$FD_VERSION*
 
 RIPGREP_VERSION=$(curl -Ls https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r ".tag_name")
 curl -L https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-x86_64-unknown-linux-musl.tar.gz > /tmp/ripgrep-$RIPGREP_VERSION.tar.gz && mkdir -p /tmp/ripgrep-$RIPGREP_VERSION && tar -xf /tmp/ripgrep-$RIPGREP_VERSION.tar.gz -C /tmp/ripgrep-$RIPGREP_VERSION --strip-components=1 && mv /tmp/ripgrep-$RIPGREP_VERSION/rg ~/.local/bin && chmod u+x ~/.local/bin/rg && rm -rf /tmp/ripgrep-$RIPGREP_VERSION*
 
-DELTA_VERSION=$(curl -Ls https://api.github.com/repos/dandavison/delta/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/dandavison/delta/releases/download/$DELTA_VERSION/delta-$DELTA_VERSION-x86_64-unknown-linux-musl.tar.gz  > /tmp/delta-$DELTA_VERSION.tar.gz && mkdir -p /tmp/delta-$DELTA_VERSION && tar -xf /tmp/delta-$DELTA_VERSION.tar.gz -C /tmp/delta-$DELTA_VERSION --strip-components=1 && mv /tmp/delta-$DELTA_VERSION/delta ~/.local/bin && chmod u+x ~/.local/bin/delta && rm -rf /tmp/delta-$DELTA_VERSION*
 
 EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
 
-curl -L https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_x86_64-unknown-linux-musl.zip > /tmp/eza-$EZA_VERSION.zip && mkdir -p /tmp/eza-$EZA_VERSION && unzip /tmp/eza-$EZA_VERSION.zip -d /tmp/eza-$EZA_VERSION && mv /tmp/eza-$EZA_VERSION/eza ~/.local/bin && chmod u+x ~/.local/bin/eza && rm -rf /tmp/eza-$EZA_VERSION*
+curl -L https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_x86_64-unknown-linux-gnu.zip > /tmp/eza-$EZA_VERSION.zip && mkdir -p /tmp/eza-$EZA_VERSION && unzip /tmp/eza-$EZA_VERSION.zip -d /tmp/eza-$EZA_VERSION && mv /tmp/eza-$EZA_VERSION/eza ~/.local/bin && chmod u+x ~/.local/bin/eza && rm -rf /tmp/eza-$EZA_VERSION*
 
 BAT_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r ".tag_name")
 curl -L https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/bat-$BAT_VERSION-i686-unknown-linux-musl.tar.gz > /tmp/bat-$BAT_VERSION.tar.gz && mkdir -p /tmp/bat-$BAT_VERSION && tar -xf /tmp/bat-$BAT_VERSION.tar.gz -C /tmp/bat-$BAT_VERSION --strip-components=1 && mv /tmp/bat-$BAT_VERSION/bat ~/.local/bin && chmod u+x ~/.local/bin/bat && rm -rf /tmp/bat-$BAT_VERSION*
@@ -29,12 +30,12 @@ curl -l https://github.com/MichaelMure/git-bug/releases/download/$GIT_BUG/git-bu
 
 # git-appraise install
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+ command -v rustup > /dev/null && rustup update || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 pushd $HOME/.local/
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage\
 	 && chmod u+x nvim.appimage\
 	 && ./nvim.appimage --appimage-extract \
-	 && ln -s $HOME/.local/squashfs-root/AppRun $HOME/.local/bin/nvim
+	 && ln -fs $HOME/.local/squashfs-root/AppRun $HOME/.local/bin/nvim
 popd
 
 bin_path=$PREFIX
@@ -43,4 +44,3 @@ curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | 
 curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir $PREFIX --yes
 curl -LsSf https://astral.sh/uv/install.sh | sh
 curl -sSf https://rye.astral.sh/get | bash
-[[ -d ~/.pyenv ]] || curl https://pyenv.run | bash
