@@ -1,6 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-default_install_hook_types: [pre-commit, post-commit]
+default_install_hook_types: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -34,11 +34,3 @@ repos:
           - Spaces
           - --indent-width
           - "2"
-  - repo: local
-    hooks:
-      - id: git-cliff
-        name: git-cliff
-        entry: git-cliff -o CHANGELOG.md --with-commit="$PRE_COMMIT_SOURCE $PRE_COMMIT_COMMIT_MSG_SOURCE"
-        language: system
-        always_run: true
-        pass_filenames: false
