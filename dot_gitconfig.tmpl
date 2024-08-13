@@ -1,10 +1,11 @@
 [user]
 	email = {{ onepasswordRead "op://devtools/github.com/email" }}
 	name = "{{ onepasswordRead "op://devtools/Identity/firstname" }} {{ onepasswordRead "op://devtools/Identity/lastname" }}"
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINFlkdMMr3f+uYtWhV/YXqd3vnOZqJLR8OJ0TM7uBezp
+	signingkey = "{{ onepasswordRead "op://Personal/Github Signing/public key" }}"
+
 [core]
         pager = delta
-	excludesFile = /home/hicham/.gitignore
+	excludesFile = {{ .chezmoi.homeDir }}{{ .chezmoi.pathSeparator}}.gitignore
 [interactive]
 	diffFilter = delta --color-only
 [mergetool]
@@ -17,7 +18,7 @@
 	conflictstyle = zdiff3
 [init]
 	defaultBranch = main
-	templateDir = ~/.git_template
+	templateDir= {{ .chezmoi.homeDir }}{{ .chezmoi.pathSeparator}}.git_template
 [push]
 	default = current
 	autoSetupRemote = true
