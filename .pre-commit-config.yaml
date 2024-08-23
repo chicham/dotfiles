@@ -25,15 +25,6 @@ repos:
     rev: v0.20.0
     hooks:
       - id: stylua # or stylua-system / stylua-github
-        args:
-          - --quote-style
-          - ForceDouble
-          - --call-parentheses
-          - Always
-          - --indent-type
-          - Spaces
-          - --indent-width
-          - "2"
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.4.0
     hooks:
