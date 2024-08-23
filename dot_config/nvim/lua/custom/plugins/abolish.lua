@@ -1,3 +1,4 @@
 return {
-  "tpope/vim-abolish",
+	"tpope/vim-abolish",
+	lazy = true,
 }

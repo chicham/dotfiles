@@ -1,11 +1,11 @@
 return {
-  "https://github.com/chentoast/marks.nvim",
-  opts = {
-    default_mappings = true,
-    signs = true,
-    mappings = {
-      set_next = "m.",
-      preview = "gm",
-    },
-  },
+	"chentoast/marks.nvim",
+	opts = {
+		default_mappings = true, -- Enable default mappings
+		signs = true, -- Enable signs for marks
+		mappings = {
+			set_next = "m.", -- Set the next mark
+			preview = "gm", -- Preview marks
+		},
+	},
 }

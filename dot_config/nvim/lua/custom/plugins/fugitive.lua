@@ -1,14 +1,24 @@
 return {
-  "tpope/vim-fugitive",
-  config = function(_, opts)
-    vim.keymap.set("n", "<leader>gg", ":<C-u>0Git<cr>", { silent = true })
-    vim.keymap.set("n", "<leader>gw", ":<C-u>Gwrite<cr>")
-    vim.keymap.set("n", "<leader>gW", ":<C-u>Gwrite!<cr>")
-    vim.keymap.set("n", "<leader>g+", ":<C-u>Git stash<cr>:e<cr>")
-    vim.keymap.set("n", "<leader>g-", ":<C-u>Git stash pop<cr>:e<cr>")
-    vim.keymap.set("n", "<leader>go", ":execute line('.') . ',GBrowse'<cr>", { silent = true })
-    vim.keymap.set("n", "<leader>gv", ":<C-u>Gvdiff<cr>")
-    vim.keymap.set("n", "<leader>gt", require("telescope.builtin").git_stash)
-    vim.keymap.set("n", "<leader>fg", require("telescope.builtin").grep_string, { desc = "Search current Word" })
-  end,
+	"tpope/vim-fugitive",
+	keys = {
+		-- Git commands
+		{ "<leader>gg", ":0Git<CR>", desc = "Open Git status", { silent = true } },
+		{ "<leader>gw", ":Gwrite<CR>", desc = "Write changes to Git" },
+		{ "<leader>gW", ":Gwrite!<CR>", desc = "Force write changes to Git" },
+		{ "<leader>g+", ":Git stash<CR>:e<CR>", desc = "Stash changes and reopen buffer" },
+		{ "<leader>g-", ":Git stash pop<CR>:e<CR>", desc = "Pop stash and reopen buffer" },
+		{
+			"<leader>go",
+			function()
+				vim.cmd(string.format(".,GBrowse"))
+			end,
+			desc = "Open current line in Git browser",
+			expr = true,
+		},
+		{ "<leader>gl", ":Gllog<CR>", desc = "View Git log" },
+
+		-- Telescope integration (requires telescope.nvim)
+		{ "<leader>gs", require("telescope.builtin").git_stash, desc = "Browse Git stashes with Telescope" },
+		{ "<leader>gc", require("telescope.builtin").git_commits, desc = "Browse Git commits with Telescope" },
+	},
 }

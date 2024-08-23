@@ -1,18 +1,66 @@
 return {
-  "gbprod/substitute.nvim",
-  config = function()
-    vim.keymap.set("n", "gx", require("substitute").operator, { noremap = true })
-    vim.keymap.set("n", "gxx", require("substitute").line, { noremap = true })
-    vim.keymap.set("n", "gX", require("substitute").eol, { noremap = true })
-    vim.keymap.set("x", "gx", require("substitute").visual, { noremap = true })
-    vim.keymap.set("n", "cx", require("substitute.exchange").operator, { noremap = true })
-    vim.keymap.set("n", "cxx", require("substitute.exchange").line, { noremap = true })
-    vim.keymap.set("x", "X", require("substitute.exchange").visual, { noremap = true })
-    require("substitute").setup({
-      yank_substituted_text = true,
-      range = {
-        prefix = "S",
-      },
-    })
-  end,
+	"gbprod/substitute.nvim",
+	lazy = true,
+
+	opts = {
+		yank_substituted_text = true,
+		range = {
+			prefix = "S",
+		},
+	},
+	-- Define key mappings with descriptions
+	keys = {
+		-- Substitute mappings
+		{
+			"gx",
+			function()
+				require("substitute").operator()
+			end,
+			{ noremap = true, desc = "Substitute (operator)" },
+		},
+		{
+			"gxx",
+			function()
+				require("substitute").line()
+			end,
+			{ noremap = true, desc = "Substitute line" },
+		},
+		{
+			"gX",
+			function()
+				require("substitute").eol()
+			end,
+			{ noremap = true, desc = "Substitute to end of line" },
+		},
+		{
+			"gx",
+			function()
+				require("substitute").visual()
+			end,
+			{ noremap = true, mode = "x", desc = "Substitute (visual)" },
+		},
+
+		-- Exchange mappings
+		{
+			"cx",
+			function()
+				require("substitute.exchange").operator()
+			end,
+			{ noremap = true, desc = "Exchange (operator)" },
+		},
+		{
+			"cxx",
+			function()
+				require("substitute.exchange").line()
+			end,
+			{ noremap = true, desc = "Exchange line" },
+		},
+		{
+			"X",
+			function()
+				require("substitute.exchange").visual()
+			end,
+			{ noremap = true, mode = "x", desc = "Exchange (visual)" },
+		},
+	},
 }

@@ -1,4 +1,5 @@
 install.sh
 cliff.toml
 pre-commit
-.git/
+**/.git/
+**/*lock.json
