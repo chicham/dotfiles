@@ -16,15 +16,15 @@ return {
 		"rcarriga/nvim-dap-ui",
 
 		-- Required dependency for nvim-dap-ui
-		"nvim-neotest/nvim-nio",
+		{ "nvim-neotest/nvim-nio", lazy = true },
 
 		-- Installs the debug adapters for you
 		"williamboman/mason.nvim",
-		"jay-babu/mason-nvim-dap.nvim",
+		{ "jay-babu/mason-nvim-dap.nvim", lazy = true },
 
 		-- Add your own debuggers here
-		"leoluz/nvim-dap-go",
-		"https://github.com/mfussenegger/nvim-dap-python",
+		{ "leoluz/nvim-dap-go", lazy = true },
+		{ "https://github.com/mfussenegger/nvim-dap-python", lazy = true },
 	},
 	keys = function(_, keys)
 		local dap = require("dap")

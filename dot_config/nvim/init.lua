@@ -159,7 +159,7 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 -- Set completeopt to have a better completion experience
-vim.opt.completeopt = "menuone,longest,noinsert"
+vim.opt.completeopt = "menu,menuone,longest,noinsert"
 
 if vim.fn.executable("rg") == 1 then
 	vim.opt.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
@@ -176,6 +176,7 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- Diagnostic keymaps
 -- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.diagnostic.config({ virtual_lines = { only_current_line = true }, virtual_text = false })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -245,7 +246,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.uv.fs_stat(lazypath) then
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
 	if vim.v.shell_error ~= 0 then
@@ -356,7 +357,44 @@ require("lazy").setup({
 		"folke/which-key.nvim",
 		event = "VimEnter", -- Sets the loading event to 'VimEnter'
 		config = function() -- This is the function that runs, AFTER loading
-			require("which-key").setup()
+			require("which-key").setup({
+				icons = {
+					-- set icon mappings to true if you have a Nerd Font
+					mappings = vim.g.have_nerd_font,
+					-- If you are using a Nerd Font: set icons.keys to an empty table which will use the
+					-- default whick-key.nvim defined Nerd Font icons, otherwise define a string table
+					keys = vim.g.have_nerd_font and {} or {
+						Up = "<Up> ",
+						Down = "<Down> ",
+						Left = "<Left> ",
+						Right = "<Right> ",
+						C = "<C-…> ",
+						M = "<M-…> ",
+						D = "<D-…> ",
+						S = "<S-…> ",
+						CR = "<CR> ",
+						Esc = "<Esc> ",
+						ScrollWheelDown = "<ScrollWheelDown> ",
+						ScrollWheelUp = "<ScrollWheelUp> ",
+						NL = "<NL> ",
+						BS = "<BS> ",
+						Space = "<Space> ",
+						Tab = "<Tab> ",
+						F1 = "<F1>",
+						F2 = "<F2>",
+						F3 = "<F3>",
+						F4 = "<F4>",
+						F5 = "<F5>",
+						F6 = "<F6>",
+						F7 = "<F7>",
+						F8 = "<F8>",
+						F9 = "<F9>",
+						F10 = "<F10>",
+						F11 = "<F11>",
+						F12 = "<F12>",
+					},
+				},
+			})
 
 			-- Document existing key chains
 			require("which-key").add({
@@ -899,6 +937,7 @@ require("lazy").setup({
 					--    https://github.com/rafamadriz/friendly-snippets
 					{
 						"iurimateus/luasnip-latex-snippets.nvim",
+						lazy = true,
 						-- replace "lervag/vimtex" with "nvim-treesitter/nvim-treesitter" if you're
 						-- using treesitter.
 						requires = { "nvim-treesitter/nvim-treesitter" },
@@ -925,6 +964,7 @@ require("lazy").setup({
 			"ray-x/cmp-treesitter",
 			{
 				"jmbuhr/otter.nvim",
+				lazy = true,
 				dependencies = {
 					"nvim-treesitter/nvim-treesitter",
 				},
@@ -1069,7 +1109,6 @@ require("lazy").setup({
 			-- Load the colorscheme here.
 			-- Like many other themes, this one has different styles, and you could load
 			-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-			vim.cmd.colorscheme("tokyonight-night")
 
 			-- You can configure highlights by doing something like:
 			vim.cmd.hi("Comment gui=none")
@@ -1275,11 +1314,9 @@ require("lazy").setup({
 	--
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
 	--    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
+
 	{ import = "custom.plugins" },
 }, {
-	defaults = {
-		lazy = true,
-	},
 	ui = {
 		-- If you are using a Nerd Font: set icons to an empty table which will use the
 		-- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
