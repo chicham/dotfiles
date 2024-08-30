@@ -165,6 +165,7 @@ if vim.fn.executable("rg") == 1 then
 	vim.opt.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
 end
 
+vim.opt.wrap = true
 vim.opt.diffopt = "filler,internal,algorithm:histogram,indent-heuristic"
 
 -- [[ Basic Keymaps ]]
@@ -228,6 +229,7 @@ vim.keymap.set("n", "W", ":w<cr>", { silent = true })
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 vim.keymap.set("n", "<leader>pp", ":let @+ = join([expand('%:p'), line('.')], ':')<cr>", { silent = true })
+vim.keymap.set("n", "0", "^")
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -269,6 +271,8 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	-- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
 	"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+	"tpope/vim-repeat",
+	"tummetott/unimpaired.nvim",
 
 	-- NOTE: Plugins can also be added by using a table,
 	-- with the first argument being the link and the following
@@ -333,7 +337,7 @@ require("lazy").setup({
 					end,
 					desc = "Diff against the last commit",
 				},
-				{ "ih", mode = { "o", "x" }, ":<C-U>Gitsigns select_hunk<CR>" },
+				{ "ah", mode = { "o", "x" }, ":<C-U>Gitsigns select_hunk<CR>" },
 			}
 		end,
 	},
@@ -573,7 +577,7 @@ require("lazy").setup({
 			{
 				"<leader><leader>",
 				function()
-					require("telescope.builtin").oldfiles()
+					require("telescope.builtin").buffers()
 				end,
 				{ desc = "[?] Find recently opened files" },
 			},
@@ -840,7 +844,6 @@ require("lazy").setup({
 					},
 				},
 				rust_analyzer = {},
-				jedi_language_server = {},
 			}
 
 			-- Ensure the servers and tools above are installed
@@ -985,7 +988,7 @@ require("lazy").setup({
 					end,
 				},
 				completion = {
-					completeopt = "menu,menuone,noinsert",
+					completeopt = "menu,menuone,noselect,noinsert",
 					-- Enable ghost text for completion items
 				},
 				experimental = {
@@ -1248,8 +1251,6 @@ require("lazy").setup({
 							["ak"] = "@assignment.inner",
 							["iv"] = "@assignment.rhs",
 							["av"] = "@assignment.outer",
-							-- ['ip'] = { query = '@block.inner', desc = 'in block' },
-							-- ['ap'] = { query = '@block.outer', desc = 'a block' },
 						},
 					},
 					move = {
@@ -1280,6 +1281,7 @@ require("lazy").setup({
 				},
 				matchup = {
 					enable = true, -- mandatory, false will disable the whole extension
+					enable_quotes = true,
 					disable_virtual_text = true,
 				},
 			})
