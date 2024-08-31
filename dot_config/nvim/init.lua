@@ -582,18 +582,11 @@ require("lazy").setup({
 				{ desc = "[?] Find recently opened files" },
 			},
 			{
-				"<leader>fb",
-				function()
-					require("telescope.builtin").buffers()
-				end,
-				{ desc = "Search [B]uffers" },
-			},
-			{
 				"<leader>fh",
 				function()
-					require("telescope.builtin").help_tags()
+					require("telescope.builtin").oldfiles()
 				end,
-				{ desc = "Search [H]elp" },
+				{ desc = '[F]ind [H]istory ("." for repeat)' },
 			},
 			{
 				"<leader>fG",
@@ -672,7 +665,7 @@ require("lazy").setup({
 
 			-- Useful status updates for LSP.
 			-- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-			{ "j-hui/fidget.nvim", opts = {} },
+			-- { 'j-hui/fidget.nvim', opts = {} },
 
 			-- Allows extra capabilities provided by nvim-cmp
 			"hrsh7th/cmp-nvim-lsp",
