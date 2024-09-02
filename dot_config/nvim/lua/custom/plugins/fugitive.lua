@@ -24,40 +24,36 @@
 -- }
 --
 return {
-	"NeogitOrg/neogit",
-	dependencies = {
-		"nvim-lua/plenary.nvim", -- required
-		"sindrets/diffview.nvim", -- optional - Diff integration
+  'NeogitOrg/neogit',
+  dependencies = {
+    'nvim-lua/plenary.nvim', -- required
+    'sindrets/diffview.nvim', -- optional - Diff integration
 
-		-- Only one of these is needed, not both.
-		"nvim-telescope/telescope.nvim", -- optional
-	},
-	config = true,
-	keys = {
-		-- Open Neogit status window
-		{ "<leader>gg", "<cmd>Neogit<CR>", desc = "Open Neogit status" },
+    -- Only one of these is needed, not both.
+    'nvim-telescope/telescope.nvim', -- optional
+  },
+  config = true,
+  keys = {
+    -- Open Neogit status window
+    { '<leader>gg', '<cmd>Neogit<CR>', desc = 'Open Neogit status' },
 
-		-- Stage/Unstage file (similar to :Gwrite)
-		{ "<leader>gw", "<cmd>Neogit stage<CR>", desc = "Stage file" },
+    -- Stage/Unstage file (similar to :Gwrite)
+    { '<leader>gw', '<cmd>Neogit stage<CR>', desc = 'Stage file' },
 
-		-- No direct equivalent for force write in Neogit
+    -- No direct equivalent for force write in Neogit
 
-		-- Stash/Pop (using Neogit commands)
-		{ "<leader>g+", "<cmd>Neogit stash push<CR>", desc = "Create stash" },
-		{ "<leader>g-", "<cmd>Neogit stash pop<CR>", desc = "Pop stash" },
+    -- Stash/Pop (using Neogit commands)
+    { '<leader>g+', '<cmd>Neogit stash push<CR>', desc = 'Create stash' },
+    { '<leader>g-', '<cmd>Neogit stash pop<CR>', desc = 'Pop stash' },
 
-		-- Open commit in browser (no direct equivalent, but you could customize Neogit)
+    -- Open commit in browser (no direct equivalent, but you could customize Neogit)
 
-		-- View Git log
-		{ "<leader>gl", "<cmd>Neogit log<CR>", desc = "View Git log" },
+    -- View Git log
+    { '<leader>gl', '<cmd>Neogit log<CR>', desc = 'View Git log' },
 
-		-- Telescope integration (requires telescope-frecency.nvim)
-		-- These remain the same as they use Telescope commands
-		{ "<leader>gs", "<cmd>Telescope frecency workspace=git_stash<CR>", desc = "Browse Git stashes with Telescope" },
-		{
-			"<leader>gc",
-			"<cmd>Telescope frecency workspace=git_commits<CR>",
-			desc = "Browse Git commits with Telescope",
-		},
-	},
+    -- Telescope integration (requires telescope-frecency.nvim)
+    -- These remain the same as they use Telescope commands
+    { '<leader>gs', '<cmd>Telescope frecency workspace=git_stash<CR>', desc = 'Browse Git stashes with Telescope' },
+    { '<leader>gc', '<cmd>Telescope frecency workspace=git_commits<CR>', desc = 'Browse Git commits with Telescope' },
+  },
 }

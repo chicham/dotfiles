@@ -1,7 +1,7 @@
 return {
-	"https://github.com/rasulomaroff/telepath.nvim",
-	dependencies = "ggandor/leap.nvim",
-	config = function()
-		require("telepath").use_default_mappings()
-	end,
+  'https://github.com/rasulomaroff/telepath.nvim',
+  dependencies = 'ggandor/leap.nvim',
+  config = function()
+    require('telepath').use_default_mappings()
+  end,
 }
