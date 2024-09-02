@@ -21,13 +21,26 @@ repos:
     hooks:
       - id: yamllint
         args: [-d, relaxed]
-  - repo: https://github.com/JohnnyMorganz/StyLua
-    rev: v0.20.0
-    hooks:
-      - id: stylua # or stylua-system / stylua-github
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.4.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: []
+  - repo: https://github.com/JohnnyMorganz/StyLua
+    rev: v0.20.0  # Replace with the latest stable release
+    hooks:
+      - id: stylua
+        args:
+          - --column-width
+          - "160"
+          - --line-endings
+          - "Unix"
+          - --indent-type
+          - "Spaces"
+          - --indent-width
+          - "2"
+          - --quote-style
+          - "AutoPreferSingle"
+          - --call-parentheses
+          - "None"

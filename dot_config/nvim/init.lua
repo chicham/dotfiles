@@ -537,15 +537,6 @@ require("lazy").setup({
 				end,
 			},
 			{
-				"g*",
-				function()
-					require("telescope.builtin").current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
-						winblend = 10,
-						previewer = false,
-					}))
-				end,
-			},
-			{
 				"<leader>fe",
 				function(opts)
 					opts = opts or {}
@@ -566,15 +557,6 @@ require("lazy").setup({
 				{ desc = "Search [D]iagnostics" },
 			},
 			{
-				"<leader>ff",
-				function()
-					require("telescope.builtin").lsp_document_symbols({
-						symbols = { "class", "method", "function", "module", "variable", "constant" },
-					})
-				end,
-				{ desc = "Document [S]ymbols" },
-			},
-			{
 				"<leader><leader>",
 				function()
 					require("telescope.builtin").buffers()
@@ -587,27 +569,6 @@ require("lazy").setup({
 					require("telescope.builtin").oldfiles()
 				end,
 				{ desc = '[F]ind [H]istory ("." for repeat)' },
-			},
-			{
-				"<leader>fG",
-				function()
-					require("telescope.builtin").live_grep()
-				end,
-				{ desc = "Search by [G]rep" },
-			},
-			{
-				"<leader>fq",
-				function()
-					require("telescope.builtin").quickfix()
-				end,
-				{ desc = "Search [Q]uickfix" },
-			},
-			{
-				"<leader>fw",
-				function()
-					require("telescope.builtin").lsp_dynamic_workspace_symbols()
-				end,
-				{ desc = "[W]orkspace Symbols" },
 			},
 			{
 				"<leader>fm",
@@ -732,7 +693,11 @@ require("lazy").setup({
 
 					-- Fuzzy find all the symbols in your current document.
 					--  Symbols are things like variables, functions, types, etc.
-					map("<leader>fs", require("telescope.builtin").lsp_document_symbols, "Document [S]ymbols")
+					map("<leader>fs", function()
+						require("telescope.builtin").lsp_document_symbols({
+							symbols = { "class", "method", "function", "module", "variable", "constant" },
+						})
+					end, "Document [S]ymbols")
 
 					-- Fuzzy find all the symbols in your current workspace.
 					--  Similar to document symbols, except searches over your entire project.
@@ -931,16 +896,22 @@ require("lazy").setup({
 					-- `friendly-snippets` contains a variety of premade snippets.
 					--    See the README about individual language/framework/plugin snippets:
 					--    https://github.com/rafamadriz/friendly-snippets
-					{
-						"iurimateus/luasnip-latex-snippets.nvim",
-						lazy = true,
-						-- replace "lervag/vimtex" with "nvim-treesitter/nvim-treesitter" if you're
-						-- using treesitter.
-						requires = { "nvim-treesitter/nvim-treesitter" },
-						opts = {
-							use_treesitter = true,
-						},
-					},
+					-- {
+					--   'iurimateus/luasnip-latex-snippets.nvim',
+					--   lazy = true,
+					--   -- replace "lervag/vimtex" with "nvim-treesitter/nvim-treesitter" if you're
+					--   -- using treesitter.
+					--   requires = { 'nvim-treesitter/nvim-treesitter' },
+					--   opts = {
+					--     use_treesitter = true,
+					--     allow_on_markdown = true,
+					--   },
+					--   config = function()
+					--     require('luasnip-latex-snippets').setup()
+					--     -- or setup({ use_treesitter = true })
+					--     require('luasnip').config.setup { enable_autosnippets = true }
+					--   end,
+					-- },
 					{
 						"rafamadriz/friendly-snippets",
 						config = function()
