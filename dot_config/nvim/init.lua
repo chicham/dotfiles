@@ -159,7 +159,8 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 -- Set completeopt to have a better completion experience
-vim.opt.completeopt = 'menu,menuone,longest,noinsert'
+vim.opt.completeopt = 'menu,menuone,noinsert,noselect'
+vim.opt.wildmode = 'longest,list,full'
 
 if vim.fn.executable 'rg' == 1 then
   vim.opt.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
@@ -528,7 +529,7 @@ require('lazy').setup({
     end,
     keys = {
       {
-        'g/',
+        '<leader>g/',
         function()
           require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
             winblend = 10,
@@ -557,7 +558,7 @@ require('lazy').setup({
         { desc = 'Search [D]iagnostics' },
       },
       {
-        '<leader><leader>',
+        '<leader>fb',
         function()
           require('telescope.builtin').buffers()
         end,
@@ -630,7 +631,6 @@ require('lazy').setup({
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-nvim-lsp-signature-help',
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -693,7 +693,7 @@ require('lazy').setup({
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>fs', function()
+          map('<leader>ff', function()
             require('telescope.builtin').lsp_document_symbols {
               symbols = { 'class', 'method', 'function', 'module', 'variable', 'constant' },
             }
@@ -801,6 +801,7 @@ require('lazy').setup({
           },
         },
         rust_analyzer = {},
+        jedi_language_server = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -912,12 +913,15 @@ require('lazy').setup({
           --   end,
           -- },
           {
-            'rafamadriz/friendly-snippets',
+            'chicham/vim-snippets',
             config = function()
-              require('luasnip.loaders.from_vscode').lazy_load()
+              require('luasnip.loaders.from_snipmate').lazy_load()
               require('luasnip.loaders.from_snipmate').lazy_load { paths = { '~/.snippets/snippets' } }
             end,
           },
+        },
+        opts = {
+          store_selection_keys = '<Tab>',
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -927,7 +931,6 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
-      'ray-x/cmp-treesitter',
       {
         'jmbuhr/otter.nvim',
         lazy = true,
@@ -992,7 +995,7 @@ require('lazy').setup({
                 luasnip.expand()
               else
                 cmp.confirm {
-                  select = true,
+                  select = false,
                 }
               end
             else
@@ -1054,10 +1057,8 @@ require('lazy').setup({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
-          { name = 'treesitter' },
           { name = 'otter' },
           { name = 'git' },
-          { name = 'nvim_lsp_signature_help' },
         },
       }
       -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
@@ -1206,8 +1207,8 @@ require('lazy').setup({
             lookhahead = true,
             keymaps = {
               -- You can use the capture groups defined in textobjects.scm
-              ['a,'] = '@parameter.outer',
-              ['i,'] = '@parameter.inner',
+              ['aa'] = '@parameter.outer',
+              ['ia'] = '@parameter.inner',
               ['ac'] = '@comment.outer',
               ['ic'] = '@comment.inner',
               ['ik'] = '@assignment.lhs',
@@ -1235,9 +1236,9 @@ require('lazy').setup({
         },
         textsubjects = {
           enable = true,
-          -- prev_selection = ',', -- (Optional) keymap to select the previous selection
+          prev_selection = '<bs>', -- (Optional) keymap to select the previous selection
           keymaps = {
-            ['.'] = 'textsubjects-smart',
+            ['<cr>'] = 'textsubjects-smart',
             ['a;'] = 'textsubjects-container-outer',
             ['i;'] = 'textsubjects-container-inner',
           },

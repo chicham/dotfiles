@@ -5,13 +5,13 @@ return {
     grug_far.setup {
       engine = 'astgrep',
     }
-    vim.keymap.set('n', '<leader>ff', function()
+    vim.keymap.set('n', '<leader>fs', function()
       grug_far.open { transient = true, prefills = { paths = vim.fn.expand '%' } }
     end)
-    vim.keymap.set('n', '<leader>fF', function()
+    vim.keymap.set('n', '<leader>fS', function()
       grug_far.open { transient = true }
     end)
-    vim.keymap.set('x', 'gf', function()
+    vim.keymap.set('x', 'g/', function()
       grug_far.with_visual_selection { transient = true, { prefills = { paths = vim.fn.expand '%' } } }
     end)
   end,
