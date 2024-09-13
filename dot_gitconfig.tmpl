@@ -8,10 +8,11 @@
 [mergetool]
 	prompt = false
 	keepBackup = false
-[mergetool "fugitive"]
-	cmd = nvim -f -c \"Gvdiffsplit!\" \"$MERGED\"
+[mergetool "diffview"]
+	cmd = nvim -f -c \"DiffviewOpen\" \"$MERGED\"
+	trustExitCode = true
 [merge]
-	tool = fugitive
+	tool = diffview
 	conflictstyle = zdiff3
 [init]
 	defaultBranch = main
