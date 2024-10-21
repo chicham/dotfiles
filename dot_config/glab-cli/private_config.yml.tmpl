@@ -11,11 +11,3 @@ check_update: false
 # Whether or not to display hyperlink escapes when listing things like issues or MRs
 display_hyperlinks: false
 # configuration specific for gitlab instances
-
-hosts:
-    {{ onepasswordRead "op://huawei/gitlab/api_host" }}:
-        token: {{ onepasswordRead "op://huawei/gitlab/token" }}
-        api_host: {{  onepasswordRead "op://huawei/gitlab/api_host"  }}
-        git_protocol: ssh
-        api_protocol: https
-        user: {{ onepasswordRead "op://huawei/gitlab/user" }}
