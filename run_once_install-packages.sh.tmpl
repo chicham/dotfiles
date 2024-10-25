@@ -125,8 +125,19 @@ rm -rf "/tmp/eza-$EZA_VERSION"*
 
 # bat
 BAT_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r ".tag_name")
+
+# Determine the correct bat binary name based on TARGET
+if [[ "$TARGET" == "apple-darwin" ]]; then
+  BAT_BINARY="bat-$BAT_VERSION-x86_64-apple-darwin.tar.gz"
+elif [[ "$TARGET" == "unknown-linux-gnu" ]]; then
+  BAT_BINARY="bat-$BAT_VERSION-aarch64-unknown-linux-gnu.tar.gz"
+else
+  log_error "Unsupported target for bat: $TARGET"
+  exit 1
+fi
+
 download_and_extract \
-  "https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/bat-$BAT_VERSION-aarch64-$TARGET.tar.gz" \
+  "https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/$BAT_BINARY" \
   "/tmp/bat-$BAT_VERSION.tar.gz" \
   "/tmp/bat-$BAT_VERSION" \
   1
