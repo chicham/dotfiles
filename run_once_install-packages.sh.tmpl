@@ -64,7 +64,7 @@ check_command curl
 # difftastic
 DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
 download_and_extract \
-  "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/aarch64-$TARGET.tar.gz" \
+  "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" \
   "/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
   "/tmp/difftastic-$DIFFTASTIC_VERSION"
 
