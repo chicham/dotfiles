@@ -2,11 +2,12 @@
 
 set -exo pipefail
 
-{{- if eq .chezmoi.os "linux" -}}
-  TARGET="unknown-linux-gnu"
-{{- else if eq .chezmoi.os "darwin" -}}
+TARGET=$(echo "{{ .chezmoi.os }}" | tr '[:upper:]' '[:lower:]')
+if [[ "$TARGET" == "darwin" ]]; then
   TARGET="apple-darwin"
-{{- end -}}
+elif [[ "$TARGET" == "linux" ]]; then
+  TARGET="unknown-linux-gnu"
+fi
 
 # --- Helper Functions ---
 log_info() {
