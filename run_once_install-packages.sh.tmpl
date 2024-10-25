@@ -77,17 +77,18 @@ check_command curl
 
 # --- Install Packages ---
 # difftastic
+# difftastic
 DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
 
-# Extract directly to ~/.local/bin using the 'strip-components' option
-log_info "Downloading and extracting difftastic"
-if ! curl -L "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" | \
-     tar -xzf - --strip-components=1 -C ~/.local/bin difft; then 
-  log_error "Failed to download or extract difftastic"
-  exit 1
-fi
+download_and_extract \
+  "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" \
+  "/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
+  "/tmp/difftastic-$DIFFTASTIC_VERSION" \
+  1  # Add strip-components argument
 
+mv "/tmp/difftastic-$DIFFTASTIC_VERSION/difft" ~/.local/bin
 chmod u+x ~/.local/bin/difft
+rm -rf "/tmp/difftastic-$DIFFTASTIC_VERSION"*
 
 # fd
 FD_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/fd/releases/latest | jq -r ".tag_name")
