@@ -99,7 +99,7 @@ rm -rf "/tmp/ripgrep-$RIPGREP_VERSION"*
 # eza
 EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
 download_and_extract \
-  "https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_aarch64-$TARGET.zip" \
+  "https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_aarch64-unknown-linux-gnu.zip"\
   "/tmp/eza-$EZA_VERSION.zip" \
   "/tmp/eza-$EZA_VERSION"
 
