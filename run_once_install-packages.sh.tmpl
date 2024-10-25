@@ -32,11 +32,15 @@ download_and_extract() {
   local strip_components="$4"
 
   # --- Create the target directory ---
-  log_info "Creating directory: $extract_dir" 
-  mkdir -p "$extract_dir" || { 
-    log_error "Failed to create directory: $extract_dir"
-    exit 1
-  }
+  if [[ ! -d "$extract_dir" ]]; then 
+    log_info "Creating directory: $extract_dir" 
+    mkdir -p "$extract_dir" || { 
+      log_error "Failed to create directory: $extract_dir"
+      exit 1
+    }
+  else
+    log_info "Directory already exists: $extract_dir"
+  fi
 
   if [[ -d "$extract_dir" ]]; then
     log_info "Skipping download and extraction: $extract_dir already exists"
