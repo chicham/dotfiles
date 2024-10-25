@@ -31,6 +31,13 @@ download_and_extract() {
   local extract_dir="$3"
   local strip_components="$4"
 
+  # --- Create the target directory ---
+  log_info "Creating directory: $extract_dir" 
+  mkdir -p "$extract_dir" || { 
+    log_error "Failed to create directory: $extract_dir"
+    exit 1
+  }
+
   if [[ -d "$extract_dir" ]]; then
     log_info "Skipping download and extraction: $extract_dir already exists"
     return 0
@@ -56,8 +63,8 @@ download_and_extract() {
     fi
   else
     log_error "Unsupported archive format: $archive_path"
-exit 1
-fi
+    exit 1
+  fi
 }
 
 # --- Check Dependencies ---
