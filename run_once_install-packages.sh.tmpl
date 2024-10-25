@@ -84,7 +84,7 @@ download_and_extract \
   "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" \
   "/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
   "/tmp/difftastic-$DIFFTASTIC_VERSION" \
-  1  # Add strip-components argument
+  0
 
 mv "/tmp/difftastic-$DIFFTASTIC_VERSION/difft" ~/.local/bin
 chmod u+x ~/.local/bin/difft
