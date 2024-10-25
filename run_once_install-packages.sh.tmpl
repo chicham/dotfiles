@@ -31,6 +31,11 @@ download_and_extract() {
   local extract_dir="$3"
   local strip_components="$4"
 
+  if [[ -d "$extract_dir" ]]; then
+    log_info "Skipping download and extraction: $extract_dir already exists"
+    return 0
+  fi
+
   log_info "Downloading $url"
   if ! curl -L "$url" > "$archive_path"; then
     log_error "Failed to download $url"
@@ -51,9 +56,8 @@ download_and_extract() {
     fi
   else
     log_error "Unsupported archive format: $archive_path"
-    exit 1
-  fi
-}
+exit 1
+fi
 
 # --- Check Dependencies ---
 check_command jq
