@@ -81,94 +81,112 @@ check_command jq
 check_command curl
 
 # --- Install Packages ---
-# difftastic
-# difftastic
-DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
 
-download_and_extract \
-  "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" \
-  "/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
-  "/tmp/difftastic-$DIFFTASTIC_VERSION" \
-  0
-
-mv "/tmp/difftastic-$DIFFTASTIC_VERSION/difft" ~/.local/bin
-chmod u+x ~/.local/bin/difft
-rm -rf "/tmp/difftastic-$DIFFTASTIC_VERSION"*
-
-# fd
-FD_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/fd/releases/latest | jq -r ".tag_name")
-download_and_extract \
-  "https://github.com/sharkdp/fd/releases/download/$FD_VERSION/fd-$FD_VERSION-aarch64-$TARGET.tar.gz" \
-  "/tmp/fd-$FD_VERSION.tar.gz" \
-  "/tmp/fd-$FD_VERSION" \
-  1
-
-mv "/tmp/fd-$FD_VERSION/fd" ~/.local/bin
-chmod u+x ~/.local/bin/fd
-rm -rf "/tmp/fd-$FD_VERSION"*
-
-# ripgrep
-RIPGREP_VERSION=$(curl -Ls https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r ".tag_name")
-download_and_extract \
-  "https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-aarch64-$TARGET.tar.gz" \
-  "/tmp/ripgrep-$RIPGREP_VERSION.tar.gz" \
-  "/tmp/ripgrep-$RIPGREP_VERSION" \
-  1
-
-mv "/tmp/ripgrep-$RIPGREP_VERSION/rg" ~/.local/bin
-chmod u+x ~/.local/bin/rg
-rm -rf "/tmp/ripgrep-$RIPGREP_VERSION"*
-
-# eza
-
-EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
-
-# Determine the correct eza binary name based on TARGET
-EZA_BINARY="eza_x86_64-unknown-linux-musl.tar.gz" 
-
-# Download and extract (this part remains the same)
-download_and_extract \
-  "https://github.com/eza-community/eza/releases/download/$EZA_VERSION/$EZA_BINARY" \
-  "/tmp/eza-$EZA_VERSION.tar.gz" \
-  "/tmp/eza-$EZA_VERSION"
-
-mv "/tmp/eza-$EZA_VERSION/eza" ~/.local/bin
-chmod u+x ~/.local/bin/eza
-rm -rf "/tmp/eza-$EZA_VERSION"*
-
-# bat
-BAT_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r ".tag_name")
-
-# Determine the correct bat binary name based on TARGET
+# --- Install Homebrew on macOS ---
 if [[ "$TARGET" == "apple-darwin" ]]; then
-  BAT_BINARY="bat-$BAT_VERSION-x86_64-apple-darwin.tar.gz"
-elif [[ "$TARGET" == "unknown-linux-gnu" ]]; then
-  BAT_BINARY="bat-$BAT_VERSION-aarch64-unknown-linux-gnu.tar.gz"
-else
-  log_error "Unsupported target for bat: $TARGET"
-  exit 1
+  log_info "Installing Homebrew"
+  if ! command -v brew > /dev/null; then
+    if ! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+      log_error "Failed to install Homebrew"
+      exit 1
+    fi
+  else
+    log_info "Homebrew already installed. Skipping."
+  fi
 fi
 
-download_and_extract \
-  "https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/$BAT_BINARY" \
-  "/tmp/bat-$BAT_VERSION.tar.gz" \
-  "/tmp/bat-$BAT_VERSION" \
-  1
+# difftastic
+if [[ "$TARGET" == "apple-darwin" ]]; then
+  # --- Install packages with Homebrew on macOS ---
+  log_info "Installing packages with Homebrew"
+  brew install difftastic fd ripgrep bat zellij neovim direnv zoxide starship uv ast-grep
+else
+	DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
 
-mv "/tmp/bat-$BAT_VERSION/bat" ~/.local/bin
-chmod u+x ~/.local/bin/bat
-rm -rf "/tmp/bat-$BAT_VERSION"*
+	download_and_extract \
+	"https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/difft-aarch64-$TARGET.tar.gz" \
+	"/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
+	"/tmp/difftastic-$DIFFTASTIC_VERSION" \
+	0
 
-# zellij
-ZELLIJ_VERSION=$(curl -Ls https://api.github.com/repos/zellij-org/zellij/releases/latest | jq -r ".tag_name")
-download_and_extract \
-  "https://github.com/zellij-org/zellij/releases/download/$ZELLIJ_VERSION/zellij-aarch64-$TARGET.tar.gz" \
-  "/tmp/zellij-$ZELLIJ_VERSION.tar.gz" \
-  "/tmp/zellij-$ZELLIJ_VERSION"
+	mv "/tmp/difftastic-$DIFFTASTIC_VERSION/difft" ~/.local/bin
+	chmod u+x ~/.local/bin/difft
+	rm -rf "/tmp/difftastic-$DIFFTASTIC_VERSION"*
 
-mv "/tmp/zellij-$ZELLIJ_VERSION/zellij" ~/.local/bin
-chmod u+x ~/.local/bin/zellij
-rm -rf "/tmp/zellij-$ZELLIJ_VERSION"*
+	# fd
+	FD_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/fd/releases/latest | jq -r ".tag_name")
+	download_and_extract \
+	"https://github.com/sharkdp/fd/releases/download/$FD_VERSION/fd-$FD_VERSION-aarch64-$TARGET.tar.gz" \
+	"/tmp/fd-$FD_VERSION.tar.gz" \
+	"/tmp/fd-$FD_VERSION" \
+	1
+
+	mv "/tmp/fd-$FD_VERSION/fd" ~/.local/bin
+	chmod u+x ~/.local/bin/fd
+	rm -rf "/tmp/fd-$FD_VERSION"*
+
+	# ripgrep
+	RIPGREP_VERSION=$(curl -Ls https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r ".tag_name")
+	download_and_extract \
+	"https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-aarch64-$TARGET.tar.gz" \
+	"/tmp/ripgrep-$RIPGREP_VERSION.tar.gz" \
+	"/tmp/ripgrep-$RIPGREP_VERSION" \
+	1
+
+	mv "/tmp/ripgrep-$RIPGREP_VERSION/rg" ~/.local/bin
+	chmod u+x ~/.local/bin/rg
+	rm -rf "/tmp/ripgrep-$RIPGREP_VERSION"*
+
+	# eza
+
+	EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
+
+	# Determine the correct eza binary name based on TARGET
+	EZA_BINARY="eza_x86_64-unknown-linux-musl.tar.gz" 
+
+	# Download and extract (this part remains the same)
+	download_and_extract \
+	"https://github.com/eza-community/eza/releases/download/$EZA_VERSION/$EZA_BINARY" \
+	"/tmp/eza-$EZA_VERSION.tar.gz" \
+	"/tmp/eza-$EZA_VERSION"
+
+	mv "/tmp/eza-$EZA_VERSION/eza" ~/.local/bin
+	chmod u+x ~/.local/bin/eza
+	rm -rf "/tmp/eza-$EZA_VERSION"*
+
+	# bat
+	BAT_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r ".tag_name")
+
+	# Determine the correct bat binary name based on TARGET
+	if [[ "$TARGET" == "apple-darwin" ]]; then
+	BAT_BINARY="bat-$BAT_VERSION-x86_64-apple-darwin.tar.gz"
+	elif [[ "$TARGET" == "unknown-linux-gnu" ]]; then
+	BAT_BINARY="bat-$BAT_VERSION-aarch64-unknown-linux-gnu.tar.gz"
+	else
+	log_error "Unsupported target for bat: $TARGET"
+	exit 1
+	fi
+
+	download_and_extract \
+	"https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/$BAT_BINARY" \
+	"/tmp/bat-$BAT_VERSION.tar.gz" \
+	"/tmp/bat-$BAT_VERSION" \
+	1
+
+	mv "/tmp/bat-$BAT_VERSION/bat" ~/.local/bin
+	chmod u+x ~/.local/bin/bat
+	rm -rf "/tmp/bat-$BAT_VERSION"*
+
+	# zellij
+	ZELLIJ_VERSION=$(curl -Ls https://api.github.com/repos/zellij-org/zellij/releases/latest | jq -r ".tag_name")
+	download_and_extract \
+	"https://github.com/zellij-org/zellij/releases/download/$ZELLIJ_VERSION/zellij-aarch64-$TARGET.tar.gz" \
+	"/tmp/zellij-$ZELLIJ_VERSION.tar.gz" \
+	"/tmp/zellij-$ZELLIJ_VERSION"
+
+	mv "/tmp/zellij-$ZELLIJ_VERSION/zellij" ~/.local/bin
+	chmod u+x ~/.local/bin/zellij
+	rm -rf "/tmp/zellij-$ZELLIJ_VERSION"*
 
 # rustup and neovim
 log_info "Installing rustup"
