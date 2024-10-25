@@ -168,6 +168,8 @@ else
   rustup update
 fi
 
+rustup default stable
+
 log_info "Installing Neovim"
 pushd "$HOME/.local/"
 if ! curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage \
