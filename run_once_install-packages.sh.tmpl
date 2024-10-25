@@ -2,47 +2,191 @@
 
 set -exo pipefail
 
-PREFIX=~/.local/bin
-mkdir -p $PREFIX
-
 {{- if eq .chezmoi.os "linux" -}}
-TARGET=unknown-linux-gnu
+  TARGET="unknown-linux-gnu"
 {{- else if eq .chezmoi.os "darwin" -}}
-TARGET=apple-darwin
+  TARGET="apple-darwin"
 {{- end -}}
 
-# git-appraise install
+# --- Helper Functions ---
+log_info() {
+  echo "[INFO] $*"
+}
+
+log_error() {
+  echo "[ERROR] $*" >&2
+}
+
+check_command() {
+  command -v "$1" > /dev/null 2>&1 || {
+    log_error "Command '$1' not found. Please install it."
+    exit 1
+  }
+}
+
+download_and_extract() {
+  local url="$1"
+  local archive_path="$2"
+  local extract_dir="$3"
+  local strip_components="$4"
+
+  log_info "Downloading $url"
+  if ! curl -L "$url" > "$archive_path"; then
+    log_error "Failed to download $url"
+    exit 1
+  fi
+
+  log_info "Extracting $archive_path"
+  if [[ "$archive_path" == *.tar.gz ]]; then
+    if ! tar -xf "$archive_path" -C "$extract_dir" ${strip_components:+"--strip-components=$strip_components"}; then
+      log_error "Failed to extract $archive_path"
+      exit 1
+    fi
+  elif [[ "$archive_path" == *.zip ]]; then
+    check_command unzip
+    if ! unzip "$archive_path" -d "$extract_dir"; then
+      log_error "Failed to extract $archive_path"
+      exit 1
+    fi
+  else
+    log_error "Unsupported archive format: $archive_path"
+    exit 1
+  fi
+}
+
+# --- Check Dependencies ---
+check_command jq
+check_command curl
+
+# --- Install Packages ---
+
+# difftastic
 DIFFTASTIC_VERSION=$(curl -Ls https://api.github.com/repos/Wilfred/difftastic/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/aarch64-$TARGET.tar.gz > /tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz && mkdir -p /tmp/difftastic-$DIFFTASTIC_VERSION && tar -xf /tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz -C /tmp/difftastic-$DIFFTASTIC_VERSION && mv /tmp/difftastic-$DIFFTASTIC_VERSION/difft ~/.local/bin && chmod u+x ~/.local/bin/difft && rm -rf /tmp/difftastic-$DIFFTASTIC_VERSION*
+download_and_extract \
+  "https://github.com/Wilfred/difftastic/releases/download/$DIFFTASTIC_VERSION/aarch64-$TARGET.tar.gz" \
+  "/tmp/difftastic-$DIFFTASTIC_VERSION.tar.gz" \
+  "/tmp/difftastic-$DIFFTASTIC_VERSION"
 
+mv "/tmp/difftastic-$DIFFTASTIC_VERSION/difft" ~/.local/bin
+chmod u+x ~/.local/bin/difft
+rm -rf "/tmp/difftastic-$DIFFTASTIC_VERSION"*
+
+# fd
 FD_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/fd/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/sharkdp/fd/releases/download/$FD_VERSION/fd-$FD_VERSION-aarch64-$TARGET.tar.gz > /tmp/fd-$FD_VERSION.tar.gz && mkdir -p /tmp/fd-$FD_VERSION && tar -xf /tmp/fd-$FD_VERSION.tar.gz -C /tmp/fd-$FD_VERSION --strip-components=1 && mv /tmp/fd-$FD_VERSION/fd ~/.local/bin && chmod u+x ~/.local/bin/fd && rm -rf /tmp/fd-$FD_VERSION*
+download_and_extract \
+  "https://github.com/sharkdp/fd/releases/download/$FD_VERSION/fd-$FD_VERSION-aarch64-$TARGET.tar.gz" \
+  "/tmp/fd-$FD_VERSION.tar.gz" \
+  "/tmp/fd-$FD_VERSION" \
+  1
 
+mv "/tmp/fd-$FD_VERSION/fd" ~/.local/bin
+chmod u+x ~/.local/bin/fd
+rm -rf "/tmp/fd-$FD_VERSION"*
+
+# ripgrep
 RIPGREP_VERSION=$(curl -Ls https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-aarch64-$TARGET.tar.gz > /tmp/ripgrep-$RIPGREP_VERSION.tar.gz && mkdir -p /tmp/ripgrep-$RIPGREP_VERSION && tar -xf /tmp/ripgrep-$RIPGREP_VERSION.tar.gz -C /tmp/ripgrep-$RIPGREP_VERSION --strip-components=1 && mv /tmp/ripgrep-$RIPGREP_VERSION/rg ~/.local/bin && chmod u+x ~/.local/bin/rg && rm -rf /tmp/ripgrep-$RIPGREP_VERSION*
+download_and_extract \
+  "https://github.com/BurntSushi/ripgrep/releases/download/$RIPGREP_VERSION/ripgrep-$RIPGREP_VERSION-aarch64-$TARGET.tar.gz" \
+  "/tmp/ripgrep-$RIPGREP_VERSION.tar.gz" \
+  "/tmp/ripgrep-$RIPGREP_VERSION" \
+  1
 
+mv "/tmp/ripgrep-$RIPGREP_VERSION/rg" ~/.local/bin
+chmod u+x ~/.local/bin/rg
+rm -rf "/tmp/ripgrep-$RIPGREP_VERSION"*
+
+# eza
 EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
+download_and_extract \
+  "https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_aarch64-$TARGET.zip" \
+  "/tmp/eza-$EZA_VERSION.zip" \
+  "/tmp/eza-$EZA_VERSION"
 
-curl -L https://github.com/eza-community/eza/releases/download/$EZA_VERSION/eza_aarch64-$TARGET.zip > /tmp/eza-$EZA_VERSION.zip && mkdir -p /tmp/eza-$EZA_VERSION && unzip /tmp/eza-$EZA_VERSION.zip -d /tmp/eza-$EZA_VERSION && mv /tmp/eza-$EZA_VERSION/eza ~/.local/bin && chmod u+x ~/.local/bin/eza && rm -rf /tmp/eza-$EZA_VERSION*
+mv "/tmp/eza-$EZA_VERSION/eza" ~/.local/bin
+chmod u+x ~/.local/bin/eza
+rm -rf "/tmp/eza-$EZA_VERSION"*
 
+# bat
 BAT_VERSION=$(curl -Ls https://api.github.com/repos/sharkdp/bat/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/bat-$BAT_VERSION-aarch64-$TARGET.tar.gz > /tmp/bat-$BAT_VERSION.tar.gz && mkdir -p /tmp/bat-$BAT_VERSION && tar -xf /tmp/bat-$BAT_VERSION.tar.gz -C /tmp/bat-$BAT_VERSION --strip-components=1 && mv /tmp/bat-$BAT_VERSION/bat ~/.local/bin && chmod u+x ~/.local/bin/bat && rm -rf /tmp/bat-$BAT_VERSION*
+download_and_extract \
+  "https://github.com/sharkdp/bat/releases/download/$BAT_VERSION/bat-$BAT_VERSION-aarch64-$TARGET.tar.gz" \
+  "/tmp/bat-$BAT_VERSION.tar.gz" \
+  "/tmp/bat-$BAT_VERSION" \
+  1
 
+mv "/tmp/bat-$BAT_VERSION/bat" ~/.local/bin
+chmod u+x ~/.local/bin/bat
+rm -rf "/tmp/bat-$BAT_VERSION"*
+
+# zellij
 ZELLIJ_VERSION=$(curl -Ls https://api.github.com/repos/zellij-org/zellij/releases/latest | jq -r ".tag_name")
-curl -L https://github.com/zellij-org/zellij/releases/download/$ZELLIJ_VERSION/zellij-aarch64-$TARGET.tar.gz > /tmp/zellij-$ZELLIJ_VERSION.tar.gz && mkdir -p /tmp/zellij-$ZELLIJ_VERSION && tar -xf /tmp/zellij-$ZELLIJ_VERSION.tar.gz -C /tmp/zellij-$ZELLIJ_VERSION && mv /tmp/zellij-$ZELLIJ_VERSION/zellij ~/.local/bin && chmod u+x ~/.local/bin/zellij && rm -rf /tmp/zellij-$ZELLIJ_VERSION*
+download_and_extract \
+  "https://github.com/zellij-org/zellij/releases/download/$ZELLIJ_VERSION/zellij-aarch64-$TARGET.tar.gz" \
+  "/tmp/zellij-$ZELLIJ_VERSION.tar.gz" \
+  "/tmp/zellij-$ZELLIJ_VERSION"
 
+mv "/tmp/zellij-$ZELLIJ_VERSION/zellij" ~/.local/bin
+chmod u+x ~/.local/bin/zellij
+rm -rf "/tmp/zellij-$ZELLIJ_VERSION"*
 
- command -v rustup > /dev/null && rustup update || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-pushd $HOME/.local/
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage\
-	 && chmod u+x nvim.appimage\
-	 && ./nvim.appimage --appimage-extract \
-	 && ln -fs $HOME/.local/squashfs-root/AppRun $HOME/.local/bin/nvim
+# rustup and neovim
+log_info "Installing rustup"
+if ! command -v rustup > /dev/null; then
+  if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh; then
+    log_error "Failed to install rustup"
+    exit 1
+  fi
+else
+  rustup update
+fi
+
+log_info "Installing Neovim"
+pushd "$HOME/.local/"
+if ! curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage \
+  && chmod u+x nvim.appimage \
+  && ./nvim.appimage --appimage-extract \
+  && ln -fs "$HOME/.local/squashfs-root/AppRun" "$HOME/.local/bin/nvim"; then
+  log_error "Failed to install Neovim"
+  exit 1
+fi
 popd
 
-bin_path=$PREFIX
-curl -sfL https://direnv.net/install.sh | bash
-curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
-curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir $PREFIX --yes
- command -v uv > /dev/null && uv self update || curl -LsSf https://astral.sh/uv/install.sh | sh
- cargo install ast-grep --locked
+# direnv, zoxide, starship, and uv
+PREFIX=~/.local/bin
+mkdir -p "$PREFIX"
+
+bin_path="$PREFIX"
+log_info "Installing direnv"
+if ! curl -sfL https://direnv.net/install.sh | bash; then
+  log_error "Failed to install direnv"
+  exit 1
+fi
+
+log_info "Installing zoxide"
+if ! curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh; then
+  log_error "Failed to install zoxide"
+  exit 1
+fi
+
+log_info "Installing starship"
+if ! curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir "$PREFIX" --yes; then
+  log_error "Failed to install starship"
+  exit 1
+fi
+
+log_info "Installing uv"
+if ! command -v uv > /dev/null; then
+  if ! curl -LsSf https://astral.sh/uv/install.sh | sh; then
+    log_error "Failed to install uv"
+    exit 1
+  fi
+else
+  uv self update
+fi
+
+# ast-grep
+log_info "Installing ast-grep"
+if ! cargo install ast-grep --locked; then
+  log_error "Failed to install ast-grep"
+  exit 1
+fi
