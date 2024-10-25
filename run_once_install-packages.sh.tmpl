@@ -36,11 +36,17 @@ download_and_extract() {
     return 0
   fi
 
-  log_info "Downloading $url"
-  if ! curl -L "$url" > "$archive_path"; then
-    log_error "Failed to download $url"
-    exit 1
+  # --- Skip download if archive already exists ---
+  if [[ -f "$archive_path" ]]; then
+    log_info "Skipping download: $archive_path already exists"
+  else
+    log_info "Downloading $url"
+    if ! curl -L "$url" > "$archive_path"; then
+      log_error "Failed to download $url"
+      exit 1
+    fi
   fi
+  
   # --- Create the target directory ---
   if [[ ! -d "$extract_dir" ]]; then 
     log_info "Creating directory: $extract_dir" 
@@ -51,6 +57,7 @@ download_and_extract() {
   else
     log_info "Directory already exists: $extract_dir"
   fi
+
   log_info "Extracting $archive_path"
   if [[ "$archive_path" == *.tar.gz ]]; then
     if ! tar -xf "$archive_path" -C "$extract_dir" ${strip_components:+"--strip-components=$strip_components"}; then
