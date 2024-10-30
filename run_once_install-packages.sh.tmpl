@@ -48,9 +48,9 @@ download_and_extract() {
   fi
 
   # --- Create the target directory ---
-  if [[ ! -d "$extract_dir" ]]; then 
-    log_info "Creating directory: $extract_dir" 
-    mkdir -p "$extract_dir" || { 
+  if [[ ! -d "$extract_dir" ]]; then
+    log_info "Creating directory: $extract_dir"
+    mkdir -p "$extract_dir" || {
       log_error "Failed to create directory: $extract_dir"
       exit 1
     }
@@ -142,7 +142,7 @@ else
 	EZA_VERSION=$(curl -Ls https://api.github.com/repos/eza-community/eza/releases/latest | jq -r ".tag_name")
 
 	# Determine the correct eza binary name based on TARGET
-	EZA_BINARY="eza_x86_64-unknown-linux-musl.tar.gz" 
+	EZA_BINARY="eza_x86_64-unknown-linux-musl.tar.gz"
 
 	# Download and extract (this part remains the same)
 	download_and_extract \
