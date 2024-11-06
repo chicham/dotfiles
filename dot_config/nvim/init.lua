@@ -330,14 +330,6 @@ require('lazy').setup({
           desc = 'Git blame on the current line',
         },
         { '<leader>gB', gitsigns.toggle_current_line_blame, desc = 'Toggle git blame on current line' },
-        { '<leader>gd', gitsigns.diffthis, desc = 'Diff against the index' },
-        {
-          '<leader>gD',
-          function()
-            gitsigns.diffthis '@'
-          end,
-          desc = 'Diff against the last commit',
-        },
         { 'ah', mode = { 'o', 'x' }, ':<C-U>Gitsigns select_hunk<CR>' },
       }
     end,
@@ -699,6 +691,12 @@ require('lazy').setup({
             }
           end, 'Document [S]ymbols')
 
+          map('<leader>fw', function()
+            require('telescope.builtin').lsp_dynamic_workspace_symbols {
+              symbols = { 'class', 'method', 'function', 'module', 'variable', 'constant' },
+            }
+          end, 'Document [S]ymbols')
+
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
           -- map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
@@ -801,7 +799,6 @@ require('lazy').setup({
           },
         },
         rust_analyzer = {},
-        jedi_language_server = {},
       }
 
       -- Ensure the servers and tools above are installed

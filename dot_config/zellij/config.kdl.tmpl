@@ -212,7 +212,9 @@ mouse_mode true
 // copy_command "wl-copy"                    // wayland
 // copy_command "pbcopy"                     // osx
 
-copy_command "wl-copy"                    // wayland
+
+copy_command "pbcopy"
+
 
 // Choose the destination for copied text
 // Allows using the primary selection buffer (on x11/wayland) instead of the system clipboard.
@@ -233,6 +235,7 @@ copy_clipboard "system"
 // Default: $EDITOR or $VISUAL
 //
 // scrollback_editor "/usr/bin/vim"
+scrollback_editor "/opt/homebrew/bin/nvim"
 
 // When attaching to an existing session with other users,
 // should the session be mirrored (true)

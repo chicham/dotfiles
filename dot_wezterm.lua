@@ -20,5 +20,7 @@ config.enable_kitty_keyboard = true
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
 config.font_size = 14.
 
+config.font = wezterm.font 'Fira Code'
+
 -- and finally, return the configuration to wezterm
 return config

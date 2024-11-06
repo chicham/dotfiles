@@ -45,6 +45,7 @@ if command -v direnv &> /dev/null
 end
 
 if command -v sk &> /dev/null
+  source $HOME/.config/fish/functions/skim.fish
   skim_key_bindings
 end
 
@@ -148,4 +149,25 @@ function nrg -w rg -d 'fuzzy find pattern in one or multiple files in nvim'
   else
     return 1
   end
+end
+
+# If .env missing; restore from .env.sample and validate
+# See https://github.com/direnv/direnv/wiki/.envrc-Boilerplate
+#if test -f .env.sample
+#    if not command -v createnv >/dev/null
+#        echo 'WARN|Createnv missing; try: pyenv local 3.x && pip install createnv'
+#    else if not test -f .env
+#        uvx createnv --use-default --overwrite || echo 'ERROR|https://github.com/cuducos/createnv'
+#        if command dotenv-linter --version >/dev/null
+#            dotenv-linter .env || echo 'ERROR|https://dotenv-linter.github.io'
+#        end
+#    end
+#end
+
+# The following functions are assumed to be defined elsewhere in your config
+# You'll need to implement them according to your needs
+#dotenv_if_exists || direnv status # https://direnv.net/man/direnv-stdlib.1.html
+
+if test -e $HOME/.config/op/plugins.sh
+  source $HOME/.config/op/plugins.sh
 end

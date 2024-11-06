@@ -53,8 +53,6 @@
 	verbose = true
 [gpg]
 	format = ssh
-[gpg "ssh"]
-	program = /opt/1Password/op-ssh-sign
 [pull]
 	ff = only
 [rerere]
@@ -64,4 +62,6 @@
 [receive]
 	fsckObjects = true
 [branch]
-	sort = commiterdate
+	sort = committerdate
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
