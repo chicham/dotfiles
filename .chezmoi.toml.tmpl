@@ -3,14 +3,19 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 [merge]
   command = 'nvim'
-  args = ["-d", "{{ `{{ .Destination }}` }}", "{{ `{{ .Source }}` }}", "{{ `{{ .Target }}` }}"]
+  args = [
+    "-c",
+    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }} | wincmd j",
+    "{{ .Target }}"
+  ]
+
+
 [diff]
-  pager = "delta"
+  pager = "difft"
 
 [git]
-  autoCommit = true
-  autoPush = true
-  commitMessageTemplate = "{{ `{{ promptString \"Commit message\" | quote }}` }}"
+  autoCommit = false
+  autoPush = false
 
 [data]
   codespaces = {{ $codespaces }}
