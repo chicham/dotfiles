@@ -41,7 +41,7 @@ download_and_extract() {
     log_info "Skipping download: $archive_path already exists"
   else
     log_info "Downloading $url"
-    if ! curl -L "$url" > "$archive_path"; then
+    if ! curl -L "$url" -o "$archive_path"; then
       log_error "Failed to download $url"
       exit 1
     fi
