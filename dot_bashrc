@@ -139,10 +139,21 @@ ex ()
   fi
 }
 
-eval "$(starship init bash)"
-eval "$(direnv hook bash)"
-eval "$(zoxide init --cmd cd bash)"
+if command -v "starship" >/dev/null 2>&1; then
+  eval "$(starship init bash)"
+fi
+if command -v "direnv" >/dev/null 2>&1; then
+  eval "$(direnv hook bash)"
+fi
+if command -v "zoxide" >/dev/null 2>&1; then
+  eval "$(zoxide init --cmd cd bash)"
+fi
 
-alias ls="eza"
-alias cat="bat"
-alias ll="ls -al --icons"
+if command -v "eza" >/dev/null 2>&1; then
+  alias ls="eza"
+  alias ll="eza -al --icons"
+fi
+
+if command -v "bat" >/dev/null 2>&1; then
+  alias cat="bat"
+fi
