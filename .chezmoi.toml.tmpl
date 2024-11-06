@@ -5,8 +5,7 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
   command = 'nvim'
   args = [
     "-c",
-    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }} | wincmd j",
-    "{{ .Target }}"
+    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }},
   ]
 
 
