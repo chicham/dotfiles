@@ -182,7 +182,8 @@ else
 	download_and_extract \
 	"https://github.com/zellij-org/zellij/releases/download/$ZELLIJ_VERSION/zellij-aarch64-unknown-linux-musl.tar.gz" \
 	"/tmp/zellij-$ZELLIJ_VERSION.tar.gz" \
-	"/tmp/zellij-$ZELLIJ_VERSION"
+	"/tmp/zellij-$ZELLIJ_VERSION" \
+	1
 
 	mv "/tmp/zellij-$ZELLIJ_VERSION/zellij" ~/.local/bin
 	chmod u+x ~/.local/bin/zellij
