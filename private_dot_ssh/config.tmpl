@@ -2,14 +2,15 @@ Host *
   # ControlPath ~/.ssh/sockets/%r@%h-%p
   IdentityAgent ~/.1password/agent.sock
 
+
 Host github.com
   IdentityFile ~/.ssh/github.pub
   IdentitiesOnly yes
   ForwardAgent yes
 
-Host {{ onepasswordRead "op://huawei/gpu-tower2/Title" }}
-  User {{ onepasswordRead "op://Artefact/itovnzsbsso5pe4avhqxqbo4by/username" }}
-  HostName {{ onepasswordRead "op://Artefact/itovnzsbsso5pe4avhqxqbo4by/url" }}
+Host artefact-internal
+  HostName 10.40.2.172
+  User hicham_randrianarivo
   IdentityFile ~/.ssh/artefact.pub
   IdentitiesOnly yes
   ForwardAgent yes
