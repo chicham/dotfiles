@@ -15,26 +15,14 @@
 
 # set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
-function zz
-    set ZJ_SESSION (sk --ansi --interactive --exit-0 --select-1 -c \
-  "zellij list-sessions -n -s")
-
-    if test -z "$ZJ_SESSION"
-        zellij attach -c
-    else
-        zellij attach $ZJ_SESSION
-    end
-end
-
+set ZELLIJ_AUTO_ATTACH true
+set ZELLIJ_AUTO_EXIT true
 if status is-interactive
     if command -v zellij &>/dev/null
         # Configure auto-attach/exit to your likings (default is off).
         # set ZELLIJ_AUTO_ATTACH true
         # set ZELLIJ_AUTO_EXIT true
-        # zellij setup --generate-auto-start fish | source
-        if not set -q ZELLIJ
-            zz
-        end
+        eval (zellij setup --generate-auto-start fish | string collect)
         zellij setup --generate-completion fish | source
     end
 end

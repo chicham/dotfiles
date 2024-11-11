@@ -2,15 +2,29 @@ Host *
   # ControlPath ~/.ssh/sockets/%r@%h-%p
   IdentityAgent ~/.1password/agent.sock
 
-
 Host github.com
   IdentityFile ~/.ssh/github.pub
   IdentitiesOnly yes
   ForwardAgent yes
 
-Host artefact-internal
-  HostName 10.40.2.172
-  User hicham_randrianarivo
-  IdentityFile ~/.ssh/artefact.pub
+{{ if eq .vaultType "Work" }}
+Host {{ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/Title" }}
+  User {{ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/username" }}
+  HostName {{ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/url" }}
+  IdentityFile ~/.ssh/work.pub
   IdentitiesOnly yes
   ForwardAgent yes
+  ServerAliveInterval 60
+  ServerAliveCountMax 3
+  TCPKeepAlive yes
+
+Host {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/Title" }}
+  User {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/username" }}
+  HostName {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/url" }}
+  IdentityFile ~/.ssh/work.pub
+  IdentitiesOnly yes
+  ForwardAgent yes
+  ServerAliveInterval 60
+  ServerAliveCountMax 3
+  TCPKeepAlive yes
+{{- end }}

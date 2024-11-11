@@ -1,27 +1,20 @@
 {{- $codespaces:= env "CODESPACES" | not | not -}}
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
+{{- $vaultType := promptString "Choose your vault type (Personal or Work)" }}
+
 [merge]
   command = 'nvim'
   args = [
     "-c",
-    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }},
+    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }}",
   ]
 
-
 [diff]
-  pager = "difft"
-
-[git]
-  autoCommit = false
-  autoPush = false
+  command = "difft"
 
 [data]
+  name = "Hicham Randrianarivo"
+  email = "hicham.randrianarivo@{{ if eq $vaultType "Work" }}artefact.com{{ else }}gmail.com{{ end }}"
   codespaces = {{ $codespaces }}
-{{- if $codespaces }}{{/* Codespaces dotfiles setup is non-interactive, so set an email address */}}
-  name = "Hicham"
-  email = "your@email.com"
-{{- else }}{{/* Interactive setup, so prompt for an email address */}}
-  name = {{ promptString "name" | quote }}
-  email = {{ promptString "email" | quote }}
-{{- end }}
+  vaultType = "{{ $vaultType }}"

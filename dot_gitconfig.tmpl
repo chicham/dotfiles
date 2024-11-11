@@ -1,7 +1,8 @@
 [user]
-	email = {{ onepasswordRead "op://devtools/github.com/email" }}
-	name = "{{ onepasswordRead "op://devtools/Identity/firstname" }} {{ onepasswordRead "op://devtools/Identity/lastname" }}"
-	signingkey = "{{ onepasswordRead "op://Personal/Github Signing/public key" }}"
+
+	email = {{ onepasswordRead "op://Personal/44b5wmbx2pnv7xww6vzfzjy2ki/email" }}
+	name = "{{ onepasswordRead "op://Personal/44b5wmbx2pnv7xww6vzfzjy2ki/first name" }} {{ onepasswordRead "op://Personal/44b5wmbx2pnv7xww6vzfzjy2ki/last name" }}"
+	signingkey = "{{ onepasswordRead "op://Personal/6pnubzqtczttbtqs5orgl4nzxe/public key" }}"
 
 [core]
 	excludesFile = {{ .chezmoi.homeDir }}{{ .chezmoi.pathSeparator}}.gitignore
@@ -63,5 +64,7 @@
 	fsckObjects = true
 [branch]
 	sort = committerdate
-[url "ssh://git@github.com/"]
-	insteadOf = https://github.com/
+{{- if (eq .chezmoi.os "darwin") }}
+[gpg "ssh"]
+  program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+{{- end }}
