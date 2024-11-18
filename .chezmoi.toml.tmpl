@@ -6,12 +6,15 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 [merge]
   command = 'nvim'
   args = [
-    "-c",
-    "DiffviewOpen {{ `{{ .Destination }}` }} {{ `{{ .Source }}` }} {{ `{{ .Target }}` }}",
+    "-d",
+    "{{ `{{ .Destination }}` }}",
+    "{{ `{{ .Source }}` }}",
+    "{{ `{{ .Target }}` }}",
   ]
 
 [diff]
   command = "difft"
+  args = ["--display", "inline"]
 
 [data]
   name = "Hicham Randrianarivo"

@@ -18,7 +18,7 @@ return {
     { '<leader>gl', ':Gllog<CR>', desc = 'View Git log' },
 
     -- Telescope integration (requires telescope.nvim)
-    { '<leader>gs', require('telescope.builtin').git_stash, desc = 'Browse Git stashes with Telescope' },
+    -- { '<leader>gs', require('telescope.builtin').git_stash, desc = 'Browse Git stashes with Telescope' },
     { '<leader>gc', require('telescope.builtin').git_commits, desc = 'Browse Git commits with Telescope' },
   },
 }
