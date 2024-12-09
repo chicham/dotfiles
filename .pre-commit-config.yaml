@@ -39,7 +39,7 @@ repos:
         stages: [commit-msg]
         args: []
   - repo: https://github.com/JohnnyMorganz/StyLua
-    rev: v2.0.1  # Replace with the latest stable release
+    rev: v2.0.2  # Replace with the latest stable release
     hooks:
       - id: stylua
         args:
