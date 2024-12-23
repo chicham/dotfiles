@@ -3,3 +3,6 @@ cliff.toml
 pre-commit
 **/.git/
 **/*lock.json
+{{ not if (hasPrefix .chezmoi.hostname "research-") }}
+.ssh/config
+{{ end }}
