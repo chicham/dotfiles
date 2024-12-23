@@ -13,7 +13,7 @@
 	cmd = nvim -f -c \"DiffviewOpen\" \"$MERGED\"
 	trustExitCode = true
 [merge]
-	tool = diffview
+	tool = fugitive
 	conflictstyle = zdiff3
 [init]
 	defaultBranch = main
@@ -68,7 +68,22 @@
 [gpg "ssh"]
   program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
 {{ end -}}
-{{ if (eq .chezmoi.hostname "macbookair") -}}
+
 [url "ssh://git@github.com/"]
 	insteadOf = https://github.com/
-{{ end -}}
+[mergetool "fugitive"]
+	cmd = nvim -f -c \"Gvdiffsplit!\" \"$MERGED\"
+[diff "jupyternotebook"]
+	command = git-nbdiffdriver diff
+[merge "jupyternotebook"]
+	driver = git-nbmergedriver merge %O %A %B %L %P
+	name = jupyter notebook merge driver
+[difftool "nbdime"]
+	cmd = git-nbdifftool diff \"$LOCAL\" \"$REMOTE\" \"$BASE\"
+[mergetool "nbdime"]
+	cmd = git-nbmergetool merge \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
+[filter "lfs"]
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f

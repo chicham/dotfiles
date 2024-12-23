@@ -1,7 +1,6 @@
 Host github.com
   IdentityFile ~/.ssh/github.pub
   IdentitiesOnly yes
-  ForwardAgent yes
 
 {{ if eq .vaultType "Work" -}}
 Host {{ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/Title" }}
@@ -10,9 +9,6 @@ Host {{ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/Title" }}
   IdentityFile ~/.ssh/work.pub
   IdentitiesOnly yes
   ForwardAgent yes
-  ServerAliveInterval 60
-  ServerAliveCountMax 5
-  TCPKeepAlive no
 
 Host {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/Title" }}
   User {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/username" }}
@@ -20,11 +16,13 @@ Host {{ onepasswordRead "op://Work/itovnzsbsso5pe4avhqxqbo4by/Title" }}
   IdentityFile ~/.ssh/work.pub
   IdentitiesOnly yes
   ForwardAgent yes
-  ServerAliveInterval 60
-  ServerAliveCountMax 5
-  TCPKeepAlive no
 {{ end -}}
 
 Host *
   IdentityAgent ~/.1password/agent.sock
-  ConnectTimeout 120
+  ServerAliveInterval 60
+  ServerAliveCountMax 5
+  TCPKeepAlive yes
+  ControlMaster auto
+  ControlPath ~/.ssh/control:%h:%p:%r
+  ControlPersist 10m

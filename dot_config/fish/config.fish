@@ -15,17 +15,6 @@
 
 # set -U __done_exclude '(fg)'  # default: all git commands, except push and pull. accepts a regex.
 
-set ZELLIJ_AUTO_ATTACH true
-set ZELLIJ_AUTO_EXIT true
-if status is-interactive
-    if command -v zellij &>/dev/null
-        # Configure auto-attach/exit to your likings (default is off).
-        # set ZELLIJ_AUTO_ATTACH true
-        # set ZELLIJ_AUTO_EXIT true
-        eval (zellij setup --generate-auto-start fish | string collect)
-        zellij setup --generate-completion fish | source
-    end
-end
 
 #### DIRENV ####
 if command -v direnv &>/dev/null
@@ -33,7 +22,6 @@ if command -v direnv &>/dev/null
 end
 
 if command -v sk &>/dev/null
-    source $HOME/.config/fish/functions/skim.fish
     skim_key_bindings
 end
 

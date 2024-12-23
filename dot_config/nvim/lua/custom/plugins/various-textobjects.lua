@@ -1,7 +1,9 @@
 return {
   'chrisgrieser/nvim-various-textobjs',
   opts = {
-    useDefaultKeymaps = false,
+    keymaps = {
+      useDefaults = false,
+    },
   },
   keys = function()
     local vt = require 'various-textobjs'

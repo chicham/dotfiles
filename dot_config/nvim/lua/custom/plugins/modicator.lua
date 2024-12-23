@@ -1,5 +1,7 @@
 return {
   'mawkler/modicator.nvim',
+  event = 'ModeChanged',
+  dependencies = 'sainnhe/gruvbox-material',
   init = function()
     -- These are required for Modicator to work
     vim.o.cursorline = true
@@ -12,5 +14,11 @@ return {
     -- ignore. Feel free to remove this line after you've gotten Modicator to
     -- work properly.
     show_warnings = true,
+    highlights = {
+      defaults = {
+        bold = true,
+      },
+      use_cursorline_background = false,
+    },
   },
 }
