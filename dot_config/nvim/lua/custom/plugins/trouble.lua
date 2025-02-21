@@ -4,18 +4,23 @@ return {
   cmd = 'Trouble',
   keys = {
     {
-      '<leader>td',
+      '<leader>tD',
       '<cmd>Trouble diagnostics toggle focus=true<cr>',
       desc = 'Diagnostics (Trouble)',
     },
     {
-      '<leader>tt',
+      '<leader>td',
       '<cmd>Trouble diagnostics toggle focus=true filter.buf=0<cr>',
       desc = 'Buffer Diagnostics (Trouble)',
     },
     {
-      '<leader>to',
+      '<leader>tt',
       '<cmd>Trouble todo toggle focus=true filter.buf=0<cr>',
+      desc = 'Buffer Diagnostics (Trouble)',
+    },
+    {
+      '<leader>tT',
+      '<cmd>Trouble todo<cr>',
       desc = 'Buffer Diagnostics (Trouble)',
     },
   },

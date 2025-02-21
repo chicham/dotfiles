@@ -1,9 +1,11 @@
 return {
   'https://github.com/lervag/vimtex',
-  lazy = true,
+  lazy = false,
   config = function()
     -- VimTeX configuration goes here, e.g.
-    vim.g.vimtex_view_method = 'zathura'
-    vim.g.vimtex_compiler_method = 'latexrun'
+    vim.g.vimtex_view_method = 'skim'
+    -- vim.g.vimtex_compiler_method = 'latexrun.py'
+    vim.g.vimtex_syntax_enabled = 0
+    vim.g.vimtex_syntax_conceal_disable = 1
   end,
 }

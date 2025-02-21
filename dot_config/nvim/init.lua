@@ -177,19 +177,38 @@ vim.opt.diffopt = 'filler,internal,algorithm:histogram,indent-heuristic'
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
--- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
--- vim.diagnostic.config { virtual_lines = { only_current_line = true }, virtual_text = false }
+---- Variable to track the diagnostic state
+local diagnostic_enabled = true
+
+-- Function to toggle diagnostics
+local function toggle_diagnostics()
+  diagnostic_enabled = not diagnostic_enabled
+  vim.diagnostic.enable(diagnostic_enabled)
+end
+
+-- vim.diagnostic.config {
+--   virtual_text = false,
+--   virtual_lines = {
+--     only_current_line = true,
+--   },
+-- }
+
+-- -- Set the keybinding (using <leader>td for "toggle diagnostics")
+vim.keymap.set('n', '<leader>dt', toggle_diagnostics, {
+  desc = 'Toggle diagnostics',
+  silent = true,
+  noremap = true,
+})
+
 vim.diagnostic.config {
-  virtual_lines = { only_current_line = true },
-  virtual_text = false,
   signs = {
     severity = {
-      min = vim.diagnostic.severity.WARN,
+      min = vim.diagnostic.severity.HINT,
     },
   },
   underline = {
     severity = {
-      min = vim.diagnostic.severity.WARN,
+      min = vim.diagnostic.severity.ERROR,
     },
   },
 }
@@ -220,7 +239,7 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --Windows management
 vim.keymap.set('n', '<leader>ww', '"<C-w><C-w> | zt"', { expr = true, silent = true })
 vim.keymap.set('n', '<leader>wv', '"<C-w>v | zt"', { expr = true, silent = true })
-vim.keymap.set('n', '<leader>ws', '"<C-W>s | zt"', { expr = true, silent = true })
+vim.keymap.set('n', '<leader>wh', '"<C-W>s | zt"', { expr = true, silent = true })
 vim.keymap.set('n', '<leader>wc', '<C-w>c')
 vim.keymap.set('n', '<leader>w=', '<C-w>=')
 vim.keymap.set('n', '<leader>wr', '<C-w>r')
@@ -788,6 +807,9 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
+        basedpyright = {
+          settings = { basedpyright = { analysis = { typeCheckingMode = 'off' } } },
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -1195,6 +1217,11 @@ require('lazy').setup({
         'toml',
         'yaml',
         'dockerfile',
+        'git_config',
+        'git_rebase',
+        'gitattributes',
+        'gitcommit',
+        'gitignore',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,

@@ -3,7 +3,7 @@ return {
   lazy = false,
   keys = {
     -- Git commands
-    { '<leader>gg', ':0Git<CR>', desc = 'Open Git status', { silent = true } },
+    -- { '<leader>gg', ':0Git<CR>', desc = 'Open Git status', { silent = true } },
     { '<leader>gw', ':Gwrite<CR>', desc = 'Write changes to Git' },
     { '<leader>gW', ':Gwrite!<CR>', desc = 'Force write changes to Git' },
     { '<leader>g+', ':Git stash<CR>:e<CR>', desc = 'Stash changes and reopen buffer' },

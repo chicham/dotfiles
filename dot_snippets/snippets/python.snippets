@@ -348,7 +348,14 @@ snippet train_state
 					**kwargs,
 			)
 
-snippet appconfig
+snippet appconfig "default application config"
+	@edc.dataclass
+	@dataclasses.dataclass
+	class AppConfig:
+		${1:pass}
+	$0
+
+snippet jaxconfig
 	@edc.dataclass
 	@dataclasses.dataclass(frozen=True, eq=True)
 	class ${1:AppConfig}:

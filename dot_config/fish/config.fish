@@ -52,8 +52,6 @@ if command -v zoxide &>/dev/null
     end
 end
 
-#### GPG-AGENT ####
-
 if command -v 1password &>/dev/null
     set -x SSH_AUTH_SOCK ~/.1password/agent.sock
 end
