@@ -30,3 +30,14 @@ repos:
     -   id: conventional-pre-commit
         stages: [commit-msg]
         args: [feat, fix, chore, test]  # Restrict to our allowed types
+
+# Custom local hooks
+-   repo: local
+    hooks:
+    -   id: generate-changelog
+        name: Generate changelog
+        description: Automatically generates CHANGELOG.md using git-cliff
+        entry: bash -c 'if command -v git-cliff >/dev/null 2>&1; then git-cliff --output CHANGELOG.md && git add CHANGELOG.md || exit 1; else echo "git-cliff not installed, skipping changelog generation"; fi'
+        language: system
+        pass_filenames: false
+        stages: [push]

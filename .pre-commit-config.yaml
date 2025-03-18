@@ -30,14 +30,6 @@ repos:
         args: ["--ignore-words=.codespellignore"]
         exclude: ".git/"
 
-  # Check markdown files
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm  # GitHub-Flavored Markdown
-
   # Validate YAML files
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.35.1
