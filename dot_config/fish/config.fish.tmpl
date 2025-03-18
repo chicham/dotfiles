@@ -21,6 +21,16 @@ if test -d $HOME/.local/bin
     fish_add_path $HOME/.local/bin
 end
 
+# Add Google Cloud SDK to PATH if installed in ~/.local
+if test -d $HOME/.local/google-cloud-sdk
+    fish_add_path $HOME/.local/google-cloud-sdk/bin
+
+    # Google Cloud SDK completion for fish
+    if test -f $HOME/.local/google-cloud-sdk/path.fish.inc
+        source $HOME/.local/google-cloud-sdk/path.fish.inc
+    end
+end
+
 # Docker configuration if installed
 if type -q docker
     # Add docker completions if they exist

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# This script installs Google Cloud SDK on macOS
+# https://cloud.google.com/sdk/docs/install-sdk
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# Check if Google Cloud SDK is already installed
+if command -v gcloud >/dev/null 2>&1; then
+  echo "Google Cloud SDK is already installed."
+else
+  echo "Installing Google Cloud SDK..."
+
+  # Install Google Cloud SDK on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install --cask google-cloud-sdk
+
+    echo "Google Cloud SDK has been installed successfully."
+    echo "Use 'gcloud init' to initialize the SDK and authenticate."
+  else
+    echo "Homebrew not found. Please install Homebrew first."
+    exit 1
+  fi
+fi
+
+# Display installed components
+if command -v gcloud >/dev/null 2>&1; then
+  echo "Installed Google Cloud SDK components:"
+  gcloud components list
+fi
