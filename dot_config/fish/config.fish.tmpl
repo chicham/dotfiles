@@ -5,6 +5,17 @@ set -gx EDITOR nvim
 set -gx VISUAL nvim
 set -gx TERM wezterm
 
+{{ if eq .chezmoi.os "darwin" -}}
+# Configure Homebrew paths based on architecture
+if test -d /opt/homebrew
+    # Apple Silicon (M1/M2) Mac
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+else if test -d /usr/local/Homebrew
+    # Intel Mac
+    eval "$(/usr/local/bin/brew shellenv)"
+end
+{{- end }}
+
 # Add ~/.local/bin to PATH if it exists
 if test -d $HOME/.local/bin
     fish_add_path $HOME/.local/bin
@@ -121,7 +132,7 @@ else
             ssh-agent -c | sed 's/^echo/# echo/' > $agent_file
             chmod 600 $agent_file
             source $agent_file
-            
+
             # Add default key if available
             if test -f $HOME/.ssh/id_ed25519
                 ssh-add $HOME/.ssh/id_ed25519 2>/dev/null
