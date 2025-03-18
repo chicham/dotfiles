@@ -63,11 +63,13 @@ chmod +x "${WRAPPER_SCRIPT}"
 # Add to shell config to auto-start fish for interactive shells
 for RC_FILE in "${HOME}/.bashrc" "${HOME}/.zshrc"; do
   if [ -f "${RC_FILE}" ] && ! grep -q "start-fish" "${RC_FILE}"; then
-    echo "" >> "${RC_FILE}"
-    echo "# Auto-start fish shell for interactive sessions" >> "${RC_FILE}"
-    echo "if [ -t 1 ] && [ -x ${WRAPPER_SCRIPT} ]; then" >> "${RC_FILE}"
-    echo "  exec ${WRAPPER_SCRIPT}" >> "${RC_FILE}"
-    echo "fi" >> "${RC_FILE}"
+    {
+      echo ""
+      echo "# Auto-start fish shell for interactive sessions"
+      echo "if [ -t 1 ] && [ -x ${WRAPPER_SCRIPT} ]; then"
+      echo "  exec ${WRAPPER_SCRIPT}"
+      echo "fi"
+    } >> "${RC_FILE}"
     echo "Added fish auto-start to ${RC_FILE}"
   fi
 done

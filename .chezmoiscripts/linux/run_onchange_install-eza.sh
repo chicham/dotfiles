@@ -10,7 +10,6 @@ if ! command -v eza >/dev/null 2>&1; then
 
   # Get latest release
   LATEST_RELEASE=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
-  VERSION=${LATEST_RELEASE#v}
 
   # Download and install
   TEMP_DIR=$(mktemp -d)
