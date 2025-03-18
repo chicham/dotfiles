@@ -113,17 +113,17 @@ set -eu
 install_wezterm() {
   VERSION="$1"
   NIGHTLY="$2"
-  
+
   echo "Installing WezTerm on remote server..."
-  
+
   # Set directory for binaries
   BIN_DIR="${HOME}/.local/bin"
   mkdir -p "${BIN_DIR}"
-  
+
   # Create temporary directory
   TEMP_DIR=$(mktemp -d)
   cd "${TEMP_DIR}"
-  
+
   # Determine download URL
   if [ "${NIGHTLY}" = "true" ]; then
     echo "Downloading WezTerm nightly build..."
@@ -139,28 +139,28 @@ install_wezterm() {
       DOWNLOAD_URL="https://github.com/wez/wezterm/releases/download/${LATEST_RELEASE}/wezterm-${LATEST_RELEASE}-ubuntu20.04.tar.gz"
     fi
   fi
-  
+
   # Download the tarball
   echo "Downloading from: ${DOWNLOAD_URL}"
   curl -Lo wezterm.tar.gz "${DOWNLOAD_URL}"
-  
+
   # Extract the tarball
   echo "Extracting WezTerm files..."
   tar -xzf wezterm.tar.gz
   cd wezterm*
-  
+
   # Copy binaries to ~/.local/bin
   cp -f wezterm "${BIN_DIR}/"
   cp -f wezterm-gui "${BIN_DIR}/"
   cp -f wezterm-mux-server "${BIN_DIR}/"
   cp -f strip-ansi-escapes "${BIN_DIR}/"
-  
+
   # Clean up
   cd - > /dev/null
   rm -rf "${TEMP_DIR}"
-  
+
   echo "WezTerm installed to ${BIN_DIR}/wezterm"
-  
+
   # Check installation
   if [ -x "${BIN_DIR}/wezterm" ]; then
     "${BIN_DIR}/wezterm" --version
@@ -179,7 +179,7 @@ EOF
 
 # Copy the script to the remote server and execute it
 echo "Connecting to ${SSH_USER}@${REMOTE_HOST}..."
-scp ${SSH_OPTS} -P "${SSH_PORT}" "${TEMP_SCRIPT}" "${SSH_USER}@${REMOTE_HOST}:wezterm-install.sh"
+scp "${SSH_OPTS}" -P "${SSH_PORT}" "${TEMP_SCRIPT}" "${SSH_USER}@${REMOTE_HOST}:wezterm-install.sh"
 ${SSH_CMD} "chmod +x ~/wezterm-install.sh && ./wezterm-install.sh '${LOCAL_VERSION}' '${USE_NIGHTLY}' && rm ~/wezterm-install.sh"
 
 # Clean up
