@@ -56,12 +56,17 @@
     ui = auto
 
 [diff]
-    # Use difftastic for all diffs
+    # Use difftastic for all diffs by default
     external = difft
     tool = difftastic
+    # Add VSCode as an alternative diff tool
+    guitool = vscode
 
 [difftool "difftastic"]
     cmd = difft "$LOCAL" "$REMOTE"
+
+[difftool "vscode"]
+    cmd = code --wait --diff "$LOCAL" "$REMOTE"
 
 [difftool]
     prompt = false
@@ -76,6 +81,16 @@
     conflictstyle = zdiff3
     # Always use rebase for merging
     ff = only
+    # Use VSCode as the merge tool
+    tool = vscode
+
+[mergetool "vscode"]
+    cmd = code --wait "$MERGED"
+    trustExitCode = true
+
+[mergetool]
+    prompt = false
+    keepBackup = false
 
 [rebase]
     # Auto-stash before rebasing
@@ -126,6 +141,10 @@
     contributors = shortlog --summary --numbered
     # Use difftastic for viewing changes
     dft = difftool
+    # Use VSCode for viewing changes
+    vsdiff = difftool --tool=vscode
+    # Use VSCode for resolving merge conflicts
+    vsmerge = mergetool --tool=vscode
     # Show diff using difftastic
     dlog = "!f() { GIT_EXTERNAL_DIFF=difft git log -p --ext-diff $@; }; f"
 
