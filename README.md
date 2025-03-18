@@ -26,6 +26,10 @@ This dotfiles template includes a carefully curated set of development tools, ea
 | [starship](https://starship.rs/)                    | Customizable prompt    | Fast, informative prompt with Git integration and language support           |
 | [wezterm](https://wezfurlong.org/wezterm/)          | Terminal emulator      | GPU-accelerated with excellent font handling and multiplexing                |
 | [neovim](https://neovim.io/)                        | Text editor            | Modern Vim with better defaults and powerful extensions                      |
+| [VSCode](https://code.visualstudio.com/)            | Code editor            | Feature-rich editor with excellent extension ecosystem                       |
+| [Homebrew](https://brew.sh/)                        | Package manager        | Simple package installation for macOS (automatically installed)              |
+| [git-cliff](https://github.com/orhun/git-cliff)     | Changelog generator    | Automatically generates changelogs from conventional commits                 |
+| [Google Cloud SDK](https://cloud.google.com/sdk)    | Cloud tools            | Command-line tools for Google Cloud (gcloud, gsutil, bq)                     |
 | [uv](https://github.com/astral-sh/uv)               | Python package manager | Ultra-fast Python package installation and management                        |
 | [pre-commit](https://pre-commit.com/)               | Git hook manager       | Automates code quality checks before each commit                             |
 | [bat](https://github.com/sharkdp/bat)               | Cat replacement        | Syntax highlighting and Git integration for file viewing                     |
@@ -35,9 +39,11 @@ This dotfiles template includes a carefully curated set of development tools, ea
 | [zoxide](https://github.com/ajeetdsouza/zoxide)     | Directory jumper       | Faster navigation between frequently-used directories                        |
 | [direnv](https://direnv.net/)                       | Environment manager    | Directory-based environment variable loading                                 |
 
-### Git Template with Pre-commit
+### Git Configuration
 
-All new Git repositories will automatically be configured with pre-commit hooks, ensuring consistent code quality across your projects.
+- **VSCode Integration**: Configured as both diff and merge tool with convenient aliases (`git vsdiff`, `git vsmerge`)
+- **Automatic Changelog**: Pre-push hook generates CHANGELOG.md using git-cliff and conventional commits
+- **Pre-commit Hooks**: All new Git repositories will automatically be configured with pre-commit hooks for code quality
 
 ## Platform Support
 
