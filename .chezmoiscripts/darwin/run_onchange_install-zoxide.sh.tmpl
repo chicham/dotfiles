@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs zoxide on macOS using Homebrew
+
+if ! command -v zoxide >/dev/null 2>&1; then
+  echo "Installing zoxide..."
+  # Install zoxide on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install zoxide
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "zoxide has been installed successfully."
+else
+  echo "zoxide is already installed."
+fi

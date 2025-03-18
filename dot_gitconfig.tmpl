@@ -1,0 +1,172 @@
+# ~/.gitconfig
+# This is a template managed by chezmoi
+# Platform-specific and best practices Git configuration
+
+[user]
+    name = {{ .firstName }} {{ .lastName }}
+    email = {{ .email }}
+
+[core]
+    # Use VS Code as default editor
+    editor = code --wait
+    # Avoid issues with line endings between platforms
+    autocrlf = input
+    # Enable symlinks on all platforms
+    symlinks = true
+    # Ensure proper quoting of file names
+    quotepath = false
+    # Use bat as pager
+    pager = bat --style=plain
+    # Store global exclusions
+    excludesfile = ~/.gitignore_global
+    # Store global attributes
+    attributesfile = ~/.gitattributes_global
+    # Don't keep temporary files
+    keepBackup = false
+    keepTempFiles = false
+
+[init]
+    # Set default branch name to main
+    defaultBranch = main
+    # Use custom template with pre-commit hook
+    templateDir = ~/.git_template
+
+[pull]
+    # Rebase by default when pulling
+    rebase = true
+    # Only allow fast-forward merges when pulling
+    ff = only
+
+[push]
+    # Push to the remote branch with the same name as the local branch
+    default = current
+    # Automatically create upstream branch when pushing
+    autoSetupRemote = true
+    # Always push to origin by default
+    remote = origin
+
+[fetch]
+    # Automatically prune deleted branches from remote
+    prune = true
+    # Automatically fetch tags
+    pruneTags = true
+
+[color]
+    # Use colors in Git commands when possible
+    ui = auto
+
+[diff]
+    # Use difftastic for all diffs
+    external = difft
+    tool = difftastic
+
+[difftool "difftastic"]
+    cmd = difft "$LOCAL" "$REMOTE"
+
+[difftool]
+    prompt = false
+
+[pager]
+    difftool = true
+
+[merge]
+    # Include summaries of merged commits in new merge commits
+    log = true
+    # Use zdiff3 for more detailed conflict resolution
+    conflictstyle = zdiff3
+    # Always use rebase for merging
+    ff = only
+
+[rebase]
+    # Auto-stash before rebasing
+    autoStash = true
+
+[rerere]
+    # Enable the recording of resolved conflicts
+    enabled = true
+    # Auto-stage files on conflict resolution
+    autoUpdate = true
+
+[help]
+    # Automatically correct mistyped commands
+    autocorrect = 10
+
+[alias]
+    # Shorter status command
+    st = status
+    # Shorter checkout command
+    co = checkout
+    # Shorter branch command
+    br = branch
+    # Shorter commit command
+    ci = commit
+    # Show commit graph with branch names
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    # Show all branches with their last commit
+    branches = branch -a -v
+    # Stash changes and keep working directory
+    save = stash push -u
+    # Show all stashes
+    stashes = stash list
+    # Get the current branch name
+    current = rev-parse --abbrev-ref HEAD
+    # Check out a pull request from GitHub
+    pr = "!f() { git fetch origin pull/$1/head:pr-$1 && git checkout pr-$1; }; f"
+    # List aliases
+    aliases = config --get-regexp '^alias\\.'
+    # Amend the previous commit without changing the commit message
+    amend = commit --amend --no-edit
+    # Interactively rebase the last n commits
+    reb = "!f() { git rebase -i HEAD~$1; }; f"
+    # Undo the last commit
+    undo = reset --soft HEAD^
+    # Discard all local changes
+    discard = reset --hard
+    # List contributors with number of commits
+    contributors = shortlog --summary --numbered
+    # Use difftastic for viewing changes
+    dft = difftool
+    # Show diff using difftastic
+    dlog = "!f() { GIT_EXTERNAL_DIFF=difft git log -p --ext-diff $@; }; f"
+
+[credential]
+    # Cache credentials for 1 hour (3600 seconds)
+    helper = cache --timeout=3600
+    {{- if eq .chezmoi.os "darwin" }}
+    # Use macOS keychain for credential storage
+    helper = osxkeychain
+    {{- end }}
+
+[url "git@github.com:"]
+    # Short syntax for SSH GitHub repositories
+    insteadOf = gh:
+
+[url "git@gitlab.com:"]
+    # Short syntax for SSH GitLab repositories
+    insteadOf = gl:
+
+[lfs]
+    # Enable Git LFS
+    enable = true
+    # Skip smudge (download) during checkout
+    skipsmudge = false
+    # Set default batch size for LFS operations
+    batchsize = 100
+    # Set concurrency for LFS operations
+    concurrenttransfers = 8
+
+[filter "lfs"]
+    # Clean, smudge, and required settings for Git LFS
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+
+[diff "jupyternotebook"]
+    # Use nbdime for Jupyter notebook diffs
+    command = nbdiff --color-words
+
+[merge "jupyternotebook"]
+    # Use nbdime for Jupyter notebook merges
+    driver = nbmerge-git
+    name = Jupyter notebook merge driver

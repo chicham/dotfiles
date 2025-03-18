@@ -1,0 +1,11 @@
+# Words to ignore in codespell
+artefiles
+chezmoi
+direnv
+difftastic
+eza
+keypair
+keypairs
+starship
+wezterm
+zoxide

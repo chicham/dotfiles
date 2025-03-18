@@ -1,0 +1,157 @@
+# Fish shell configuration file
+
+# Set environment variables
+set -gx EDITOR nvim
+set -gx VISUAL nvim
+set -gx TERM wezterm
+
+# Add ~/.local/bin to PATH if it exists
+if test -d $HOME/.local/bin
+    fish_add_path $HOME/.local/bin
+end
+
+# Docker configuration if installed
+if type -q docker
+    # Add docker completions if they exist
+    if test -d ~/.config/fish/completions
+        and not test -f ~/.config/fish/completions/docker.fish
+        # Docker provides completions via the CLI
+        docker completion fish > ~/.config/fish/completions/docker.fish 2>/dev/null
+    end
+end
+
+# Initialize starship prompt if installed
+if type -q starship
+    starship init fish | source
+end
+
+# Initialize zoxide (smarter cd) if installed
+if type -q zoxide
+    zoxide init fish --cmd cd | source
+end
+
+# Initialize direnv if installed
+if type -q direnv
+    direnv hook fish | source
+end
+
+# Initialize atuin (shell history) if installed
+if type -q atuin
+    atuin init fish | source
+end
+
+# Set up aliases for exa/eza if installed
+if type -q eza
+    alias ls="eza --group-directories-first"
+    alias ll="eza -lh --group-directories-first"
+    alias la="eza -lah --group-directories-first"
+    alias lt="eza -T --group-directories-first"
+elif type -q exa
+    alias ls="exa --group-directories-first"
+    alias ll="exa -lh --group-directories-first"
+    alias la="exa -lah --group-directories-first"
+    alias lt="exa -T --group-directories-first"
+end
+
+# Use bat instead of cat if installed
+if type -q bat
+    alias cat="bat --style=plain"
+end
+
+# Use fd instead of find if installed
+if type -q fd
+    alias find="fd"
+end
+
+# Use difft (difftastic) for git diff if available
+if type -q difft
+    set -gx GIT_EXTERNAL_DIFF difft
+end
+
+# Set up git aliases
+if type -q git
+    alias g="git"
+    alias gs="git status"
+    alias ga="git add"
+    alias gc="git commit"
+    alias gp="git push"
+    alias gl="git pull"
+    alias gd="git diff"
+    alias gco="git checkout"
+    alias gb="git branch"
+    alias glog="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+end
+
+# GitHub CLI aliases if installed
+if type -q gh
+    alias ghpr="gh pr create"
+    alias ghprv="gh pr view"
+    alias ghprl="gh pr list"
+end
+
+# Neovim aliases
+if type -q nvim
+    alias vim="nvim"
+    alias vi="nvim"
+    alias v="nvim"
+end
+
+# WezTerm specific settings
+if test "$TERM_PROGRAM" = WezTerm
+    # Enable true color support and italics
+    set -gx COLORTERM truecolor
+end
+
+# Set up SSH agent (either 1Password or standard)
+if command -v op >/dev/null 2>&1; and test -d "/Applications/1Password.app"
+    # Use 1Password as SSH agent if it's installed
+    set -gx SSH_AUTH_SOCK ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+    if status is-interactive
+        echo "Using 1Password as SSH agent"
+    end
+else
+    # Use standard ssh-agent
+    if status is-interactive
+        # Path to store SSH agent environment variables
+        set -l agent_file $HOME/.ssh/agent.fish
+
+        # Function to start the SSH agent
+        function __start_agent
+            echo "Starting SSH agent..."
+            ssh-agent -c | sed 's/^echo/# echo/' > $agent_file
+            chmod 600 $agent_file
+            source $agent_file
+            
+            # Add default key if available
+            if test -f $HOME/.ssh/id_ed25519
+                ssh-add $HOME/.ssh/id_ed25519 2>/dev/null
+            end
+        end
+
+        # Check if agent is already running
+        if test -f $agent_file
+            source $agent_file
+            # Verify the agent is still running
+            if not ps -p $SSH_AGENT_PID | grep -q ssh-agent 2>/dev/null
+                # Agent process is not running, start a new one
+                __start_agent
+            end
+        else
+            # No agent file exists, start a new agent
+            __start_agent
+        end
+    end
+end
+
+# Terminal title
+function fish_title
+    echo "{{ .firstName }} {{ .lastName }}: "(basename $PWD)
+end
+
+# Suppress fish greeting
+set fish_greeting
+
+# Source local config if it exists (not managed by chezmoi)
+if test -f $HOME/.config/fish/local.config.fish
+    source $HOME/.config/fish/local.config.fish
+end

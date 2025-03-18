@@ -1,0 +1,698 @@
+-- Neovim Configuration
+-- Modern configuration using the latest Neovim APIs
+
+-- Use lazy.nvim for plugin management (better than packer.nvim)
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Set leader key before loading plugins
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+--------------------------------------------------------------------------------
+-- BASIC SETTINGS
+--------------------------------------------------------------------------------
+-- General
+vim.opt.mouse = "a"              -- Enable mouse in all modes
+vim.opt.clipboard = "unnamedplus" -- Use system clipboard
+vim.opt.completeopt = { "menu", "menuone", "noselect" } -- Completion options
+vim.opt.conceallevel = 0         -- Don't hide quotes in markdown
+vim.opt.fileencoding = "utf-8"   -- File encoding
+vim.opt.pumheight = 10           -- Pop up menu height
+vim.opt.showmode = false         -- Don't show mode (lualine will do this)
+vim.opt.showtabline = 2          -- Always show tabs
+vim.opt.splitbelow = true        -- Horizontal splits go below current window
+vim.opt.splitright = true        -- Vertical splits go to the right of current window
+vim.opt.termguicolors = true     -- Enable 24-bit RGB color
+vim.opt.undofile = true          -- Enable persistent undo
+vim.opt.updatetime = 100         -- Faster completion
+vim.opt.writebackup = false      -- Not needed when using undofile
+vim.opt.timeoutlen = 300         -- Time to wait for a mapped sequence to complete (in milliseconds)
+vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
+-- Indentation
+vim.opt.expandtab = true         -- Convert tabs to spaces
+vim.opt.shiftwidth = 2           -- Number of spaces for indentation
+vim.opt.tabstop = 2              -- Number of spaces a tab counts for
+vim.opt.softtabstop = 2          -- Number of spaces a tab counts for while editing
+vim.opt.smartindent = true       -- Smart indenting
+{{ if eq .chezmoi.os "darwin" }}
+-- On macOS, add autopairs settings
+vim.g.autopairs_enable = true
+{{ end }}
+
+-- Line Handling
+vim.opt.number = true            -- Show line numbers
+vim.opt.relativenumber = true    -- Show relative line numbers
+vim.opt.cursorline = true        -- Highlight current line
+vim.opt.wrap = false             -- Don't wrap lines
+vim.opt.breakindent = true       -- Wrapped lines continue visually indented
+vim.opt.linebreak = true         -- Don't break words when wrapping
+vim.opt.scrolloff = 8            -- Lines of context when scrolling vertically
+vim.opt.sidescrolloff = 8        -- Lines of context when scrolling horizontally
+
+-- Search
+vim.opt.hlsearch = true          -- Highlight all matches
+vim.opt.ignorecase = true        -- Ignore case in search patterns
+vim.opt.smartcase = true         -- Override ignorecase if search contains uppercase
+
+-- File/Buffer Handling
+vim.opt.hidden = true            -- Required to keep multiple buffers open
+vim.opt.swapfile = false         -- Don't use swapfile
+vim.opt.backup = false           -- Don't create backups
+vim.opt.spell = false            -- Disable spell checking by default
+vim.opt.spelllang = "en_us"      -- Set language to US English
+
+-- Command Line
+vim.opt.cmdheight = 1            -- Prefer minimal height
+vim.opt.wildmenu = true          -- Command-line completion mode
+vim.opt.wildmode = "longest:full,full" -- Command line completion behavior
+
+-- Appearance
+vim.opt.fillchars:append({ eob = " " }) -- Don't show ~ for empty lines
+vim.g.netrw_banner = 0           -- Hide banner in netrw file browser
+vim.g.netrw_liststyle = 3        -- Tree style listing
+
+-- Folding (using treesitter when available)
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldenable = false       -- Don't fold by default when opening files
+vim.opt.foldlevel = 99           -- High fold level by default to avoid folding
+
+--------------------------------------------------------------------------------
+-- KEY MAPPINGS
+--------------------------------------------------------------------------------
+
+-- Helper function for mapping keys
+local function map(mode, lhs, rhs, opts)
+  local options = { noremap = true, silent = true }
+  if opts then options = vim.tbl_extend("force", options, opts) end
+  vim.api.nvim_set_keymap(mode, lhs, rhs, options)
+end
+
+-- Better window navigation
+map("n", "<C-h>", "<C-w>h")
+map("n", "<C-j>", "<C-w>j")
+map("n", "<C-k>", "<C-w>k")
+map("n", "<C-l>", "<C-w>l")
+
+-- Resize windows with arrows
+map("n", "<C-Up>", ":resize +2<CR>")
+map("n", "<C-Down>", ":resize -2<CR>")
+map("n", "<C-Left>", ":vertical resize -2<CR>")
+map("n", "<C-Right>", ":vertical resize +2<CR>")
+
+-- Navigate buffers
+map("n", "<S-l>", ":bnext<CR>")
+map("n", "<S-h>", ":bprevious<CR>")
+
+-- Stay in indent mode when indenting
+map("v", "<", "<gv")
+map("v", ">", ">gv")
+
+-- Move text up and down
+map("v", "J", ":m .+1<CR>==")
+map("v", "K", ":m .-2<CR>==")
+map("v", "p", '"_dP') -- Don't lose yanked text when pasting over selection
+
+-- Keep cursor centered when jumping
+map("n", "n", "nzzzv")
+map("n", "N", "Nzzzv")
+map("n", "J", "mzJ`z")
+
+-- Quickly escape to normal mode
+map("i", "jk", "<ESC>")
+map("i", "kj", "<ESC>")
+
+-- Clear highlighting on escape
+map("n", "<Esc>", ":noh<CR>")
+
+-- Utility shortcuts
+map("n", "<leader>w", ":w<CR>")       -- Quick save
+map("n", "<leader>q", ":q<CR>")       -- Quick quit
+map("n", "<leader>Q", ":qa!<CR>")     -- Force quit all
+
+-- Tab controls
+map("n", "<leader>tn", ":tabnew<CR>") -- New tab
+map("n", "<leader>tc", ":tabclose<CR>") -- Close tab
+map("n", "<leader>to", ":tabonly<CR>") -- Close other tabs
+
+--------------------------------------------------------------------------------
+-- PLUGIN CONFIGURATION
+--------------------------------------------------------------------------------
+
+-- Theme (using Catppuccin for all platforms)
+local themes = {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("catppuccin").setup({
+        flavour = "mocha", -- latte, frappe, macchiato, mocha
+        background = { 
+          light = "latte",
+          dark = "mocha",
+        },
+        transparent_background = false,
+        term_colors = true,
+        integrations = {
+          cmp = true,
+          gitsigns = true,
+          nvimtree = true,
+          telescope = true,
+          treesitter = true,
+          mason = true,
+          which_key = true,
+          indent_blankline = {
+            enabled = true,
+            colored_indent_levels = false,
+          },
+          native_lsp = {
+            enabled = true,
+            virtual_text = {
+              errors = { "italic" },
+              hints = { "italic" },
+              warnings = { "italic" },
+              information = { "italic" },
+            },
+            underlines = {
+              errors = { "underline" },
+              hints = { "underline" },
+              warnings = { "underline" },
+              information = { "underline" },
+            },
+          },
+        },
+      })
+      vim.cmd.colorscheme "catppuccin"
+    end,
+  },
+}
+
+-- Plugin definitions
+require("lazy").setup({
+  -- Include the chosen theme
+  themes[1],
+
+  -- LSP and Language Features
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      -- LSP Management
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+      -- UI Improvements
+      "folke/neodev.nvim",
+      "j-hui/fidget.nvim",
+      -- Autocompletion
+      "hrsh7th/nvim-cmp",
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-cmdline",
+      -- Snippets
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+      "rafamadriz/friendly-snippets",
+    },
+    config = function()
+      -- Mason (LSP installer)
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = { 
+          "lua_ls",     -- Lua
+          "pyright",    -- Python
+          "tsserver",   -- TypeScript/JavaScript
+{{ if eq .chezmoi.os "darwin" }}
+          -- Additional LSPs for macOS
+          "bashls",     -- Bash
+          "clangd",     -- C/C++
+          "cssls",      -- CSS
+          "html",       -- HTML
+          "jsonls",     -- JSON
+{{ end }}
+        },
+        automatic_installation = true,
+      })
+
+      -- Neodev for Lua development
+      require("neodev").setup()
+
+      -- Fidget for LSP progress display
+      require("fidget").setup()
+
+      -- Completion Setup
+      local cmp = require("cmp")
+      local luasnip = require("luasnip")
+
+      -- Load friendly snippets
+      require("luasnip.loaders.from_vscode").lazy_load()
+
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ["<C-k>"] = cmp.mapping.select_prev_item(),
+          ["<C-j>"] = cmp.mapping.select_next_item(),
+          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif luasnip.expandable() then
+              luasnip.expand()
+            elseif luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+          { name = "buffer" },
+          { name = "path" },
+        }),
+        window = {
+          documentation = cmp.config.window.bordered(),
+        },
+      })
+
+      -- LSP Config
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      
+      -- Set up each LSP
+      local lspconfig = require("lspconfig")
+      
+      -- Setup for Lua 
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        settings = {
+          Lua = {
+            diagnostics = {
+              globals = { "vim" },
+            },
+            workspace = {
+              library = vim.api.nvim_get_runtime_file("", true),
+              checkThirdParty = false,
+            },
+            telemetry = {
+              enable = false,
+            },
+          },
+        },
+      })
+
+      -- Add other LSP setups as needed
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+      })
+
+      lspconfig.tsserver.setup({
+        capabilities = capabilities,
+      })
+
+      -- Key mappings for LSP functionality
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+        callback = function(ev)
+          local opts = { buffer = ev.buf }
+          
+          -- Basic mappings
+          vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+          vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+          vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+          vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+          vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+          vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, opts)
+          vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, opts)
+          vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, opts)
+          vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+          vim.keymap.set("n", "<space>f", function() 
+            vim.lsp.buf.format({ async = true }) 
+          end, opts)
+        end,
+      })
+    end,
+  },
+
+  -- File Explorer
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    tag = "nightly",
+    config = function()
+      require("nvim-tree").setup({
+        sort_by = "case_sensitive",
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = false,
+        },
+      })
+      
+      -- Keymaps for nvim-tree
+      map("n", "<leader>e", ":NvimTreeToggle<CR>")
+      map("n", "<leader>o", ":NvimTreeFocus<CR>")
+    end,
+  },
+
+  -- Fuzzy Finder
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope-fzf-native.nvim",
+    },
+    config = function()
+      require("telescope").setup({
+        defaults = {
+          prompt_prefix = " ",
+          selection_caret = " ",
+          path_display = { "smart" },
+          file_ignore_patterns = { ".git/", "node_modules" },
+        },
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
+          },
+        },
+      })
+
+      -- Load extensions
+      pcall(require("telescope").load_extension, "fzf")
+      
+      -- Telescope mappings
+      map("n", "<leader>ff", ":Telescope find_files<CR>")
+      map("n", "<leader>fg", ":Telescope live_grep<CR>")
+      map("n", "<leader>fb", ":Telescope buffers<CR>")
+      map("n", "<leader>fh", ":Telescope help_tags<CR>")
+      map("n", "<leader>fr", ":Telescope oldfiles<CR>")
+    end,
+  },
+  
+  -- Better syntax highlighting
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { 
+          "bash", "c", "cpp", "css", 
+          "html", "javascript", "json", "lua", 
+          "python", "regex", "typescript", "vim", "yaml",
+          "markdown", "markdown_inline",
+        },
+        sync_install = false,
+        auto_install = true,
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+        indent = { enable = true },
+        autopairs = { enable = true },
+      })
+    end,
+  },
+
+  -- Status line
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+      require("lualine").setup({
+        options = {
+          theme = "catppuccin",
+          component_separators = { left = "", right = "" },
+          section_separators = { left = "", right = "" },
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          globalstatus = true,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          },
+        },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch", "diff", "diagnostics" },
+          lualine_c = { { "filename", path = 1 } },
+          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
+        },
+      })
+    end,
+  },
+
+  -- Git integration
+  {
+    "lewis6991/gitsigns.nvim",
+    config = function()
+      require("gitsigns").setup({
+        signs = {
+          add = { text = "▎" },
+          change = { text = "▎" },
+          delete = { text = "▎" },
+          topdelete = { text = "▎" },
+          changedelete = { text = "▎" },
+          untracked = { text = "▎" },
+        },
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+          
+          -- Navigation through hunks
+          map("n", "]g", function()
+            if vim.wo.diff then return "]c" end
+            vim.schedule(function() gs.next_hunk() end)
+            return "<Ignore>"
+          end, { expr = true })
+          
+          map("n", "[g", function()
+            if vim.wo.diff then return "[c" end
+            vim.schedule(function() gs.prev_hunk() end)
+            return "<Ignore>"
+          end, { expr = true })
+          
+          -- Actions
+          map("n", "<leader>gs", gs.stage_hunk, { buffer = bufnr })
+          map("n", "<leader>gr", gs.reset_hunk, { buffer = bufnr })
+          map("n", "<leader>gS", gs.stage_buffer, { buffer = bufnr })
+          map("n", "<leader>gu", gs.undo_stage_hunk, { buffer = bufnr })
+          map("n", "<leader>gR", gs.reset_buffer, { buffer = bufnr })
+          map("n", "<leader>gp", gs.preview_hunk, { buffer = bufnr })
+          map("n", "<leader>gb", function() gs.blame_line({ full = true }) end, { buffer = bufnr })
+          map("n", "<leader>tb", gs.toggle_current_line_blame, { buffer = bufnr })
+          map("n", "<leader>gd", gs.diffthis, { buffer = bufnr })
+          map("n", "<leader>td", gs.toggle_deleted, { buffer = bufnr })
+        end,
+      })
+    end,
+  },
+
+  -- Comment toggling
+  {
+    "numToStr/Comment.nvim",
+    config = function()
+      require("Comment").setup()
+    end,
+  },
+
+  -- Auto pairs
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+      require("nvim-autopairs").setup({
+        check_ts = true,
+        ts_config = {
+          lua = { "string", "source" },
+          javascript = { "string", "template_string" },
+        },
+        disable_filetype = { "TelescopePrompt", "spectre_panel" },
+        fast_wrap = {
+          map = "<M-e>",
+          chars = { "{", "[", "(", '"', "'" },
+          pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], "%s+", ""),
+          offset = 0,
+          end_key = "$",
+          keys = "qwertyuiopzxcvbnmasdfghjkl",
+          check_comma = true,
+          highlight = "PmenuSel",
+          highlight_grey = "LineNr",
+        },
+      })
+    end,
+  },
+
+  -- Indentation guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    config = function()
+      require("ibl").setup({
+        scope = { enabled = true },
+      })
+    end,
+  },
+
+  -- Better terminal integration
+  {
+    "akinsho/toggleterm.nvim",
+    config = function()
+      require("toggleterm").setup({
+        size = 20,
+        open_mapping = [[<c-\>]],
+        hide_numbers = true,
+        shade_filetypes = {},
+        shade_terminals = true,
+        shading_factor = 2,
+        start_in_insert = true,
+        insert_mappings = true,
+        persist_size = true,
+        direction = "float",
+        close_on_exit = true,
+        shell = vim.o.shell,
+        float_opts = {
+          border = "curved",
+          winblend = 0,
+          highlights = {
+            border = "Normal",
+            background = "Normal",
+          },
+        },
+      })
+    end,
+  },
+
+  -- Which key integration (show key mappings)
+  {
+    "folke/which-key.nvim",
+    config = function()
+      require("which-key").setup({
+        plugins = {
+          marks = true,
+          registers = true,
+          spelling = {
+            enabled = true,
+            suggestions = 20,
+          },
+          presets = {
+            operators = true,
+            motions = true,
+            text_objects = true,
+            windows = true,
+            nav = true,
+            z = true,
+            g = true,
+          },
+        },
+        operators = { gc = "Comments" },
+        key_labels = {},
+        icons = {
+          breadcrumb = "»",
+          separator = "➜",
+          group = "+",
+        },
+        popup_mappings = {
+          scroll_down = "<c-d>",
+          scroll_up = "<c-u>",
+        },
+        window = {
+          border = "rounded",
+          position = "bottom",
+          margin = { 1, 0, 1, 0 },
+          padding = { 2, 2, 2, 2 },
+          winblend = 0,
+        },
+        layout = {
+          height = { min = 4, max = 25 },
+          width = { min = 20, max = 50 },
+          spacing = 3,
+          align = "left",
+        },
+        ignore_missing = false,
+        hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " },
+        show_help = true,
+        triggers = "auto",
+        triggers_blacklist = {
+          i = { "j", "k" },
+          v = { "j", "k" },
+        },
+      })
+    end,
+  },
+
+})
+
+-- Additional Settings
+-- Format on save
+vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })]]
+
+-- Highlight yanked text
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank({ higroup = "IncSearch", timeout = 150 })
+  end,
+})
+
+-- Auto-resize panes on terminal resize
+vim.api.nvim_create_autocmd("VimResized", {
+  pattern = "*",
+  command = "tabdo wincmd =",
+})
+
+-- Remember cursor position when reopening files
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = "*",
+  callback = function()
+    local line = vim.fn.line
+    if line("'\"") > 0 and line("'\"") <= line("$") then
+      vim.cmd("normal! g`\"")
+    end
+  end,
+})

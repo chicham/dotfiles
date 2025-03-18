@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs fish shell on macOS and sets it as the default shell without requiring input
+
+if ! command -v fish >/dev/null 2>&1; then
+  echo "Installing fish shell..."
+  # Install fish on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install fish
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "fish shell has been installed successfully."
+else
+  echo "fish shell is already installed."
+fi
+
+# Get the path to fish shell
+FISH_PATH="$(command -v fish)"
+
+# Check if fish is in /etc/shells
+if ! grep -q "${FISH_PATH}" /etc/shells; then
+  echo "Adding fish to /etc/shells..."
+  # Use sudo with -S flag to read password from stdin if needed
+  echo "${FISH_PATH}" | sudo tee -a /etc/shells > /dev/null
+fi
+
+# Change the default shell to fish without prompting for password again
+if [ "${SHELL}" != "${FISH_PATH}" ]; then
+  echo "Changing default shell to fish..."
+  # Use chpass instead of chsh to avoid prompt on macOS
+  sudo chpass -s "${FISH_PATH}" "$(whoami)"
+  echo "Default shell changed to fish. Please log out and back in for changes to take effect."
+else
+  echo "fish is already the default shell."
+fi

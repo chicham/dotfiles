@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs bat on macOS using Homebrew
+
+if ! command -v bat >/dev/null 2>&1; then
+  echo "Installing bat..."
+  # Install bat on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install bat
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "bat has been installed successfully."
+else
+  echo "bat is already installed."
+fi

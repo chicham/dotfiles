@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs Zotero reference manager on macOS using Homebrew
+
+# Check if Zotero is already installed
+if [ -d "/Applications/Zotero.app" ] || [ -d "${HOME}/Applications/Zotero.app" ]; then
+  echo "Zotero is already installed."
+else
+  echo "Installing Zotero..."
+  # Install Zotero on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install --cask zotero
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "Zotero has been installed successfully."
+fi

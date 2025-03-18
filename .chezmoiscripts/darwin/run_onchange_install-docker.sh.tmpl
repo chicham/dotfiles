@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs Docker Desktop on macOS using Homebrew
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Installing Docker Desktop..."
+  # Install Docker Desktop on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install --cask docker
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "Docker Desktop has been installed successfully."
+  echo "Please launch Docker Desktop from your Applications folder to complete setup."
+else
+  echo "Docker is already installed."
+fi

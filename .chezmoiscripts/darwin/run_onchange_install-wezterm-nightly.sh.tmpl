@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs wezterm nightly builds on macOS
+
+echo "Installing WezTerm nightly build..."
+
+# Install wezterm nightly on macOS using Homebrew
+if command -v brew >/dev/null 2>&1; then
+  # Remove stable version if installed
+  if brew list --cask wezterm &>/dev/null; then
+    echo "Removing stable WezTerm version first..."
+    brew uninstall --cask wezterm
+  fi
+
+  # Install from nightly tap
+  brew tap wez/wezterm-linuxbrew
+  brew install --cask wez/wezterm-linuxbrew/wezterm-nightly
+
+  echo "WezTerm nightly has been installed successfully."
+else
+  echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+  exit 1
+fi

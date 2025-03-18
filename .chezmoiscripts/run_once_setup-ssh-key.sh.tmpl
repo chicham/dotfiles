@@ -1,0 +1,101 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script generates an SSH key without a passphrase and configures SSH config
+# SSH agent configuration is handled by fish shell config
+# It's designed to be run once via chezmoi's run_once functionality
+
+# Use user's information from chezmoi data
+SSH_KEY_COMMENT="{{ .email }}"
+SSH_KEY_FILE="${HOME}/.ssh/id_ed25519"
+SSH_PUB_FILE="${SSH_KEY_FILE}.pub"
+
+# Check if key already exists
+if [ -f "${SSH_KEY_FILE}" ]; then
+  echo "SSH key already exists at ${SSH_KEY_FILE}. Skipping generation."
+else
+  # Ensure .ssh directory exists with proper permissions
+  mkdir -p "${HOME}/.ssh"
+  chmod 700 "${HOME}/.ssh"
+
+  # Generate new ED25519 key (more secure than RSA) without passphrase
+  echo "Generating new SSH key at ${SSH_KEY_FILE}..."
+  ssh-keygen -t ed25519 -C "${SSH_KEY_COMMENT}" -f "${SSH_KEY_FILE}" -N ""
+  chmod 600 "${SSH_KEY_FILE}"
+  chmod 644 "${SSH_PUB_FILE}"
+
+  echo "SSH key successfully generated."
+fi
+
+# Check if 1Password is installed
+if command -v op >/dev/null 2>&1 && [ -d "/Applications/1Password.app" ]; then
+  echo "1Password detected, configuring as SSH agent..."
+  USE_1PASSWORD=true
+else
+  echo "1Password not detected, using standard ssh-agent..."
+  USE_1PASSWORD=false
+fi
+
+# Configure SSH
+SSH_CONFIG="${HOME}/.ssh/config"
+mkdir -p "$(dirname "${SSH_CONFIG}")"
+
+if [ "${USE_1PASSWORD}" = true ]; then
+  # Configure SSH to use 1Password as the agent
+  if [ ! -f "${SSH_CONFIG}" ] || ! grep -q "IdentityAgent" "${SSH_CONFIG}"; then
+    echo "Configuring SSH to use 1Password as agent..."
+    cat > "${SSH_CONFIG}" << EOF
+# Use 1Password as SSH agent
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+    ForwardAgent yes
+    AddKeysToAgent yes
+EOF
+    chmod 600 "${SSH_CONFIG}"
+  fi
+
+  # Inform user about adding key to 1Password
+  echo "Please add your SSH key to 1Password:"
+  echo "1. Open 1Password"
+  echo "2. Go to Developer Tools"
+  echo "3. Click 'Add SSH Key' or '+'"
+  echo "4. Select the key at ${SSH_KEY_FILE}"
+else
+  # Configure SSH to use standard agent
+  if [ ! -f "${SSH_CONFIG}" ] || ! grep -q "ForwardAgent yes" "${SSH_CONFIG}"; then
+    echo "Configuring SSH for agent forwarding..."
+    cat > "${SSH_CONFIG}" << EOF
+# Enable SSH agent forwarding by default
+Host *
+    ForwardAgent yes
+    AddKeysToAgent yes
+EOF
+    chmod 600 "${SSH_CONFIG}"
+  fi
+
+  # Start ssh-agent if not already running (for initial key addition)
+  if ! ps -p "${SSH_AGENT_PID:-0}" > /dev/null 2>&1; then
+    echo "Starting ssh-agent for initial key addition..."
+    eval "$(ssh-agent -s)"
+
+    # Add key to standard ssh-agent
+    if ! ssh-add -l 2>/dev/null | grep -q "${SSH_KEY_FILE}"; then
+      echo "Adding SSH key to ssh-agent..."
+      ssh-add "${SSH_KEY_FILE}" 2>/dev/null || echo "Note: Could not add key to agent. It will be added on next login."
+    fi
+  fi
+fi
+
+echo "SSH key setup complete. Your public key is:"
+echo "-------------------------------------------"
+cat "${SSH_PUB_FILE}"
+echo "-------------------------------------------"
+echo "Add this key to your GitHub/GitLab account or any remote servers you need to access."
+if [ "${USE_1PASSWORD}" = true ]; then
+  echo "1Password is configured as your SSH agent."
+else
+  echo "Standard ssh-agent is configured and will be started automatically in fish shell."
+fi

@@ -1,0 +1,20 @@
+#!/bin/bash
+# vim: set ft=bash:
+set -eu
+
+# Install Git LFS using Homebrew
+if ! command -v git-lfs >/dev/null 2>&1; then
+  echo "Installing Git LFS..."
+  brew install git-lfs
+
+  # Initialize Git LFS
+  git lfs install --system
+else
+  # Check if we need to upgrade
+  if brew outdated | grep -q git-lfs; then
+    echo "Upgrading Git LFS..."
+    brew upgrade git-lfs
+  else
+    echo "Git LFS is already installed and up to date."
+  fi
+fi

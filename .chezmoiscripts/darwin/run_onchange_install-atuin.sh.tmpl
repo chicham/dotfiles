@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# -e: exit on error
+# -u: exit on unset variables
+set -eu
+
+# This script installs atuin on macOS using Homebrew
+
+if ! command -v atuin >/dev/null 2>&1; then
+  echo "Installing atuin..."
+  # Install atuin on macOS using Homebrew
+  if command -v brew >/dev/null 2>&1; then
+    brew install atuin
+  else
+    echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
+    exit 1
+  fi
+  echo "atuin has been installed successfully."
+else
+  echo "atuin is already installed."
+fi

@@ -1,30 +1,26 @@
-{{- /* Checks if running interactively, which is not the case for GitHub Codespaces */ -}}
-{{- $interactive := stdinIsATTY -}}
+{{- /* Extract user information from $USER (format: firstname.lastname) */ -}}
+{{- $user := env "USER" -}}
+{{- $nameParts := splitList "." $user -}}
 
-{{- /* Initializes the name variable with a default value */ -}}
-{{- $name := "Your Name" -}}
-{{- /* If name was previously set, reuses it */ -}}
-{{- if hasKey . "name" -}}
-{{-   $name = .name -}}
-{{- /* Otherwise, if running interactively, prompts for a name */ -}}
-{{- else if $interactive -}}
-{{-   $name = promptString "name" $name -}}
+{{- /* Set default values */ -}}
+{{- $firstName := "First" -}}
+{{- $lastName := "Last" -}}
+
+{{- /* Extract first name and last name if available */ -}}
+{{- if ge (len $nameParts) 1 -}}
+{{-   $firstName = index $nameParts 0 | title -}}
+{{- end -}}
+{{- if ge (len $nameParts) 2 -}}
+{{-   $lastName = index $nameParts 1 | title -}}
 {{- end -}}
 
-{{- /* Does the same for the email */ -}}
-{{- $email := "your@email.com" -}}
-{{- if hasKey . "email" -}}
-{{-   $email = .email -}}
-{{- else if $interactive -}}
-{{-   $email = promptString "email" $email -}}
-{{- end -}}
-
-{{- if $interactive -}}
-{{-   writeToStdout "💡 Tip: you can re-enter your name and email with `chezmoi init --data=false`.\n" -}}
-{{- end -}}
+{{- /* Create email address using firstname.lastname@artefact.com format */ -}}
+{{- $emailName := lower (printf "%s.%s" $firstName $lastName) -}}
+{{- $email := printf "%s@artefact.com" $emailName -}}
 
 sourceDir: {{ .chezmoi.sourceDir | quote }}
 
 data:
-  name: {{ $name | quote }}
+  firstName: {{ $firstName | quote }}
+  lastName: {{ $lastName | quote }}
   email: {{ $email | quote }}
