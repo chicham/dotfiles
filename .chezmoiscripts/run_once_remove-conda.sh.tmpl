@@ -12,10 +12,10 @@ echo "Checking for Anaconda/Miniconda installations..."
 remove_conda() {
   local conda_path=$1
   local conda_name=$2
-  
+
   echo "Found $conda_name installation at $conda_path"
   echo "Removing $conda_name..."
-  
+
   # Run conda's uninstall script if it exists
   if [ -f "$conda_path/bin/conda" ]; then
     # Deactivate any conda environments first
@@ -25,17 +25,17 @@ remove_conda() {
       unset CONDA_PREFIX
       unset CONDA_DEFAULT_ENV
       unset CONDA_PYTHON_EXE
-      
+
       # Reset the PATH to remove conda paths
       # This is a simplified approach as we can't directly modify PATH in a script that will be sourced
       PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "conda" | tr '\n' ':' | sed 's/:$//')
     fi
   fi
-  
+
   # Remove the entire directory
   echo "Removing $conda_path directory..."
   rm -rf "$conda_path"
-  
+
   # Clean up .bashrc, .zshrc, and config.fish
   for rc_file in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
     if [ -f "$rc_file" ]; then
@@ -48,7 +48,7 @@ remove_conda() {
       mv "$tmp_file" "$rc_file"
     fi
   done
-  
+
   # Remove conda-specific dot files
   echo "Removing conda configuration files..."
   rm -rf "$HOME/.conda"
@@ -90,7 +90,7 @@ if command -v conda >/dev/null 2>&1; then
   CONDA_PATH=$(dirname "$(dirname "$(command -v conda)")")
   conda_name="conda (in PATH)"
   echo "Found $conda_name at $CONDA_PATH"
-  
+
   # Get user confirmation before removing
   echo "Removing conda executable from PATH ($CONDA_PATH)..."
   remove_conda "$CONDA_PATH" "$conda_name"
@@ -126,7 +126,7 @@ echo "Created warning file at $HOME/.local/share/conda_warning.txt"
 for shell_rc in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc"; do
   if [ -f "$shell_rc" ]; then
     echo "Adding conda blocking aliases to $shell_rc..."
-    
+
     # Only add if not already present
     if ! grep -q "# Block conda/miniconda/anaconda" "$shell_rc"; then
       cat >> "$shell_rc" << 'EOF'
