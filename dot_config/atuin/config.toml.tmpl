@@ -1,0 +1,108 @@
+## Atuin shell history configuration
+## Full documentation: https://atuin.sh/docs/config
+
+## Storage locations use system defaults unless overridden:
+## Linux/Mac: ~/.local/share/atuin/history.db
+## Windows: %USERPROFILE%/.local/share/atuin/history.db
+# db_path = "~/.history.db"
+# key_path = "~/.key"
+# session_path = "~/.session"
+
+## Date format: "us" or "uk"
+# dialect = "us"
+
+## System timezone or offset from UTC (e.g., "local", "+9", "-05:30")
+# timezone = "local"
+
+## Enable/disable automatic sync with server
+auto_sync = true
+
+## Check for updates automatically
+update_check = true
+
+## Sync server address (default is Atuin's public server)
+# sync_address = "https://api.atuin.sh"
+
+## Sync frequency (0 = after every command)
+sync_frequency = "10m"
+
+## Search configuration
+search_mode = "fuzzy"           # Options: prefix, fulltext, fuzzy, skim
+filter_mode = "workspace"        # Options: global, host, session, directory, workspace
+workspaces = true               # Enable git repository detection for workspace filtering
+
+## Shell key binding behavior
+filter_mode_shell_up_key_binding = "workspace"
+search_mode_shell_up_key_binding = "fuzzy"
+
+## UI appearance
+style = "compact"               # Options: auto, full, compact
+# inline_height = 0             # Maximum lines (0 = full screen)
+# invert = false                # Put search bar at top instead of bottom
+show_preview = true             # Show preview of selected command
+show_help = true                # Show help row with keymap hints
+# show_tabs = true              # Show tabs for search and inspect
+# auto_hide_height = 8          # Auto-hide tabs in compact mode below this height
+
+## Behavior
+exit_mode = "return-original"   # What to do when escape is pressed (return-original or return-query)
+# word_jump_mode = "emacs"      # Word jump shortcuts: emacs or subl
+# word_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+# scroll_context_lines = 1      # Context lines when scrolling
+# ctrl_n_shortcuts = false      # Use ctrl instead of alt for numerical shortcuts
+enter_accept = false            # Press Enter to immediately execute command (false = Tab to edit)
+
+## Keymap configuration
+keymap_mode = "vim-insert"      # Options: auto, emacs, vim-insert, vim-normal
+keymap_cursor = { emacs = "blink-block", vim_insert = "blink-block", vim_normal = "steady-block" }
+
+## Performance and timeout settings
+network_timeout = 5             # Network operations timeout in seconds
+local_timeout = 5               # Local database timeout in seconds
+prefers_reduced_motion = true   # Minimize UI animations for accessibility
+
+## Security
+secrets_filter = true           # Filter out sensitive information (API keys, tokens, etc.)
+
+## History filtering
+# history_filter = [            # Prevent these regex patterns from being saved
+#   "^secret-cmd",
+#   "^innocuous-cmd .*--secret=.+",
+# ]
+# cwd_filter = [                # Don't save history from these directories
+#   "^/very/secret/area",
+# ]
+
+## Command statistics
+[stats]
+common_subcommands = [          # Consider subcommands for these commands
+  "apt", "cargo", "composer", "dnf", "docker", "git", "go", "kubectl",
+  "npm", "pnpm", "podman", "systemctl", "tmux", "yarn"
+]
+common_prefix = ["sudo"]        # Strip these prefixes from command stats
+ignored_commands = ["cd", "ls"] # Completely ignore these commands in stats
+
+## Key behavior
+[keys]
+scroll_exits = false            # Don't exit TUI when scrolling past first/last entry
+
+## Sync configuration
+[sync]
+records = true                  # Enable sync v2
+
+## Preview settings
+[preview]
+strategy = "auto"               # Preview height strategy: auto, static, fixed
+
+## Daemon settings
+[daemon]
+# enabled = false               # Use daemon for syncing (requires running 'atuin daemon')
+sync_frequency = 300            # Daemon sync frequency in seconds
+# socket_path = "~/.local/share/atuin/atuin.sock"
+# systemd_socket = false        # Use systemd socket activation
+# tcp_port = 8889               # TCP port for non-Unix systems
+
+## Theme customization
+# [theme]
+# name = "default"              # Theme name (default, autumn, marine, or custom)
+# debug = false                 # Output extra theme debugging information
