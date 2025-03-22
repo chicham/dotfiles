@@ -1,6 +1,6 @@
 ---
 # Pre-commit configuration for Artefiles
-# Hooks for typo prevention and shell script validation
+# Hooks for linting, formatting, and validation of configuration files
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -9,10 +9,14 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-toml
+      - id: check-json
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-executables-have-shebangs
       - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
 
   # Shell script checking
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -20,6 +24,13 @@ repos:
     hooks:
       - id: shellcheck
         args: ["-x"]
+
+  # Shell script formatting
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shfmt
+        args: [-i, '2', -ci, -bn, -sr]
 
   # Check for spelling mistakes
   - repo: https://github.com/codespell-project/codespell
@@ -36,13 +47,25 @@ repos:
       - id: yamllint
         args: ["-d", "relaxed"]
 
+  # Format and validate TOML files
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.23.1
+    hooks:
+      - id: toml-sort-fix
+
+  # Check for secrets
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.1
+    hooks:
+      - id: gitleaks
+
   # Conventional commit messages
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.1.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
-        args: [feat, fix, chore, test]  # Restrict to our allowed types
+        args: [feat, fix, docs, style, refactor, test, chore, ci]  # Expanded allowed types
 
   # Custom local hooks
   - repo: local
@@ -54,3 +77,13 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+
+# pre-commit.ci configuration
+ci:
+  autofix_commit_msg: 'style: pre-commit.ci auto fixes'
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: 'chore: pre-commit.ci autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
