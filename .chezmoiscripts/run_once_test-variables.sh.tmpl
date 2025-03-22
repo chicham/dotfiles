@@ -1,0 +1,14 @@
+#!/bin/sh
+# Simple test for chezmoi variables
+
+set -eu
+
+# Create a test file to verify these variables
+TEST_FILE="${HOME}/.local/share/chezmoi-test-variables.txt"
+mkdir -p "$(dirname "$TEST_FILE")"
+
+cat > "$TEST_FILE" << EOF
+First Name: {{ .firstName }}
+Last Name: {{ .lastName }}
+Email: {{ .email }}
+EOF
