@@ -2,3 +2,22 @@
 install.sh
 LICENSE
 README.md
+CHANGELOG.md
+TODO.md
+TEST.md
+cliff.toml
+Dockerfile.linux
+docker-test.sh
+test-dotfiles.sh
+test-dotfiles.fish
+.install-1password-cli.sh
+scripts/install-wezterm-remote.sh
+
+# OS-specific exclusions
+{{ if eq .chezmoi.os "darwin" }}
+# Exclude Linux-specific files on macOS
+.chezmoiscripts/linux/**
+{{ else if eq .chezmoi.os "linux" }}
+# Exclude macOS-specific files on Linux
+.chezmoiscripts/darwin/**
+{{ end }}
