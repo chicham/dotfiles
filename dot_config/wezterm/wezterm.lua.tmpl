@@ -4,15 +4,49 @@ local mux = wezterm.mux
 
 local config = wezterm.config_builder()
 
--- Color scheme
-config.color_scheme = 'Catppuccin Mocha' -- Using Catppuccin Mocha variant (dark)
--- Other variants: 'Catppuccin Latte' (light), 'Catppuccin Frappe' (medium-dark), 'Catppuccin Macchiato' (darker)
+-- Define Gruvbox Material theme
+config.color_schemes = {
+  ["gruvbox_material_dark_hard"] = {
+    foreground = "#D4BE98",
+    background = "#1D2021",
+    cursor_bg = "#D4BE98",
+    cursor_border = "#D4BE98",
+    cursor_fg = "#1D2021",
+    selection_bg = "#D4BE98",
+    selection_fg = "#3C3836",
+
+    ansi = {"#1d2021","#ea6962","#a9b665","#d8a657", "#7daea3","#d3869b", "#89b482","#d4be98"},
+    brights = {"#eddeb5","#ea6962","#a9b665","#d8a657", "#7daea3","#d3869b", "#89b482","#d4be98"},
+  },
+}
+
+-- Theme configuration from environment variable
+local function get_theme_from_env()
+  -- Get theme from environment variable or fall back to default
+  local theme = os.getenv("USER_THEME") or "Catppuccin Mocha"
+  
+  -- Map theme names to color schemes
+  if theme == "Gruvbox Material" then
+    return "gruvbox_material_dark_hard"
+  elseif string.find(theme, "Gruvbox") then
+    -- Fallback for other Gruvbox variants
+    return "gruvbox_material_dark_hard"
+  end
+  
+  -- Return the theme name as-is for other themes
+  return theme
+end
+
+-- Apply the theme
+config.color_scheme = get_theme_from_env()
 
 -- Font configuration
 {{ if eq .chezmoi.os "darwin" }}
 -- macOS font configuration
 config.font = wezterm.font_with_fallback {
-  'JetBrains Mono',
+  'FiraCode Nerd Font',
+  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
+  'Monaspace Nerd Font',
   'SF Mono',
   'Menlo',
   'monospace',
@@ -20,7 +54,9 @@ config.font = wezterm.font_with_fallback {
 {{ else if eq .chezmoi.os "linux" }}
 -- Linux font configuration
 config.font = wezterm.font_with_fallback {
-  'JetBrains Mono',
+  'FiraCode Nerd Font',
+  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
+  'Monaspace Nerd Font',
   'DejaVu Sans Mono',
   'Ubuntu Mono',
   'monospace',
@@ -28,7 +64,9 @@ config.font = wezterm.font_with_fallback {
 {{ else }}
 -- Default font configuration
 config.font = wezterm.font_with_fallback {
-  'JetBrains Mono',
+  'FiraCode Nerd Font',
+  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
+  'Monaspace Nerd Font',
   'monospace',
 }
 {{ end }}
@@ -98,12 +136,12 @@ config.disable_default_key_bindings = true -- Start fresh without default bindin
 config.keys = {
   -- Leader key acts normally when pressed twice (tmux-like)
   { key = LEADER_KEY, mods = 'LEADER', action = wezterm.action.SendKey { key = LEADER_KEY, mods = LEADER }},
-  
+
   -- Windows/Tabs (tmux-like)
   { key = 'c', mods = 'LEADER', action = wezterm.action.SpawnTab 'CurrentPaneDomain' },      -- Create new window
   { key = 'w', mods = 'LEADER', action = wezterm.action.ShowTabNavigator },                  -- Tab navigator (window list)
   { key = '&', mods = 'LEADER|SHIFT', action = wezterm.action.CloseCurrentTab { confirm = true } }, -- Kill window
-  
+
   -- Window navigation (0-9) (tmux-like)
   { key = '0', mods = 'LEADER', action = wezterm.action.ActivateTab(0) },
   { key = '1', mods = 'LEADER', action = wezterm.action.ActivateTab(1) },
@@ -115,67 +153,67 @@ config.keys = {
   { key = '7', mods = 'LEADER', action = wezterm.action.ActivateTab(7) },
   { key = '8', mods = 'LEADER', action = wezterm.action.ActivateTab(8) },
   { key = '9', mods = 'LEADER', action = wezterm.action.ActivateTab(9) },
-  
+
   -- Next/previous tab (tmux-like)
   { key = 'n', mods = 'LEADER', action = wezterm.action.ActivateTabRelative(1) },
   { key = 'p', mods = 'LEADER', action = wezterm.action.ActivateTabRelative(-1) },
-  
+
   -- Panes (tmux-like)
-  { key = '"', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane { 
-    direction = 'Down', 
-    size = { Percent = 50 } 
+  { key = '"', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane {
+    direction = 'Down',
+    size = { Percent = 50 }
   }},   -- Split vertically
-  
-  { key = '%', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane { 
-    direction = 'Right', 
-    size = { Percent = 50 } 
+
+  { key = '%', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane {
+    direction = 'Right',
+    size = { Percent = 50 }
   }}, -- Split horizontally
-  
+
   { key = 'x', mods = 'LEADER', action = wezterm.action.CloseCurrentPane { confirm = true } }, -- Kill pane
   { key = 'z', mods = 'LEADER', action = wezterm.action.TogglePaneZoomState }, -- Toggle zoom
-  
+
   -- Pane navigation (tmux-like)
   { key = 'h', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Left' },
   { key = 'j', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Down' },
   { key = 'k', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Up' },
   { key = 'l', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Right' },
-  
+
   -- Additional pane navigation with arrow keys (tmux-like)
   { key = 'LeftArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Left' },
   { key = 'DownArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Down' },
   { key = 'UpArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Up' },
   { key = 'RightArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Right' },
-  
+
   -- Cycle through panes (tmux-like)
   { key = 'o', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Next' },
-  
+
   -- Pane resizing (tmux-like)
   { key = 'H', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Left', 5 } },
   { key = 'J', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Down', 5 } },
   { key = 'K', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Up', 5 } },
   { key = 'L', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Right', 5 } },
-  
+
   -- Copy mode (tmux-like)
   { key = '[', mods = 'LEADER', action = wezterm.action.ActivateCopyMode },
   { key = ']', mods = 'LEADER', action = wezterm.action.PasteFrom 'Clipboard' },
-  
+
   -- Reload configuration (tmux-like)
   { key = 'r', mods = 'LEADER', action = wezterm.action.ReloadConfiguration },
-  
+
   -- Detach domain (like tmux detach)
   { key = 'd', mods = 'LEADER', action = wezterm.action.DetachDomain 'CurrentPaneDomain' },
-  
+
 {{ if eq .chezmoi.os "darwin" }}
   -- macOS specific keybindings
   -- Copy/paste
   { key = 'c', mods = 'CMD', action = wezterm.action.CopyTo 'Clipboard' },
   { key = 'v', mods = 'CMD', action = wezterm.action.PasteFrom 'Clipboard' },
-  
+
   -- Font size
   { key = '=', mods = 'CMD', action = wezterm.action.IncreaseFontSize },
   { key = '-', mods = 'CMD', action = wezterm.action.DecreaseFontSize },
   { key = '0', mods = 'CMD', action = wezterm.action.ResetFontSize },
-  
+
   -- Full screen
   { key = 'f', mods = 'CMD|SHIFT', action = wezterm.action.ToggleFullScreen },
 {{ else }}
@@ -184,16 +222,16 @@ config.keys = {
   { key = 'c', mods = 'CTRL|SHIFT', action = wezterm.action.CopyTo 'Clipboard' },
   { key = 'v', mods = 'CTRL|SHIFT', action = wezterm.action.PasteFrom 'Clipboard' },
   { key = 'Insert', mods = 'SHIFT', action = wezterm.action.PasteFrom 'PrimarySelection' },
-  
+
   -- Font size
   { key = 'plus', mods = 'CTRL', action = wezterm.action.IncreaseFontSize },
   { key = 'minus', mods = 'CTRL', action = wezterm.action.DecreaseFontSize },
   { key = '0', mods = 'CTRL', action = wezterm.action.ResetFontSize },
-  
+
   -- Full screen
   { key = 'F11', mods = '', action = wezterm.action.ToggleFullScreen },
 {{ end }}
-  
+
   -- Tab navigation with Alt+number (for direct access without leader)
   { key = '1', mods = 'ALT', action = wezterm.action.ActivateTab(0) },
   { key = '2', mods = 'ALT', action = wezterm.action.ActivateTab(1) },
@@ -236,7 +274,7 @@ config.mux_env_remove = {
 {{ else }}
 -- Linux/other specific settings
 -- Don't enable IME function on Linux which might not have GUI
-config.use_ime = false 
+config.use_ime = false
 
 -- Set term variable for ssh connections on Linux
 wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
