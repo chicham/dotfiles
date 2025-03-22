@@ -50,14 +50,14 @@ NERD_FONTS_VERSION="3.1.1"  # Specify version for stability
 # Function to download and install a font
 install_font() {
   local font_name="$1"
-  
+
   log_subtask "Installing $font_name Nerd Font..."
-  
+
   cd "$DOWNLOAD_DIR"
-  
+
   # Construct download URL
   local font_url="https://github.com/ryanoasis/nerd-fonts/releases/download/v${NERD_FONTS_VERSION}/${font_name}.zip"
-  
+
   # Download font
   if command_exists curl; then
     curl -fsSL "$font_url" -o "$font_name.zip"
@@ -67,10 +67,10 @@ install_font() {
     log_error "Neither curl nor wget found. Cannot download fonts."
     exit 1
   fi
-  
+
   # Create temporary directory for extraction
   mkdir -p "$font_name"
-  
+
   # Extract font files
   if command_exists unzip; then
     unzip -q "$font_name.zip" -d "$font_name"
@@ -78,11 +78,11 @@ install_font() {
     log_error "unzip not found. Cannot extract font files."
     exit 1
   fi
-  
+
   # Copy font files to fonts directory - ignoring errors for files that don't exist
   cp "$font_name"/*.ttf "$FONTS_DIR/" 2>/dev/null || true
   cp "$font_name"/*.otf "$FONTS_DIR/" 2>/dev/null || true
-  
+
   log_success "$font_name Nerd Font installed"
 }
 
