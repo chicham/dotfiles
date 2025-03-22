@@ -1,9 +1,39 @@
 # Fish shell configuration file
 
-# Set environment variables
+###########################################
+# ENVIRONMENT VARIABLES
+###########################################
+
+# Basic environment variables
 set -gx EDITOR nvim
 set -gx VISUAL nvim
 set -gx TERM wezterm
+
+# Theme configuration
+# Terminal themes should use the actual theme name as recognized by WezTerm
+# Editor themes should use the theme name as recognized by Neovim
+# Supported themes:
+# - Catppuccin variants: "Catppuccin Mocha", "Catppuccin Latte", "Catppuccin Frappe", "Catppuccin Macchiato"
+# - Gruvbox variants: "Gruvbox Material", "Gruvbox Dark", "Gruvbox Light"
+# - Others: "Dracula", "Nord", "Tokyo Night"
+# 
+# Each tool will attempt to use this theme if supported, or fall back to a close match
+set -gx USER_THEME "Catppuccin Mocha"
+
+# WezTerm specific settings
+if test "$TERM_PROGRAM" = WezTerm
+    # Enable true color support and italics
+    set -gx COLORTERM truecolor
+end
+
+# Set Git external diff tool if available
+if type -q difft
+    set -gx GIT_EXTERNAL_DIFF difft
+end
+
+###########################################
+# PATH CONFIGURATION
+###########################################
 
 {{ if eq .chezmoi.os "darwin" -}}
 # Configure Homebrew paths based on architecture
@@ -21,28 +51,201 @@ if test -d $HOME/.local/bin
     fish_add_path $HOME/.local/bin
 end
 
-# Add Google Cloud SDK to PATH if installed in ~/.local
-if test -d $HOME/.local/google-cloud-sdk
-    fish_add_path $HOME/.local/google-cloud-sdk/bin
+# Add fzf bin directory to PATH if it exists
+if test -d $HOME/.fzf/bin
+    fish_add_path $HOME/.fzf/bin
+end
 
-    # Google Cloud SDK completion for fish
+# Add Rust/Cargo to PATH if it exists
+if test -d $HOME/.cargo/bin
+    fish_add_path $HOME/.cargo/bin
+end
+
+# Google Cloud SDK configuration
+{{ if eq .chezmoi.os "darwin" -}}
+# Check for Google Cloud SDK in Homebrew locations on macOS
+if test -d /opt/homebrew/Caskroom/google-cloud-sdk
+    fish_add_path /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+
+    if test -f /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+        source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+    end
+else if test -d /usr/local/Caskroom/google-cloud-sdk
+    fish_add_path /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+
+    if test -f /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+        source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+    end
+end
+{{ else -}}
+# Linux Google Cloud SDK installation
+if test -d $HOME/.local/google-cloud-sdk
+    # Directly add the bin directory to PATH
+    fish_add_path $HOME/.local/google-cloud-sdk/bin
+    
+    # Set up Python for Google Cloud SDK
+    set -gx CLOUDSDK_PYTHON /usr/bin/python3
+    
+    # Source the completion file if it exists
     if test -f $HOME/.local/google-cloud-sdk/path.fish.inc
         source $HOME/.local/google-cloud-sdk/path.fish.inc
     end
 end
+{{ end -}}
 
-# Docker configuration if installed
-if type -q docker
-    # Add docker completions if they exist
-    if test -d ~/.config/fish/completions
-        and not test -f ~/.config/fish/completions/docker.fish
-        # Docker provides completions via the CLI
-        docker completion fish > ~/.config/fish/completions/docker.fish 2>/dev/null
+# Add atuin (shell history) bin directory to PATH if it exists
+if test -d $HOME/.atuin/bin
+    fish_add_path $HOME/.atuin/bin
+end
+
+###########################################
+# THEME MANAGEMENT
+###########################################
+
+# Theme functions for various tools
+
+# Function to setup fzf to use terminal colors
+function setup_fzf_options --description "Setup fzf to use terminal colors"
+    # Use terminal colors (no custom theme)
+    set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
+end
+
+# Function to update bat theme based on USER_THEME
+function update_bat_theme --description "Update bat theme to match USER_THEME"
+    set -l theme_file "$HOME/.config/bat/config"
+    if test -f "$theme_file"
+        # Check if the theme is available in bat
+        set -l available_themes (bat --list-themes | string collect)
+        
+        if not string match -q "*$USER_THEME*" "$available_themes"
+            echo "Error: Theme '$USER_THEME' is not available in bat."
+            echo "Available themes:"
+            bat --list-themes
+            return 1
+        end
+        
+        # Replace theme line if it exists
+        sed -i '' 's/^--theme=.*$/--theme="'"$USER_THEME"'"/' "$theme_file"
+        # Clear bat cache to apply changes
+        bat cache --build >/dev/null 2>&1
+        echo "✓ Bat theme updated to $USER_THEME"
     end
 end
 
+# Function to update starship theme based on USER_THEME
+function update_starship_theme --description "Update starship theme to match USER_THEME"
+    set -l config_file "$HOME/.config/starship.toml"
+    if test -f "$config_file"
+        set -l theme "$USER_THEME"
+        set -l palette ""
+        
+        # Determine which palette to use based on theme name
+        if string match -q "*Catppuccin*" "$theme"
+            if string match -q "*Latte*" "$theme"
+                set palette "catppuccin_latte"
+            else if string match -q "*Frappe*" "$theme"
+                set palette "catppuccin_frappe"
+            else if string match -q "*Macchiato*" "$theme"
+                set palette "catppuccin_macchiato"
+            else
+                # Default to Mocha for any other Catppuccin variant
+                set palette "catppuccin_mocha"
+            end
+        else if string match -q "*Gruvbox Material*" "$theme"
+            set palette "gruvbox_material"
+        else if string match -q "*Gruvbox*" "$theme"
+            # Fallback to Gruvbox Material for other Gruvbox variants
+            set palette "gruvbox_material"
+        else
+            # For other themes, use the theme name directly
+            set palette "$theme"
+        end
+        
+        # Check if palette is already set correctly
+        set -l current_palette (grep -E "^palette = " "$config_file" | sed 's/palette = "\(.*\)"/\1/')
+        if test "$current_palette" != "$palette"
+            # Use perl for reliable in-place editing across platforms
+            perl -i -pe "s/^palette = \".*\"/palette = \"$palette\"/" "$config_file"
+            echo "✓ Starship theme updated to $palette"
+        end
+    end
+end
+
+# Main function to set theme across all tools
+function set_theme --description "Change theme across all tools" --argument variant
+    set -l catppuccin_variants "Catppuccin Mocha" "Catppuccin Latte" "Catppuccin Frappe" "Catppuccin Macchiato"
+    set -l gruvbox_variants "Gruvbox Material" "Gruvbox Dark" "Gruvbox Light"
+    set -l other_variants "Dracula" "Nord" "Tokyo Night"
+    
+    set -l all_variants $catppuccin_variants $gruvbox_variants $other_variants
+    
+    # Default to Mocha if no variant specified
+    if test -z "$variant"
+        set variant "Catppuccin Mocha"
+    end
+    
+    # Validate the variant
+    if not contains "$variant" $all_variants
+        echo "Error: Unknown theme variant '$variant'"
+        echo "Available variants:"
+        echo "- Catppuccin: $catppuccin_variants"
+        echo "- Gruvbox: $gruvbox_variants" 
+        echo "- Others: $other_variants"
+        return 1
+    end
+    
+    # Set the environment variable
+    set -gx USER_THEME "$variant"
+    
+    # Update each tool
+    echo "Setting theme to $variant across all tools..."
+    
+    # Update fzf (if installed)
+    if type -q fzf
+        setup_fzf_options
+        echo "✓ Updated fzf options"
+    end
+    
+    # Update bat (if installed)
+    if type -q bat
+        update_bat_theme
+    end
+    
+    # Update starship (if installed)
+    if type -q starship
+        update_starship_theme
+    end
+    
+    # Note about tools that need restart
+    echo "Some tools require restart to apply the theme change:"
+    
+    # Different instructions based on theme type
+    if string match -q "*Catppuccin*" "$variant"
+        echo "- WezTerm: restart the terminal"
+        echo "- Neovim: restart or run :colorscheme catppuccin"
+        echo "- Starship: updated automatically, changes apply to new prompts"
+    else if string match -q "*Gruvbox*" "$variant"
+        echo "- WezTerm: restart the terminal"
+        echo "- Neovim: restart or run :colorscheme gruvbox-material"
+        echo "- Starship: updated automatically, changes apply to new prompts"
+    else
+        echo "- WezTerm: restart the terminal"
+        echo "- Neovim: restart to apply theme"
+        echo "- Starship: updated automatically, changes apply to new prompts"
+    end
+    
+    return 0
+end
+
+###########################################
+# TOOL INITIALIZATION
+###########################################
+
 # Initialize starship prompt if installed
 if type -q starship
+    # Update starship theme when shell starts
+    update_starship_theme
+    
     starship init fish | source
 end
 
@@ -56,37 +259,68 @@ if type -q direnv
     direnv hook fish | source
 end
 
-# Initialize atuin (shell history) if installed
-if type -q atuin
-    atuin init fish | source
+# Initialize fzf if installed
+if type -q fzf
+    # Apply fzf options on startup
+    setup_fzf_options
+    
+    # Set up fzf key bindings but tell it not to bind Ctrl-r since atuin will use it
+    set -x FZF_DISABLE_KEYBINDINGS 1
+    fzf --fish | source
+
+    # Manually bind fzf keys except for Ctrl-r
+    bind \ct __fzf_search_current_dir
+    bind \ec __fzf_search_history
+    bind \eC '__fzf_cd --hidden'
 end
 
-# Set up aliases for exa/eza if installed
+# Initialize atuin (shell history) if installed - after fzf to override any bindings
+if type -q atuin
+    set -gx ATUIN_NOBIND true
+    atuin init fish | source
+
+    # bind to ctrl-r in normal and insert mode, add any other bindings you want here too
+    bind \cr _atuin_search
+    bind -M insert \cr _atuin_search
+end
+
+# Set up Docker completions if installed
+if type -q docker
+    # Add docker completions if they exist
+    if test -d ~/.config/fish/completions
+        and not test -f ~/.config/fish/completions/docker.fish
+        # Docker provides completions via the CLI
+        docker completion fish >~/.config/fish/completions/docker.fish 2>/dev/null
+    end
+end
+
+# Initialize bat if installed
+if type -q bat
+    # Update bat theme when shell starts
+    update_bat_theme
+end
+
+###########################################
+# ALIASES AND SHORTCUTS
+###########################################
+
+# Set up aliases for eza if installed
 if type -q eza
     alias ls="eza --group-directories-first"
     alias ll="eza -lh --group-directories-first"
     alias la="eza -lah --group-directories-first"
     alias lt="eza -T --group-directories-first"
-elif type -q exa
-    alias ls="exa --group-directories-first"
-    alias ll="exa -lh --group-directories-first"
-    alias la="exa -lah --group-directories-first"
-    alias lt="exa -T --group-directories-first"
 end
 
 # Use bat instead of cat if installed
 if type -q bat
+    # Set bat aliases
     alias cat="bat --style=plain"
 end
 
 # Use fd instead of find if installed
 if type -q fd
     alias find="fd"
-end
-
-# Use difft (difftastic) for git diff if available
-if type -q difft
-    set -gx GIT_EXTERNAL_DIFF difft
 end
 
 # Set up git aliases
@@ -110,27 +344,40 @@ if type -q gh
     alias ghprl="gh pr list"
 end
 
-# Neovim aliases
+# Neovim aliases and setup
 if type -q nvim
     alias vim="nvim"
     alias vi="nvim"
     alias v="nvim"
+
+    # Function to check and update LazyVim plugins
+    function nvim_update_plugins --description "Update Neovim LazyVim plugins"
+        echo "Updating LazyVim plugins..."
+        nvim --headless "+Lazy! sync" +qa
+    end
+
+    # Auto-check LazyVim plugins if not checked recently
+    set -l nvim_last_updated_file "$HOME/.cache/nvim_last_plugin_check"
+    set -l current_time (date +%s)
+
+    # Create cache directory and check update time
+    mkdir -p "$HOME/.cache"
+
+    # Check if we need to update plugins (once a week)
+    if not test -f "$nvim_last_updated_file"; or test (math "$current_time - "(cat "$nvim_last_updated_file")) -gt 604800
+        nvim_update_plugins
+        echo $current_time >"$nvim_last_updated_file"
+    end
 end
 
-# WezTerm specific settings
-if test "$TERM_PROGRAM" = WezTerm
-    # Enable true color support and italics
-    set -gx COLORTERM truecolor
-end
+###########################################
+# SSH AND AUTHENTICATION
+###########################################
 
 # Set up SSH agent (either 1Password or standard)
-if command -v op >/dev/null 2>&1; and test -d "/Applications/1Password.app"
-    # Use 1Password as SSH agent if it's installed
-    set -gx SSH_AUTH_SOCK ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
-    if status is-interactive
-        echo "Using 1Password as SSH agent"
-    end
-else
+# 1Password configuration is now handled in conf.d/1password.fish.tmpl
+# Only use standard ssh-agent if 1Password is not available and we're not in an SSH session
+if not set -q SSH_TTY; and not set -q SSH_CLIENT; and not set -q SSH_CONNECTION; and not command -v op >/dev/null 2>&1
     # Use standard ssh-agent
     if status is-interactive
         # Path to store SSH agent environment variables
@@ -139,7 +386,7 @@ else
         # Function to start the SSH agent
         function __start_agent
             echo "Starting SSH agent..."
-            ssh-agent -c | sed 's/^echo/# echo/' > $agent_file
+            ssh-agent -c | sed 's/^echo/# echo/' >$agent_file
             chmod 600 $agent_file
             source $agent_file
 
@@ -164,6 +411,10 @@ else
     end
 end
 
+###########################################
+# MISCELLANEOUS SETTINGS
+###########################################
+
 # Terminal title
 function fish_title
     echo "{{ .firstName }} {{ .lastName }}: "(basename $PWD)
@@ -171,6 +422,30 @@ end
 
 # Suppress fish greeting
 set fish_greeting
+
+# Block conda/miniconda/anaconda installation attempts
+function conda
+    echo "⛔ Conda is not allowed in this environment."
+    echo "Please use alternative Python environment tools like venv, virtualenv, or uv."
+    echo "See $HOME/.local/share/conda_warning.txt for more information."
+    return 1
+end
+
+function miniconda
+    conda
+end
+
+function anaconda
+    conda
+end
+
+function mamba
+    conda
+end
+
+###########################################
+# LOCAL CONFIGURATION
+###########################################
 
 # Source local config if it exists (not managed by chezmoi)
 if test -f $HOME/.config/fish/local.config.fish

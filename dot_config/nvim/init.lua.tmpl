@@ -151,17 +151,31 @@ map("n", "<leader>to", ":tabonly<CR>") -- Close other tabs
 -- PLUGIN CONFIGURATION
 --------------------------------------------------------------------------------
 
--- Theme (using Catppuccin for all platforms)
+-- Theme configuration
 local themes = {
+  -- Catppuccin Theme
   {
     "catppuccin/nvim",
     name = "catppuccin",
     lazy = false,
     priority = 1000,
     config = function()
+      -- Get theme from environment variable or default to "mocha"
+      local function get_catppuccin_variant()
+        local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
+        
+        -- Extract Catppuccin variant from theme name
+        if theme_env:match("^Catppuccin%s+(%w+)$") then
+          return theme_env:match("^Catppuccin%s+(%w+)$"):lower()
+        end
+        
+        -- Default fallback is mocha
+        return "mocha"
+      end
+      
       require("catppuccin").setup({
-        flavour = "mocha", -- latte, frappe, macchiato, mocha
-        background = { 
+        flavour = get_catppuccin_variant(), -- latte, frappe, macchiato, mocha
+        background = {
           light = "latte",
           dark = "mocha",
         },
@@ -196,15 +210,54 @@ local themes = {
           },
         },
       })
-      vim.cmd.colorscheme "catppuccin"
+    end,
+  },
+  
+  -- Gruvbox Material Theme
+  {
+    "sainnhe/gruvbox-material",
+    name = "gruvbox-material",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      -- Configure Gruvbox Material
+      vim.g.gruvbox_material_background = 'medium' -- soft, medium, hard
+      vim.g.gruvbox_material_foreground = 'material' -- material, mix, original
+      vim.g.gruvbox_material_better_performance = 1
+      vim.g.gruvbox_material_enable_bold = 1
+      vim.g.gruvbox_material_enable_italic = 1
     end,
   },
 }
 
+-- Function to select the theme based on USER_THEME environment variable
+local function select_theme()
+  local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
+  
+  -- Set the colorscheme based on theme
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "LazyDone",
+    callback = function()
+      if string.match(theme_env, "Gruvbox Material") then
+        vim.cmd("colorscheme gruvbox-material")
+      elseif string.match(theme_env, "Gruvbox") then
+        -- Fallback to Gruvbox Material for other Gruvbox variants
+        vim.cmd("colorscheme gruvbox-material")
+      else
+        -- Default to Catppuccin
+        vim.cmd("colorscheme catppuccin")
+      end
+    end,
+  })
+  
+  -- Return both themes for installation
+  return { themes[1], themes[2] }
+end
+
 -- Plugin definitions
 require("lazy").setup({
-  -- Include the chosen theme
-  themes[1],
+  -- Include all themes
+  select_theme(),
 
   -- LSP and Language Features
   {
@@ -231,7 +284,7 @@ require("lazy").setup({
       -- Mason (LSP installer)
       require("mason").setup()
       require("mason-lspconfig").setup({
-        ensure_installed = { 
+        ensure_installed = {
           "lua_ls",     -- Lua
           "pyright",    -- Python
           "tsserver",   -- TypeScript/JavaScript
@@ -308,11 +361,11 @@ require("lazy").setup({
 
       -- LSP Config
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      
+
       -- Set up each LSP
       local lspconfig = require("lspconfig")
-      
-      -- Setup for Lua 
+
+      -- Setup for Lua
       lspconfig.lua_ls.setup({
         capabilities = capabilities,
         settings = {
@@ -345,7 +398,7 @@ require("lazy").setup({
         group = vim.api.nvim_create_augroup("UserLspConfig", {}),
         callback = function(ev)
           local opts = { buffer = ev.buf }
-          
+
           -- Basic mappings
           vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
           vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
@@ -356,8 +409,8 @@ require("lazy").setup({
           vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, opts)
           vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, opts)
           vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-          vim.keymap.set("n", "<space>f", function() 
-            vim.lsp.buf.format({ async = true }) 
+          vim.keymap.set("n", "<space>f", function()
+            vim.lsp.buf.format({ async = true })
           end, opts)
         end,
       })
@@ -384,7 +437,7 @@ require("lazy").setup({
           dotfiles = false,
         },
       })
-      
+
       -- Keymaps for nvim-tree
       map("n", "<leader>e", ":NvimTreeToggle<CR>")
       map("n", "<leader>o", ":NvimTreeFocus<CR>")
@@ -418,7 +471,7 @@ require("lazy").setup({
 
       -- Load extensions
       pcall(require("telescope").load_extension, "fzf")
-      
+
       -- Telescope mappings
       map("n", "<leader>ff", ":Telescope find_files<CR>")
       map("n", "<leader>fg", ":Telescope live_grep<CR>")
@@ -427,16 +480,16 @@ require("lazy").setup({
       map("n", "<leader>fr", ":Telescope oldfiles<CR>")
     end,
   },
-  
+
   -- Better syntax highlighting
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
-        ensure_installed = { 
-          "bash", "c", "cpp", "css", 
-          "html", "javascript", "json", "lua", 
+        ensure_installed = {
+          "bash", "c", "cpp", "css",
+          "html", "javascript", "json", "lua",
           "python", "regex", "typescript", "vim", "yaml",
           "markdown", "markdown_inline",
         },
@@ -504,20 +557,20 @@ require("lazy").setup({
         },
         on_attach = function(bufnr)
           local gs = package.loaded.gitsigns
-          
+
           -- Navigation through hunks
           map("n", "]g", function()
             if vim.wo.diff then return "]c" end
             vim.schedule(function() gs.next_hunk() end)
             return "<Ignore>"
           end, { expr = true })
-          
+
           map("n", "[g", function()
             if vim.wo.diff then return "[c" end
             vim.schedule(function() gs.prev_hunk() end)
             return "<Ignore>"
           end, { expr = true })
-          
+
           -- Actions
           map("n", "<leader>gs", gs.stage_hunk, { buffer = bufnr })
           map("n", "<leader>gr", gs.reset_hunk, { buffer = bufnr })
