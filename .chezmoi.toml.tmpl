@@ -1,0 +1,42 @@
+{{- $user := env "USER" -}}
+
+{{- $firstName := "First" -}}
+{{- $lastName := "Last" -}}
+
+{{- $dotParts := splitList "." $user -}}
+{{- if eq (len $dotParts) 2 -}}
+{{- $firstName = index $dotParts 0 | title -}}
+{{- $lastName = index $dotParts 1 | title -}}
+{{- else -}}
+{{- $underscoreParts := splitList "_" $user -}}
+{{- if eq (len $underscoreParts) 2 -}}
+{{- $firstName = index $underscoreParts 0 | title -}}
+{{- $lastName = index $underscoreParts 1 | title -}}
+{{- end -}}
+{{- end -}}
+
+{{- $email := printf "%s.%s@artefact.com" (lower $firstName) (lower $lastName) -}}
+
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
+[data]
+  firstName = {{ $firstName | quote }}
+  lastName = {{ $lastName | quote }}
+  email = {{ $email | quote }}
+
+[diff]
+  command = "difft"
+  args = ["--display", "inline"]
+
+[merge]
+  command = "nvim"
+  args = [
+    "-d",
+    "{{ `{{ .Destination }}` }}",
+    "{{ `{{ .Source }}` }}",
+    "{{ `{{ .Target }}` }}",
+    "-c", "wincmd J | wincmd ="
+  ]
+
+[hooks.read-source-state.pre]
+  command = "{{ .chezmoi.sourceDir }}/.install-1password-cli.sh"
