@@ -1,0 +1,52 @@
+FROM ubuntu:22.04
+
+# Install essential packages - only what's needed for installation scripts
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    sudo \
+    ca-certificates \
+    unzip \
+    xz-utils \
+    build-essential \
+    cmake \
+    libncurses5-dev \
+    libpcre2-dev \
+    gettext \
+    python3 \
+    python-is-python3 \
+    fuse \
+    libfuse2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up FUSE configuration for AppImages
+RUN sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf || echo "user_allow_other" > /etc/fuse.conf
+
+# Create user named firstname.lastname
+RUN useradd -m -s /bin/bash firstname.lastname \
+    && echo "firstname.lastname ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/firstname_lastname
+
+# Set working directory and switch to firstname.lastname
+WORKDIR /home/firstname.lastname
+USER firstname.lastname
+
+# Create necessary directories
+RUN mkdir -p /home/firstname.lastname/.local/bin
+
+# Set up environment variables for user
+ENV PATH="/home/firstname.lastname/.local/bin:${PATH}"
+ENV CLOUDSDK_PYTHON="/usr/bin/python3"
+
+# Copy the repository to a temporary location
+COPY --chown=firstname.lastname:firstname.lastname . /tmp/artefiles
+
+# Copy the test script written in fish
+COPY --chown=firstname.lastname:firstname.lastname test-dotfiles.fish /home/firstname.lastname/test-dotfiles.fish
+RUN chmod +x /home/firstname.lastname/test-dotfiles.fish
+
+# Install chezmoi and apply dotfiles during build
+RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply --source=/tmp/artefiles
+
+# Set the entrypoint to run the fish test script with the fish shell installed by chezmoi
+ENTRYPOINT ["/home/firstname.lastname/.local/bin/fish", "/home/firstname.lastname/test-dotfiles.fish"]
+
