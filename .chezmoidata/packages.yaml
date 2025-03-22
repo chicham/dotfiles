@@ -1,0 +1,27 @@
+packages:
+  darwin:
+    brews:
+      - 'fish'
+      - 'starship'
+      - 'neovim'
+      - 'git'
+      - 'git-lfs'
+      - 'bat'
+      - 'eza'
+      - 'zoxide'
+      - 'atuin'
+      - 'direnv'
+      - 'difftastic'
+      - 'git-cliff'
+      - 'fd'
+      - 'uv'
+      - 'nbdime'
+      - 'fzf'
+      - 'bloznelis/tap/mactop'
+      - 'rust'
+    casks:
+      - 'wezterm'
+      - '1password-cli'
+      - 'google-chrome'
+      - 'google-cloud-sdk'
+      - 'nikitabobko/tap/aerospace'

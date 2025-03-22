@@ -1,0 +1,28 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+
+# This script is managed by chezmoi. 
+# Installs all brew packages and casks declared in .chezmoidata/packages.yaml
+
+set -eu
+
+echo "Installing macOS packages from .chezmoidata/packages.yaml..."
+
+# Check if Homebrew is installed
+if ! command -v brew &> /dev/null; then
+  echo "Homebrew is not installed. Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Install packages using brew bundle
+brew bundle --no-lock --file=/dev/stdin <<EOF
+{{ range .packages.darwin.brews -}}
+brew {{ . | quote }}
+{{ end -}}
+{{ range .packages.darwin.casks -}}
+cask {{ . | quote }}
+{{ end -}}
+EOF
+
+echo "macOS packages installation complete."
+{{ end -}}
