@@ -163,16 +163,16 @@ local themes = {
       -- Get theme from environment variable or default to "mocha"
       local function get_catppuccin_variant()
         local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
-        
+
         -- Extract Catppuccin variant from theme name
         if theme_env:match("^Catppuccin%s+(%w+)$") then
           return theme_env:match("^Catppuccin%s+(%w+)$"):lower()
         end
-        
+
         -- Default fallback is mocha
         return "mocha"
       end
-      
+
       require("catppuccin").setup({
         flavour = get_catppuccin_variant(), -- latte, frappe, macchiato, mocha
         background = {
@@ -212,7 +212,7 @@ local themes = {
       })
     end,
   },
-  
+
   -- Gruvbox Material Theme
   {
     "sainnhe/gruvbox-material",
@@ -233,7 +233,7 @@ local themes = {
 -- Function to select the theme based on USER_THEME environment variable
 local function select_theme()
   local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
-  
+
   -- Set the colorscheme based on theme
   vim.api.nvim_create_autocmd("User", {
     pattern = "LazyDone",
@@ -249,7 +249,7 @@ local function select_theme()
       end
     end,
   })
-  
+
   -- Return both themes for installation
   return { themes[1], themes[2] }
 end

@@ -24,7 +24,7 @@ config.color_schemes = {
 local function get_theme_from_env()
   -- Get theme from environment variable or fall back to default
   local theme = os.getenv("USER_THEME") or "Catppuccin Mocha"
-  
+
   -- Map theme names to color schemes
   if theme == "Gruvbox Material" then
     return "gruvbox_material_dark_hard"
@@ -32,7 +32,7 @@ local function get_theme_from_env()
     -- Fallback for other Gruvbox variants
     return "gruvbox_material_dark_hard"
   end
-  
+
   -- Return the theme name as-is for other themes
   return theme
 end
