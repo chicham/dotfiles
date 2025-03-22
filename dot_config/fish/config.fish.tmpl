@@ -16,7 +16,7 @@ set -gx TERM wezterm
 # - Catppuccin variants: "Catppuccin Mocha", "Catppuccin Latte", "Catppuccin Frappe", "Catppuccin Macchiato"
 # - Gruvbox variants: "Gruvbox Material", "Gruvbox Dark", "Gruvbox Light"
 # - Others: "Dracula", "Nord", "Tokyo Night"
-# 
+#
 # Each tool will attempt to use this theme if supported, or fall back to a close match
 set -gx USER_THEME "Catppuccin Mocha"
 
@@ -82,10 +82,10 @@ end
 if test -d $HOME/.local/google-cloud-sdk
     # Directly add the bin directory to PATH
     fish_add_path $HOME/.local/google-cloud-sdk/bin
-    
+
     # Set up Python for Google Cloud SDK
     set -gx CLOUDSDK_PYTHON /usr/bin/python3
-    
+
     # Source the completion file if it exists
     if test -f $HOME/.local/google-cloud-sdk/path.fish.inc
         source $HOME/.local/google-cloud-sdk/path.fish.inc
@@ -116,14 +116,14 @@ function update_bat_theme --description "Update bat theme to match USER_THEME"
     if test -f "$theme_file"
         # Check if the theme is available in bat
         set -l available_themes (bat --list-themes | string collect)
-        
+
         if not string match -q "*$USER_THEME*" "$available_themes"
             echo "Error: Theme '$USER_THEME' is not available in bat."
             echo "Available themes:"
             bat --list-themes
             return 1
         end
-        
+
         # Replace theme line if it exists
         sed -i '' 's/^--theme=.*$/--theme="'"$USER_THEME"'"/' "$theme_file"
         # Clear bat cache to apply changes
@@ -138,7 +138,7 @@ function update_starship_theme --description "Update starship theme to match USE
     if test -f "$config_file"
         set -l theme "$USER_THEME"
         set -l palette ""
-        
+
         # Determine which palette to use based on theme name
         if string match -q "*Catppuccin*" "$theme"
             if string match -q "*Latte*" "$theme"
@@ -160,7 +160,7 @@ function update_starship_theme --description "Update starship theme to match USE
             # For other themes, use the theme name directly
             set palette "$theme"
         end
-        
+
         # Check if palette is already set correctly
         set -l current_palette (grep -E "^palette = " "$config_file" | sed 's/palette = "\(.*\)"/\1/')
         if test "$current_palette" != "$palette"
@@ -176,49 +176,49 @@ function set_theme --description "Change theme across all tools" --argument vari
     set -l catppuccin_variants "Catppuccin Mocha" "Catppuccin Latte" "Catppuccin Frappe" "Catppuccin Macchiato"
     set -l gruvbox_variants "Gruvbox Material" "Gruvbox Dark" "Gruvbox Light"
     set -l other_variants "Dracula" "Nord" "Tokyo Night"
-    
+
     set -l all_variants $catppuccin_variants $gruvbox_variants $other_variants
-    
+
     # Default to Mocha if no variant specified
     if test -z "$variant"
         set variant "Catppuccin Mocha"
     end
-    
+
     # Validate the variant
     if not contains "$variant" $all_variants
         echo "Error: Unknown theme variant '$variant'"
         echo "Available variants:"
         echo "- Catppuccin: $catppuccin_variants"
-        echo "- Gruvbox: $gruvbox_variants" 
+        echo "- Gruvbox: $gruvbox_variants"
         echo "- Others: $other_variants"
         return 1
     end
-    
+
     # Set the environment variable
     set -gx USER_THEME "$variant"
-    
+
     # Update each tool
     echo "Setting theme to $variant across all tools..."
-    
+
     # Update fzf (if installed)
     if type -q fzf
         setup_fzf_options
         echo "✓ Updated fzf options"
     end
-    
+
     # Update bat (if installed)
     if type -q bat
         update_bat_theme
     end
-    
+
     # Update starship (if installed)
     if type -q starship
         update_starship_theme
     end
-    
+
     # Note about tools that need restart
     echo "Some tools require restart to apply the theme change:"
-    
+
     # Different instructions based on theme type
     if string match -q "*Catppuccin*" "$variant"
         echo "- WezTerm: restart the terminal"
@@ -233,7 +233,7 @@ function set_theme --description "Change theme across all tools" --argument vari
         echo "- Neovim: restart to apply theme"
         echo "- Starship: updated automatically, changes apply to new prompts"
     end
-    
+
     return 0
 end
 
@@ -245,7 +245,7 @@ end
 if type -q starship
     # Update starship theme when shell starts
     update_starship_theme
-    
+
     starship init fish | source
 end
 
@@ -263,7 +263,7 @@ end
 if type -q fzf
     # Apply fzf options on startup
     setup_fzf_options
-    
+
     # Set up fzf key bindings but tell it not to bind Ctrl-r since atuin will use it
     set -x FZF_DISABLE_KEYBINDINGS 1
     fzf --fish | source
