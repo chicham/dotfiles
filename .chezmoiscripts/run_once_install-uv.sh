@@ -12,5 +12,6 @@ if ! command -v uv >/dev/null 2>&1; then
 
   echo "uv installed successfully"
 else
-  echo "uv is already installed"
+  echo "uv is already installed, updating..."
+  uv self update
 fi
