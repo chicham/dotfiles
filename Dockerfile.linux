@@ -49,4 +49,3 @@ RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply --source=/tmp/artefiles
 
 # Set the entrypoint to run the fish test script with the fish shell installed by chezmoi
 ENTRYPOINT ["/home/firstname.lastname/.local/bin/fish", "/home/firstname.lastname/test-dotfiles.fish"]
-

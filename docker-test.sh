@@ -21,4 +21,3 @@ docker build --progress=plain -t artefiles-test-linux -f Dockerfile.linux .
 # Run container with appropriate terminal settings
 echo "Starting Docker container to test dotfiles on Linux..."
 docker run $TTY_FLAG --rm artefiles-test-linux
-
