@@ -2,18 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
-
+## \[Unreleased\]
 
 ### Chores
 
 - Add changelog generation with git-cliff ([06599d3](06599d32c438158bc0f62cb0b80d84a932d80c1b))
 
-
 ### Features
 
 - Update README and add Git template with pre-commit hooks ([18a9e42](18a9e424e26485c793ab74eef1007d36ebe08cbd))
-
+- Add comprehensive Google Cloud SDK configuration for fish shell
+- Add enhanced Neovim configuration and installation
+- Improve testing framework for tool validation in Docker environment
+- Add thorough documentation of all tools in README
+- Add Rust installation for Linux environments with automatic PATH configuration
+- Add WezTerm stable installation (replacing nightly builds)
+- Add mechanisms to remove and block Anaconda/Miniconda installations
+- Improve Docker testing framework for cross-platform validation
+- Add comprehensive Catppuccin theme integration with easy theme switching
+- Add dynamic Starship prompt theming based on USER_THEME environment variable
+- Add Nerd Fonts installation (FiraCode, Source Code Pro, Monaspace) with terminal integration
+- Add Gruvbox Material theme support across WezTerm, Neovim, and Starship
 
 ### Docs
 
