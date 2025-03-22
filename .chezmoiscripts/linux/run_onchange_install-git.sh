@@ -22,16 +22,52 @@ if ! command -v gh >/dev/null 2>&1; then
   BIN_DIR="${INSTALL_DIR}/bin"
   mkdir -p "${BIN_DIR}"
 
-  # Get latest release
-  LATEST_RELEASE=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep "tag_name" | sed -E 's/.*"tag_name": "v?([^"]+)".*/\1/')
+  # Define fallback version for API rate limit case
+  FALLBACK_VERSION="2.39.1"
+
+  # Try to get the latest release version
+  echo "Attempting to get latest GitHub CLI version..."
+  GITHUB_RESPONSE=$(curl -s https://api.github.com/repos/cli/cli/releases/latest)
+
+  # Check if the API rate limit was exceeded
+  if echo "$GITHUB_RESPONSE" | grep -q "API rate limit exceeded"; then
+    echo "GitHub API rate limit exceeded. Using fallback version ${FALLBACK_VERSION}."
+    LATEST_RELEASE="$FALLBACK_VERSION"
+  else
+    LATEST_RELEASE=$(echo "$GITHUB_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "v?([^"]+)".*/\1/')
+
+    # If failed to get the latest version for any reason other than rate limit, exit
+    if [ -z "$LATEST_RELEASE" ]; then
+      echo "ERROR: Failed to determine latest version from GitHub API."
+      exit 1
+    else
+      echo "Found latest GitHub CLI version: ${LATEST_RELEASE}"
+    fi
+  fi
 
   # Create temporary directory
   TEMP_DIR=$(mktemp -d)
   cd "${TEMP_DIR}"
 
+  # Detect architecture
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "x86_64" ]; then
+    ARCH_NAME="amd64"
+  elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+    ARCH_NAME="arm64"
+  else
+    echo "Error: Unsupported architecture: $ARCH"
+    exit 1
+  fi
+
   # Download and extract
-  echo "Downloading GitHub CLI ${LATEST_RELEASE}..."
-  curl -Lo gh.tar.gz "https://github.com/cli/cli/releases/download/v${LATEST_RELEASE}/gh_${LATEST_RELEASE}_linux_amd64.tar.gz"
+  DOWNLOAD_URL="https://github.com/cli/cli/releases/download/v${LATEST_RELEASE}/gh_${LATEST_RELEASE}_linux_${ARCH_NAME}.tar.gz"
+  echo "Downloading GitHub CLI from ${DOWNLOAD_URL}..."
+
+  if ! curl -fLo gh.tar.gz "$DOWNLOAD_URL"; then
+    echo "ERROR: Failed to download GitHub CLI from ${DOWNLOAD_URL}"
+    exit 1
+  fi
   tar -xzf gh.tar.gz
 
   # Install
@@ -66,16 +102,52 @@ if ! command -v git-lfs >/dev/null 2>&1; then
   BIN_DIR="${INSTALL_DIR}/bin"
   mkdir -p "${BIN_DIR}"
 
-  # Get latest release
-  LATEST_RELEASE=$(curl -s https://api.github.com/repos/git-lfs/git-lfs/releases/latest | grep "tag_name" | sed -E 's/.*"tag_name": "v?([^"]+)".*/\1/')
+  # Define fallback version for API rate limit case
+  FALLBACK_VERSION="3.4.0"
+
+  # Try to get the latest release version
+  echo "Attempting to get latest Git LFS version..."
+  GITHUB_RESPONSE=$(curl -s https://api.github.com/repos/git-lfs/git-lfs/releases/latest)
+
+  # Check if the API rate limit was exceeded
+  if echo "$GITHUB_RESPONSE" | grep -q "API rate limit exceeded"; then
+    echo "GitHub API rate limit exceeded. Using fallback version ${FALLBACK_VERSION}."
+    LATEST_RELEASE="$FALLBACK_VERSION"
+  else
+    LATEST_RELEASE=$(echo "$GITHUB_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "v?([^"]+)".*/\1/')
+
+    # If failed to get the latest version for any reason other than rate limit, exit
+    if [ -z "$LATEST_RELEASE" ]; then
+      echo "ERROR: Failed to determine latest version from GitHub API."
+      exit 1
+    else
+      echo "Found latest Git LFS version: ${LATEST_RELEASE}"
+    fi
+  fi
 
   # Create temporary directory
   TEMP_DIR=$(mktemp -d)
   cd "${TEMP_DIR}"
 
+  # Detect architecture
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "x86_64" ]; then
+    ARCH_NAME="amd64"
+  elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+    ARCH_NAME="arm64"
+  else
+    echo "Error: Unsupported architecture: $ARCH"
+    exit 1
+  fi
+
   # Download and extract
-  echo "Downloading Git LFS ${LATEST_RELEASE}..."
-  curl -Lo git-lfs.tar.gz "https://github.com/git-lfs/git-lfs/releases/download/v${LATEST_RELEASE}/git-lfs-linux-amd64-v${LATEST_RELEASE}.tar.gz"
+  DOWNLOAD_URL="https://github.com/git-lfs/git-lfs/releases/download/v${LATEST_RELEASE}/git-lfs-linux-${ARCH_NAME}-v${LATEST_RELEASE}.tar.gz"
+  echo "Downloading Git LFS from ${DOWNLOAD_URL}..."
+
+  if ! curl -fLo git-lfs.tar.gz "$DOWNLOAD_URL"; then
+    echo "ERROR: Failed to download Git LFS from ${DOWNLOAD_URL}"
+    exit 1
+  fi
   tar -xzf git-lfs.tar.gz
 
   # Install

@@ -1,14 +1,14 @@
 #!/bin/sh
 
 # Install starship (cross-shell prompt)
-# https://github.com/starship/starship
+# https://starship.rs/guide/
 
 set -eu
 
-if ! command -v starship >/dev/null 2>&1; then
-  echo "Installing starship..."
-  # Using official install script
-  curl -fsSL https://starship.rs/install.sh | sh -s -- -y
-else
-  echo "starship already installed, skipping."
-fi
+# Ensure ~/.local/bin exists
+mkdir -p "${HOME}/.local/bin"
+
+# Download and run the installer, specifying ~/.local/bin as the target directory
+# Starship installer will update if already installed or install if not
+echo "Installing/updating starship to user directory..."
+curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir="${HOME}/.local/bin" -y

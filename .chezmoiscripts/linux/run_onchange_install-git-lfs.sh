@@ -43,7 +43,8 @@ tar xzf git-lfs.tar.gz
 
 # Install to user's .local/bin
 mkdir -p "${HOME}/.local/bin"
-install -m 755 git-lfs "${HOME}/.local/bin/git-lfs"
+# The git-lfs binary is in the extracted directory
+install -m 755 ./git-lfs-${GIT_LFS_VERSION}/git-lfs "${HOME}/.local/bin/git-lfs"
 
 # Initialize Git LFS
 "${HOME}/.local/bin/git-lfs" install --skip-repo
