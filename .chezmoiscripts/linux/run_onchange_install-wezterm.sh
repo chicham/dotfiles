@@ -30,10 +30,10 @@ if echo "$GITHUB_RESPONSE" | grep -q "API rate limit exceeded"; then
   LATEST_VERSION="20240203-110809-5046fc22"
 else
   LATEST_VERSION=$(echo "$GITHUB_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
-  
+
   # Remove "v" prefix if present
   LATEST_VERSION=${LATEST_VERSION#v}
-  
+
   # If failed to get the latest version for any reason, use the fallback
   if [ -z "$LATEST_VERSION" ]; then
     echo "Failed to determine latest version. Using fallback version."
@@ -48,7 +48,7 @@ echo "Downloading WezTerm stable release..."
 DOWNLOAD_URL="https://github.com/wez/wezterm/releases/download/$LATEST_VERSION/wezterm-$LATEST_VERSION.Ubuntu20.04.tar.xz"
 echo "Download URL: $DOWNLOAD_URL"
 
-curl -fsSL -o wezterm.tar.xz "$DOWNLOAD_URL" || { 
+curl -fsSL -o wezterm.tar.xz "$DOWNLOAD_URL" || {
   echo "ERROR: Failed to download WezTerm stable release"
   exit 1
 }
@@ -67,7 +67,7 @@ find . -name "wezterm" -o -name "wezterm-mux-server" -o -name "strip-ansi-escape
 # Check if binaries exist in usr/bin (Debian package structure)
 if [ -d "usr/bin" ]; then
   echo "Found usr/bin directory, using binaries from there"
-  
+
   # Copy the binaries from usr/bin
   cp -f usr/bin/wezterm "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm binary from usr/bin"; exit 1; }
   cp -f usr/bin/wezterm-mux-server "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm-mux-server binary from usr/bin"; exit 1; }
@@ -85,7 +85,7 @@ else
 
   echo "Found binaries at custom locations:"
   echo "wezterm: $wezterm_bin"
-  echo "wezterm-mux-server: $wezterm_mux_bin"  
+  echo "wezterm-mux-server: $wezterm_mux_bin"
   echo "strip-ansi-escapes: $strip_ansi_bin"
 
   # Copy the binaries from their found locations

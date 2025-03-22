@@ -10,7 +10,7 @@ if ! command -v op >/dev/null 2>&1; then
 
   # Detect architecture
   ARCH=$(uname -m)
-  
+
   # Choose the appropriate package based on architecture
   if [ "$ARCH" = "x86_64" ]; then
     DOWNLOAD_URL="https://cache.agilebits.com/dist/1P/op2/pkg/v2.24.0/op_linux_amd64_v2.24.0.zip"
@@ -23,21 +23,21 @@ if ! command -v op >/dev/null 2>&1; then
     echo "Skipping 1Password CLI installation."
     exit 0
   fi
-  
+
   # Create directories
   mkdir -p "${HOME}/.local/bin"
-  
+
   # Download and install
   TEMP_DIR=$(mktemp -d)
   cd "${TEMP_DIR}"
-  
+
   curl -Lo "${DOWNLOAD_FILE}" "${DOWNLOAD_URL}"
   unzip -q "${DOWNLOAD_FILE}"
-  
+
   # Move binary to local bin
   mv op "${HOME}/.local/bin/"
   chmod +x "${HOME}/.local/bin/op"
-  
+
   # Cleanup
   cd - > /dev/null
   rm -rf "${TEMP_DIR}"

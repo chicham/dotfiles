@@ -10,7 +10,7 @@ version_gt() {
   # Extract MAJOR.MINOR from versions ignoring patch
   local ver1_major_minor=$(echo "$1" | cut -d. -f1-2)
   local ver2_major_minor=$(echo "$2" | cut -d. -f1-2)
-  
+
   # Compare using float comparison
   awk "BEGIN {exit !($ver1_major_minor > $ver2_major_minor)}"
 }
@@ -18,7 +18,7 @@ version_gt() {
 # Get latest release version from GitHub
 get_latest_fish_version() {
   API_RESPONSE=$(curl -s https://api.github.com/repos/fish-shell/fish-shell/releases/latest)
-  
+
   # Check if we hit rate limit
   if echo "$API_RESPONSE" | grep -q "API rate limit exceeded"; then
     echo "GitHub API rate limit exceeded. Using fallback version."
@@ -27,7 +27,7 @@ get_latest_fish_version() {
     FISH_VERSION=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
     # Remove 'fish-' prefix if present
     FISH_VERSION=${FISH_VERSION#fish-}
-    
+
     # Check if version was found
     if [ -z "$FISH_VERSION" ]; then
       echo "Failed to get latest version from GitHub API, using 3.6.1 as fallback."
@@ -42,15 +42,15 @@ get_latest_fish_version() {
 install_fish() {
   local FISH_VERSION="$1"
   local FISH_INSTALL_DIR="$HOME/.local"
-  
+
   echo "Installing fish shell version $FISH_VERSION..."
-  
+
   # Add Rust to PATH if available (needed for fish build dependencies)
   if [ -d "$HOME/.cargo/bin" ]; then
     echo "Adding Rust to PATH for fish build..."
     export PATH="$HOME/.cargo/bin:$PATH"
   fi
-  
+
   # Create temp directory
   TEMP_DIR=$(mktemp -d)
   cd "$TEMP_DIR"
@@ -82,11 +82,11 @@ install_fish() {
 if command -v fish >/dev/null 2>&1; then
   CURRENT_VERSION=$(fish --version | sed -E 's/.*version ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
   echo "Fish shell is already installed (version $CURRENT_VERSION)."
-  
+
   # Get latest version
   LATEST_VERSION=$(get_latest_fish_version)
   echo "Latest fish shell version: $LATEST_VERSION"
-  
+
   # Compare versions ignoring patch
   if version_gt "$LATEST_VERSION" "$CURRENT_VERSION"; then
     echo "Newer version available. Updating fish from $CURRENT_VERSION to $LATEST_VERSION..."
