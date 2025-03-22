@@ -50,6 +50,30 @@
     prune = true
     # Automatically fetch tags
     pruneTags = true
+    # Check integrity of transferred objects
+    fsckObjects = true
+
+[branch]
+    # Sort branches by commit date when listing
+    sort = committerdate
+    # Automatically set up the push remote
+    autoSetupMerge = always
+
+[transfer]
+    # Check integrity of objects during transfer
+    fsckObjects = true
+
+[receive]
+    # Check integrity of objects during receive
+    fsckObjects = true
+
+[status]
+    # Use short format for status
+    short = true
+    # Show branch info in status
+    branch = true
+    # Show stash information
+    showStash = true
 
 [color]
     # Use colors in Git commands when possible
@@ -57,13 +81,17 @@
 
 [diff]
     # Use difftastic for all diffs by default
-    external = difft
+    external = difft --display=inline
     tool = difftastic
     # Add VSCode as an alternative diff tool
     guitool = vscode
+    # Use inline diff format
+    colorMoved = default
+    # Use histogram algorithm for better diffs
+    algorithm = histogram
 
 [difftool "difftastic"]
-    cmd = difft "$LOCAL" "$REMOTE"
+    cmd = difft --display=inline "$LOCAL" "$REMOTE"
 
 [difftool "vscode"]
     cmd = code --wait --diff "$LOCAL" "$REMOTE"
@@ -81,11 +109,19 @@
     conflictstyle = zdiff3
     # Always use rebase for merging
     ff = only
-    # Use VSCode as the merge tool
-    tool = vscode
+    # Use fugitive as the default merge tool
+    tool = fugitive
 
 [mergetool "vscode"]
     cmd = code --wait "$MERGED"
+    trustExitCode = true
+
+[mergetool "nvim"]
+    cmd = nvim -d "$LOCAL" "$REMOTE" "$MERGED" -c 'wincmd J | wincmd ='
+    trustExitCode = true
+
+[mergetool "fugitive"]
+    cmd = nvim -f -c \"Gvdiffsplit!\" \"$MERGED\"
     trustExitCode = true
 
 [mergetool]
@@ -95,6 +131,8 @@
 [rebase]
     # Auto-stash before rebasing
     autoStash = true
+    # Auto-squash commits marked as fixup or squash
+    autosquash = true
 
 [rerere]
     # Enable the recording of resolved conflicts
@@ -117,6 +155,10 @@
     ci = commit
     # Show commit graph with branch names
     lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    # Enhanced log formats
+    ll = log --topo-order --abbrev-commit --pretty=format:'%C(bold blue)%h%Creset %Cgreen(%cr)%Creset %s %C(dim white)<%an>%Creset%C(bold yellow)%d%Creset'
+    betterlog = !git --no-pager ll --reverse
+    graphlog = ll --graph
     # Show all branches with their last commit
     branches = branch -a -v
     # Stash changes and keep working directory
@@ -141,10 +183,16 @@
     contributors = shortlog --summary --numbered
     # Use difftastic for viewing changes
     dft = difftool
+    # Difftastic log for showing changes with syntax highlighting
+    difflog = "ll -p --ext-diff"
     # Use VSCode for viewing changes
     vsdiff = difftool --tool=vscode
     # Use VSCode for resolving merge conflicts
     vsmerge = mergetool --tool=vscode
+    # Use neovim for resolving merge conflicts
+    nvimmerge = mergetool --tool=nvim
+    # Use fugitive for resolving merge conflicts
+    fugmerge = mergetool --tool=fugitive
     # Show diff using difftastic
     dlog = "!f() { GIT_EXTERNAL_DIFF=difft git log -p --ext-diff $@; }; f"
 
@@ -156,9 +204,35 @@
     helper = osxkeychain
     {{- end }}
 
+{{- if eq .chezmoi.os "darwin" }}
+[credential "https://github.com"]
+    # Use GitHub CLI for authentication on GitHub.com
+    helper =
+    helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+    # Use GitHub CLI for authentication on GitHub Gists
+    helper =
+    helper = !/opt/homebrew/bin/gh auth git-credential
+{{- else }}
+[credential "https://github.com"]
+    # Use GitHub CLI for authentication on GitHub.com
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    # Use GitHub CLI for authentication on GitHub Gists
+    helper =
+    helper = !gh auth git-credential
+{{- end }}
+
 [url "git@github.com:"]
     # Short syntax for SSH GitHub repositories
     insteadOf = gh:
+
+[url "ssh://git@github.com/"]
+    # Use SSH instead of HTTPS for GitHub
+    insteadOf = https://github.com/
 
 [url "git@gitlab.com:"]
     # Short syntax for SSH GitLab repositories
@@ -180,12 +254,3 @@
     smudge = git-lfs smudge -- %f
     process = git-lfs filter-process
     required = true
-
-[diff "jupyternotebook"]
-    # Use nbdime for Jupyter notebook diffs
-    command = nbdiff --color-words
-
-[merge "jupyternotebook"]
-    # Use nbdime for Jupyter notebook merges
-    driver = nbmerge-git
-    name = Jupyter notebook merge driver
