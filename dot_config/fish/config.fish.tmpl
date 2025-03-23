@@ -241,6 +241,12 @@ end
 # TOOL INITIALIZATION
 ###########################################
 
+# Install fisher (plugin manager) if not already installed
+if not test -f $HOME/.config/fish/functions/fisher.fish
+    curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
+    echo "Fisher has been installed. You can now use it to install fish plugins."
+end
+
 # Initialize starship prompt if installed
 if type -q starship
     # Update starship theme when shell starts
@@ -257,6 +263,11 @@ end
 # Initialize direnv if installed
 if type -q direnv
     direnv hook fish | source
+end
+
+# Initialize chezmoi completions if installed
+if type -q chezmoi
+    chezmoi completion fish | source
 end
 
 # Initialize fzf if installed
