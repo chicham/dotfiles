@@ -21,6 +21,7 @@ packages:
     casks:
       - 'wezterm'
       - '1password-cli'
+      - '1password'
       - 'google-chrome'
       - 'google-cloud-sdk'
       - 'nikitabobko/tap/aerospace'
