@@ -37,6 +37,3 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     "{{ `{{ .Target }}` }}",
     "-c", "wincmd J | wincmd ="
   ]
-
-[hooks.read-source-state.pre]
-  command = "{{ .chezmoi.sourceDir }}/.install-1password-cli.sh"

@@ -6,6 +6,7 @@ packages:
       - 'neovim'
       - 'git'
       - 'git-lfs'
+      - 'gh'
       - 'bat'
       - 'eza'
       - 'zoxide'
@@ -20,8 +21,6 @@ packages:
       - 'rust'
     casks:
       - 'wezterm'
-      - '1password-cli'
-      - '1password'
       - 'google-chrome'
       - 'google-cloud-sdk'
       - 'nikitabobko/tap/aerospace'
