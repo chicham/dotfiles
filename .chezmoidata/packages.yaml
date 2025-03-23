@@ -16,7 +16,7 @@ packages:
       - 'fd'
       - 'uv'
       - 'fzf'
-      - 'bloznelis/tap/mactop'
+      - 'mactop'
       - 'rust'
     casks:
       - 'wezterm'

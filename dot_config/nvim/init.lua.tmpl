@@ -145,72 +145,25 @@ map("n", "<leader>to", ":tabonly<CR>") -- Close other tabs
 -- PLUGIN CONFIGURATION
 --------------------------------------------------------------------------------
 
--- Theme configuration
-local themes = {
-  -- Catppuccin Theme
+-- Plugin definitions
+require("lazy").setup({
+  -- Catppuccin Theme (main theme)
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    lazy = false,
     priority = 1000,
+    lazy = false,
     config = function()
-      -- Get theme from environment variable or default to "mocha"
-      local function get_catppuccin_variant()
-        local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
-
-        -- Extract Catppuccin variant from theme name
-        if theme_env:match("^Catppuccin%s+(%w+)$") then
-          return theme_env:match("^Catppuccin%s+(%w+)$"):lower()
-        end
-
-        -- Default fallback is mocha
-        return "mocha"
-      end
-
-      require("catppuccin").setup({
-        flavour = get_catppuccin_variant(), -- latte, frappe, macchiato, mocha
-        background = {
-          light = "latte",
-          dark = "mocha",
-        },
-        transparent_background = false,
-        term_colors = true,
-        integrations = {
-          cmp = true,
-          gitsigns = true,
-          telescope = true,
-          treesitter = true,
-          mason = true,
-          which_key = true,
-          indent_blankline = {
-            enabled = true,
-            colored_indent_levels = false,
-          },
-          native_lsp = {
-            enabled = true,
-            virtual_text = {
-              errors = { "italic" },
-              hints = { "italic" },
-              warnings = { "italic" },
-              information = { "italic" },
-            },
-            underlines = {
-              errors = { "underline" },
-              hints = { "underline" },
-              warnings = { "underline" },
-              information = { "underline" },
-            },
-          },
-        },
-      })
-    end,
+      -- Apply the colorscheme immediately
+      vim.cmd.colorscheme("catppuccin")
+    end
   },
 
-  -- Gruvbox Material Theme
+  -- Gruvbox Material Theme (alternative)
   {
     "sainnhe/gruvbox-material",
     name = "gruvbox-material",
-    lazy = false,
+    lazy = true,
     priority = 1000,
     config = function()
       -- Configure Gruvbox Material
@@ -221,36 +174,6 @@ local themes = {
       vim.g.gruvbox_material_enable_italic = 1
     end,
   },
-}
-
--- Function to select the theme based on USER_THEME environment variable
-local function select_theme()
-  local theme_env = os.getenv("USER_THEME") or "Catppuccin Mocha"
-
-  -- Set the colorscheme based on theme
-  vim.api.nvim_create_autocmd("User", {
-    pattern = "LazyDone",
-    callback = function()
-      if string.match(theme_env, "Gruvbox Material") then
-        vim.cmd("colorscheme gruvbox-material")
-      elseif string.match(theme_env, "Gruvbox") then
-        -- Fallback to Gruvbox Material for other Gruvbox variants
-        vim.cmd("colorscheme gruvbox-material")
-      else
-        -- Default to Catppuccin
-        vim.cmd("colorscheme catppuccin")
-      end
-    end,
-  })
-
-  -- Return both themes for installation
-  return { themes[1], themes[2] }
-end
-
--- Plugin definitions
-require("lazy").setup({
-  -- Include all themes
-  select_theme(),
 
   -- Vim sensible defaults
   { "tpope/vim-sensible" },
@@ -728,6 +651,7 @@ require("lazy").setup({
           },
         },
         pyright = {},
+        -- tsserver is deprecated, use typescript-language-server instead
         tsserver = {},
       }
 {{ if eq .chezmoi.os "darwin" }}
@@ -742,7 +666,12 @@ require("lazy").setup({
       -- Set up servers with capabilities
       for server_name, config in pairs(servers) do
         config.capabilities = capabilities
-        lspconfig[server_name].setup(config)
+        if server_name == "tsserver" then
+          -- Use ts_ls instead of deprecated tsserver
+          lspconfig["typescript-language-server"].setup(config)
+        else
+          lspconfig[server_name].setup(config)
+        end
       end
     end,
   },
@@ -774,7 +703,7 @@ require("lazy").setup({
         ensure_installed = {
           "lua_ls",
           "pyright",
-          "tsserver",
+          "typescript-language-server",
 {{ if eq .chezmoi.os "darwin" }}
           -- Additional LSPs for macOS
           "bashls",

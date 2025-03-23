@@ -1,296 +1,294 @@
+-- Pull in the wezterm API
 local wezterm = require 'wezterm'
+
+-- This table will hold the configuration.
+local config = {}
 local act = wezterm.action
 local mux = wezterm.mux
 
-local config = wezterm.config_builder()
+-- In newer versions of wezterm, use the config_builder which will
+-- help provide clearer error messages
+if wezterm.config_builder then
+  config = wezterm.config_builder()
+end
 
--- Define Gruvbox Material theme
-config.color_schemes = {
-  ["gruvbox_material_dark_hard"] = {
-    foreground = "#D4BE98",
-    background = "#1D2021",
-    cursor_bg = "#D4BE98",
-    cursor_border = "#D4BE98",
-    cursor_fg = "#1D2021",
-    selection_bg = "#D4BE98",
-    selection_fg = "#3C3836",
+-- This is where you actually apply your config choices
 
-    ansi = {"#1d2021","#ea6962","#a9b665","#d8a657", "#7daea3","#d3869b", "#89b482","#d4be98"},
-    brights = {"#eddeb5","#ea6962","#a9b665","#d8a657", "#7daea3","#d3869b", "#89b482","#d4be98"},
+-- Set leader key (Ctrl+b for tmux compatibility)
+config.leader = {
+  key = 'b',
+  mods = 'CTRL',
+  timeout_milliseconds = 1000,
+}
+
+config.disable_default_key_bindings = true
+
+config.keys = {
+  -- Tmux-compatible keybindings
+  -- Leader key sends itself when pressed twice
+  {
+    key = 'b',
+    mods = 'LEADER',
+    action = act.SendKey { key = 'b', mods = 'CTRL' },
+  },
+
+  -- Copy/paste
+  {{ if eq .chezmoi.os "darwin" }}
+  {
+    key = 'c',
+    mods = 'SUPER',
+    action = act.CopyTo 'Clipboard',
+  },
+  {
+    key = 'v',
+    mods = 'SUPER',
+    action = act.PasteFrom 'Clipboard',
+  },
+  {{ else }}
+  {
+    key = 'c',
+    mods = 'CTRL|SHIFT',
+    action = act.CopyTo 'Clipboard',
+  },
+  {
+    key = 'v',
+    mods = 'CTRL|SHIFT',
+    action = act.PasteFrom 'Clipboard',
+  },
+  {{ end }}
+
+  -- Copy mode
+  {
+    key = '[',
+    mods = 'LEADER',
+    action = act.ActivateCopyMode,
+  },
+  {
+    key = ']',
+    mods = 'LEADER',
+    action = act.PasteFrom 'Clipboard',
+  },
+
+  -- Tab management
+  {
+    key = 'c',
+    mods = 'LEADER',
+    action = act.SpawnTab 'CurrentPaneDomain',
+  },
+  {
+    key = 'n',
+    mods = 'LEADER',
+    action = act.ActivateTabRelative(1),
+  },
+  {
+    key = 'p',
+    mods = 'LEADER',
+    action = act.ActivateTabRelative(-1),
+  },
+  {
+    key = '&',
+    mods = 'LEADER|SHIFT',
+    action = act.CloseCurrentTab { confirm = true },
+  },
+
+  -- Window navigation (0-9)
+  { key = '0', mods = 'LEADER', action = act.ActivateTab(0) },
+  { key = '1', mods = 'LEADER', action = act.ActivateTab(1) },
+  { key = '2', mods = 'LEADER', action = act.ActivateTab(2) },
+  { key = '3', mods = 'LEADER', action = act.ActivateTab(3) },
+  { key = '4', mods = 'LEADER', action = act.ActivateTab(4) },
+  { key = '5', mods = 'LEADER', action = act.ActivateTab(5) },
+  { key = '6', mods = 'LEADER', action = act.ActivateTab(6) },
+  { key = '7', mods = 'LEADER', action = act.ActivateTab(7) },
+  { key = '8', mods = 'LEADER', action = act.ActivateTab(8) },
+  { key = '9', mods = 'LEADER', action = act.ActivateTab(9) },
+
+  -- Window/pane management
+  {
+    key = 'r',
+    mods = 'LEADER',
+    action = act.ReloadConfiguration,
+  },
+  {
+    key = 'w',
+    mods = 'LEADER',
+    action = act.ShowTabNavigator,
+  },
+  {
+    key = 'k',
+    mods = 'LEADER',
+    action = act.ClearScrollback 'ScrollbackOnly',
+  },
+  {
+    key = 'x',
+    mods = 'LEADER',
+    action = act.CloseCurrentPane { confirm = true },
+  },
+
+  -- Split panes (tmux style)
+  {
+    key = '%',
+    mods = 'LEADER|SHIFT',
+    action = act.SplitPane {
+      direction = 'Right',
+      size = { Percent = 50 },
+    },
+  },
+  {
+    key = '"',
+    mods = 'LEADER|SHIFT',
+    action = act.SplitPane {
+      direction = 'Down',
+      size = { Percent = 50 },
+    },
+  },
+
+  -- Zoom pane
+  {
+    key = 'z',
+    mods = 'LEADER',
+    action = act.TogglePaneZoomState,
+  },
+
+  -- Rotate panes
+  {
+    key = 'o',
+    mods = 'LEADER',
+    action = act.RotatePanes 'Clockwise',
+  },
+
+  -- Swap panes
+  {
+    key = 's',
+    mods = 'LEADER',
+    action = act.PaneSelect {
+      mode = 'SwapWithActive',
+    },
+  },
+
+  -- Navigate panes with arrow keys
+  {
+    key = 'LeftArrow',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Left',
+  },
+  {
+    key = 'RightArrow',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Right',
+  },
+  {
+    key = 'DownArrow',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Down',
+  },
+  {
+    key = 'UpArrow',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Up',
+  },
+
+  -- Navigate panes with vi keys
+  {
+    key = 'h',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Left',
+  },
+  {
+    key = 'l',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Right',
+  },
+  {
+    key = 'j',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Down',
+  },
+  {
+    key = 'k',
+    mods = 'LEADER',
+    action = act.ActivatePaneDirection 'Up',
+  },
+
+  -- Detach domain
+  {
+    key = 'd',
+    mods = 'LEADER',
+    action = act.DetachDomain 'CurrentPaneDomain',
+  },
+
+  -- Select pane
+  {
+    key = 'w',
+    mods = 'LEADER',
+    action = act.PaneSelect,
+  },
+
+  -- Search
+  {
+    key = 'f',
+    mods = 'LEADER',
+    action = act.Search 'CurrentSelectionOrEmptyString',
   },
 }
 
--- Theme configuration from environment variable
-local function get_theme_from_env()
-  -- Get theme from environment variable or fall back to default
-  local theme = os.getenv("USER_THEME") or "Catppuccin Mocha"
-
-  -- Map theme names to color schemes
-  if theme == "Gruvbox Material" then
-    return "gruvbox_material_dark_hard"
-  elseif string.find(theme, "Gruvbox") then
-    -- Fallback for other Gruvbox variants
-    return "gruvbox_material_dark_hard"
-  end
-
-  -- Return the theme name as-is for other themes
-  return theme
-end
-
--- Apply the theme
-config.color_scheme = get_theme_from_env()
-
--- Font configuration
-{{ if eq .chezmoi.os "darwin" }}
--- macOS font configuration
-config.font = wezterm.font_with_fallback {
-  'FiraCode Nerd Font',
-  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
-  'Monaspace Nerd Font',
-  'SF Mono',
-  'Menlo',
-  'monospace',
+config.mouse_bindings = {
+  -- Open URLs with CMD/CTRL+Click
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = {{ if eq .chezmoi.os "darwin" }}'CMD'{{ else }}'CTRL'{{ end }},
+    action = act.OpenLinkAtMouseCursor,
+  },
 }
-{{ else if eq .chezmoi.os "linux" }}
--- Linux font configuration
-config.font = wezterm.font_with_fallback {
-  'FiraCode Nerd Font',
-  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
-  'Monaspace Nerd Font',
-  'DejaVu Sans Mono',
-  'Ubuntu Mono',
-  'monospace',
-}
-{{ else }}
--- Default font configuration
-config.font = wezterm.font_with_fallback {
-  'FiraCode Nerd Font',
-  'SauceCodePro Nerd Font', -- Source Code Pro Nerd Font
-  'Monaspace Nerd Font',
-  'monospace',
-}
-{{ end }}
-config.font_size = 14.0
 
--- Window appearance
-config.window_padding = {
-  left = 0,
-  right = 0,
-  top = 0,
-  bottom = '.5cell',
-}
+-- Set coloring for inactive panes to be less bright than your active pane
 config.inactive_pane_hsb = {
   hue = 1,
   saturation = 0.8,
   brightness = 0.8,
 }
 
--- Tab bar
-config.hide_tab_bar_if_only_one_tab = true
-config.tab_bar_at_bottom = true
-config.use_fancy_tab_bar = false
-config.show_new_tab_button_in_tab_bar = false
-config.switch_to_last_active_tab_when_closing_tab = true
-
--- Cursor
-config.default_cursor_style = 'SteadyBlock'
-config.force_reverse_video_cursor = true
-
--- Terminal behavior
-config.scrollback_lines = 5000
-config.enable_scroll_bar = true
-config.scroll_to_bottom_on_input = true
-config.audible_bell = "Disabled"
-config.term = "wezterm"
+-- Essential configuration
+config.audible_bell = 'Disabled'
+config.color_scheme = 'Catppuccin Mocha'
 config.enable_kitty_keyboard = true
-config.use_dead_keys = true
-
--- Hyperlinks
+config.enable_scroll_bar = true
+config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'monospace' }
+config.font_size = 14.0
+config.force_reverse_video_cursor = true
+config.hide_tab_bar_if_only_one_tab = true
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
-
--- Mouse behavior
 config.pane_focus_follows_mouse = false
-config.mouse_bindings = {
-  -- Open URLs with CMD+Click
-  {
-    event = { Up = { streak = 1, button = "Left" } },
-    mods = "CMD",
-    action = act.OpenLinkAtMouseCursor,
-  },
-}
-
--- SSH configuration
-config.ssh_domains = {}
--- The wezterm ssh feature can set up remote terminfo for better compatibility
-config.send_composed_key_when_left_alt_is_pressed = true
-config.send_composed_key_when_right_alt_is_pressed = false
-
--- Set prefix key (Ctrl+a like screen, alternative to tmux's Ctrl+b)
-local LEADER = 'CTRL'
-local LEADER_KEY = 'a'
-
--- Keybindings with tmux compatibility in mind
-config.leader = { key = LEADER_KEY, mods = LEADER, timeout_milliseconds = 1000 }
-config.disable_default_key_bindings = true -- Start fresh without default bindings
-
-config.keys = {
-  -- Leader key acts normally when pressed twice (tmux-like)
-  { key = LEADER_KEY, mods = 'LEADER', action = wezterm.action.SendKey { key = LEADER_KEY, mods = LEADER }},
-
-  -- Windows/Tabs (tmux-like)
-  { key = 'c', mods = 'LEADER', action = wezterm.action.SpawnTab 'CurrentPaneDomain' },      -- Create new window
-  { key = 'w', mods = 'LEADER', action = wezterm.action.ShowTabNavigator },                  -- Tab navigator (window list)
-  { key = '&', mods = 'LEADER|SHIFT', action = wezterm.action.CloseCurrentTab { confirm = true } }, -- Kill window
-
-  -- Window navigation (0-9) (tmux-like)
-  { key = '0', mods = 'LEADER', action = wezterm.action.ActivateTab(0) },
-  { key = '1', mods = 'LEADER', action = wezterm.action.ActivateTab(1) },
-  { key = '2', mods = 'LEADER', action = wezterm.action.ActivateTab(2) },
-  { key = '3', mods = 'LEADER', action = wezterm.action.ActivateTab(3) },
-  { key = '4', mods = 'LEADER', action = wezterm.action.ActivateTab(4) },
-  { key = '5', mods = 'LEADER', action = wezterm.action.ActivateTab(5) },
-  { key = '6', mods = 'LEADER', action = wezterm.action.ActivateTab(6) },
-  { key = '7', mods = 'LEADER', action = wezterm.action.ActivateTab(7) },
-  { key = '8', mods = 'LEADER', action = wezterm.action.ActivateTab(8) },
-  { key = '9', mods = 'LEADER', action = wezterm.action.ActivateTab(9) },
-
-  -- Next/previous tab (tmux-like)
-  { key = 'n', mods = 'LEADER', action = wezterm.action.ActivateTabRelative(1) },
-  { key = 'p', mods = 'LEADER', action = wezterm.action.ActivateTabRelative(-1) },
-
-  -- Panes (tmux-like)
-  { key = '"', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane {
-    direction = 'Down',
-    size = { Percent = 50 }
-  }},   -- Split vertically
-
-  { key = '%', mods = 'LEADER|SHIFT', action = wezterm.action.SplitPane {
-    direction = 'Right',
-    size = { Percent = 50 }
-  }}, -- Split horizontally
-
-  { key = 'x', mods = 'LEADER', action = wezterm.action.CloseCurrentPane { confirm = true } }, -- Kill pane
-  { key = 'z', mods = 'LEADER', action = wezterm.action.TogglePaneZoomState }, -- Toggle zoom
-
-  -- Pane navigation (tmux-like)
-  { key = 'h', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Left' },
-  { key = 'j', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Down' },
-  { key = 'k', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Up' },
-  { key = 'l', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Right' },
-
-  -- Additional pane navigation with arrow keys (tmux-like)
-  { key = 'LeftArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Left' },
-  { key = 'DownArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Down' },
-  { key = 'UpArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Up' },
-  { key = 'RightArrow', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Right' },
-
-  -- Cycle through panes (tmux-like)
-  { key = 'o', mods = 'LEADER', action = wezterm.action.ActivatePaneDirection 'Next' },
-
-  -- Pane resizing (tmux-like)
-  { key = 'H', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Left', 5 } },
-  { key = 'J', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Down', 5 } },
-  { key = 'K', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Up', 5 } },
-  { key = 'L', mods = 'LEADER|SHIFT', action = wezterm.action.AdjustPaneSize { 'Right', 5 } },
-
-  -- Copy mode (tmux-like)
-  { key = '[', mods = 'LEADER', action = wezterm.action.ActivateCopyMode },
-  { key = ']', mods = 'LEADER', action = wezterm.action.PasteFrom 'Clipboard' },
-
-  -- Reload configuration (tmux-like)
-  { key = 'r', mods = 'LEADER', action = wezterm.action.ReloadConfiguration },
-
-  -- Detach domain (like tmux detach)
-  { key = 'd', mods = 'LEADER', action = wezterm.action.DetachDomain 'CurrentPaneDomain' },
-
-{{ if eq .chezmoi.os "darwin" }}
-  -- macOS specific keybindings
-  -- Copy/paste
-  { key = 'c', mods = 'CMD', action = wezterm.action.CopyTo 'Clipboard' },
-  { key = 'v', mods = 'CMD', action = wezterm.action.PasteFrom 'Clipboard' },
-
-  -- Font size
-  { key = '=', mods = 'CMD', action = wezterm.action.IncreaseFontSize },
-  { key = '-', mods = 'CMD', action = wezterm.action.DecreaseFontSize },
-  { key = '0', mods = 'CMD', action = wezterm.action.ResetFontSize },
-
-  -- Full screen
-  { key = 'f', mods = 'CMD|SHIFT', action = wezterm.action.ToggleFullScreen },
-{{ else }}
-  -- Linux/Generic keybindings
-  -- Copy/paste
-  { key = 'c', mods = 'CTRL|SHIFT', action = wezterm.action.CopyTo 'Clipboard' },
-  { key = 'v', mods = 'CTRL|SHIFT', action = wezterm.action.PasteFrom 'Clipboard' },
-  { key = 'Insert', mods = 'SHIFT', action = wezterm.action.PasteFrom 'PrimarySelection' },
-
-  -- Font size
-  { key = 'plus', mods = 'CTRL', action = wezterm.action.IncreaseFontSize },
-  { key = 'minus', mods = 'CTRL', action = wezterm.action.DecreaseFontSize },
-  { key = '0', mods = 'CTRL', action = wezterm.action.ResetFontSize },
-
-  -- Full screen
-  { key = 'F11', mods = '', action = wezterm.action.ToggleFullScreen },
-{{ end }}
-
-  -- Tab navigation with Alt+number (for direct access without leader)
-  { key = '1', mods = 'ALT', action = wezterm.action.ActivateTab(0) },
-  { key = '2', mods = 'ALT', action = wezterm.action.ActivateTab(1) },
-  { key = '3', mods = 'ALT', action = wezterm.action.ActivateTab(2) },
-  { key = '4', mods = 'ALT', action = wezterm.action.ActivateTab(3) },
-  { key = '5', mods = 'ALT', action = wezterm.action.ActivateTab(4) },
-  { key = '6', mods = 'ALT', action = wezterm.action.ActivateTab(5) },
-  { key = '7', mods = 'ALT', action = wezterm.action.ActivateTab(6) },
-  { key = '8', mods = 'ALT', action = wezterm.action.ActivateTab(7) },
-  { key = '9', mods = 'ALT', action = wezterm.action.ActivateTab(8) },
-}
+config.scrollback_lines = 5000
+config.switch_to_last_active_tab_when_closing_tab = true
+config.tab_bar_at_bottom = true
+config.scroll_to_bottom_on_input = true
+config.show_new_tab_button_in_tab_bar = false
+config.term = 'wezterm'
+config.use_dead_keys = true
+config.use_fancy_tab_bar = false
+config.window_padding = { left = 0, right = 0, top = 0, bottom = '.5cell' }
 
 -- Platform-specific configuration
 {{ if eq .chezmoi.os "darwin" }}
--- macOS specific settings
 config.native_macos_fullscreen_mode = true
-
--- Set term variable for ssh connections
-wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
-  local title = pane.title
-  if title:match("^SSH:") then
-    -- Setting TERM to wezterm for SSH sessions
-    pane:set_environment_variable('TERM', 'wezterm')
-  end
-  return title
-end)
 
 -- Handle startup (maximize window on macOS)
 wezterm.on("gui-startup", function()
   local tab, pane, window = mux.spawn_window({})
   window:gui_window():maximize()
 end)
-
--- Environment variables to remove (for macOS)
-config.mux_env_remove = {
-  "SSH_AUTH_SOCK",
-  "SSH_CLIENT",
-}
-
 {{ else }}
--- Linux/other specific settings
--- Don't enable IME function on Linux which might not have GUI
+-- Linux specific settings
 config.use_ime = false
-
--- Set term variable for ssh connections on Linux
-wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
-  local title = pane.title
-  if title:match("^SSH:") then
-    -- Setting TERM to wezterm for SSH sessions
-    pane:set_environment_variable('TERM', 'wezterm')
-  end
-  return title
-end)
-
--- Environment variables to remove (for Linux)
-config.mux_env_remove = {
-  "SSH_AUTH_SOCK",
-  "SSH_CLIENT",
-}
 {{ end }}
+
+config.mux_env_remove = {
+  'SSH_AUTH_SOCK',
+  'SSH_CLIENT',
+}
+
+config.prefer_to_spawn_tabs = true
+config.hide_mouse_cursor_when_typing = true
 
 return config

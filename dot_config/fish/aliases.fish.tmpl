@@ -1,0 +1,145 @@
+# Fish shell aliases
+# This file contains all aliases used in the fish shell configuration
+
+###########################################
+# FILE SYSTEM ALIASES
+###########################################
+
+# Set up aliases for eza if installed
+if type -q eza
+    alias ls="eza --group-directories-first"
+    alias ll="eza -lh --group-directories-first"
+    alias la="eza -lah --group-directories-first"
+    alias lt="eza -T --group-directories-first"
+end
+
+# Use bat instead of cat if installed
+if type -q bat
+    # Set bat aliases
+    alias cat="bat --style=plain"
+end
+
+# Use fd instead of find if installed
+if type -q fd
+    alias find="fd"
+end
+
+###########################################
+# GIT ALIASES
+###########################################
+
+# Set up git aliases
+if type -q git
+    alias g="git"
+    alias gs="git status"
+    alias ga="git add"
+    alias gc="git commit"
+    alias gp="git push"
+    alias gl="git pull"
+    alias gd="git diff"
+    alias gco="git checkout"
+    alias gb="git branch"
+    alias glog="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+end
+
+# GitHub CLI aliases if installed
+if type -q gh
+    alias ghpr="gh pr create"
+    alias ghprv="gh pr view"
+    alias ghprl="gh pr list"
+end
+
+###########################################
+# EDITOR ALIASES
+###########################################
+
+# Neovim aliases and setup
+if type -q nvim
+    alias vim="nvim"
+    alias vi="nvim"
+    alias v="nvim"
+end
+
+###########################################
+# PROHIBITED SOFTWARE ALIASES
+###########################################
+
+# Block conda/miniconda/anaconda installation attempts
+function conda
+    echo "⛔ Conda is not allowed in this environment."
+    echo "Please use alternative Python environment tools like venv, virtualenv, or uv."
+    echo "See $HOME/.local/share/conda_warning.txt for more information."
+    return 1
+end
+
+function miniconda
+    conda
+end
+
+function anaconda
+    conda
+end
+
+function mamba
+    conda
+end
+
+###########################################
+# UTILITY FUNCTIONS
+###########################################
+
+# Continuously display file content with syntax highlighting
+function watch-file --argument-names file
+    if test -z "$file"
+        echo "Usage: watch-file <filename>"
+        return 1
+    end
+
+    # Get the file extension for syntax detection
+    set -l ext (string match -r '\.([^\.]+)$' "$file" | string replace -r '.*\.' '')
+
+    # Use tail to follow the file and pipe to bat for syntax highlighting
+    if test -n "$ext" && type -q bat
+        # If extension detected, use it for syntax
+        tail -f "$file" | bat --paging=never --language="$ext"
+    else if type -q bat
+        # Let bat auto-detect the syntax
+        tail -f "$file" | bat --paging=never
+    else
+        # Fallback to plain tail -f
+        tail -f "$file"
+    end
+end
+
+# Run command from stdin or arguments in the background and watch the log file
+function run-and-watch --argument-names logfile
+    # Set default log file if not provided
+    if test -z "$logfile"
+        set logfile "nohup.log"
+    end
+
+    # Check if we're receiving data from stdin (pipe)
+    if status is-pipe
+        # Read the command from stdin
+        set -l cmd (cat)
+
+        # Run the command with nohup
+        echo "Starting command in background from pipe: $cmd"
+        echo "Log file: $logfile"
+
+        # Execute the command with nohup and redirect output to the log file
+        nohup sh -c "$cmd" > "$logfile" 2>&1 &
+
+        # Get the PID of the background process
+        set -l pid $last_pid
+        echo "Process started with PID: $pid"
+
+        # Watch the log file
+        watch-file "$logfile"
+    else
+        # If not called in a pipe, show usage
+        echo "Usage: <command> | run-and-watch [logfile]"
+        echo "Example: python script.py --arg 1 | run-and-watch log.txt"
+        return 1
+    end
+end

@@ -21,53 +21,42 @@ This command will:
 
 This dotfiles template includes a carefully curated set of development tools, each chosen for their productivity benefits. All tools are automatically installed and configured.
 
-### Theme Integration
+### Theme Configuration
 
-The dotfiles come with multiple theme options pre-installed across various tools:
+The dotfiles come with [Catppuccin](https://github.com/catppuccin/catppuccin) as the default theme, specifically the Mocha variant. [Gruvbox Material](https://github.com/sainnhe/gruvbox-material) is also available as an alternative.
 
-1. [Catppuccin](https://github.com/catppuccin/catppuccin) (Mocha variant by default) - A soothing pastel theme
-2. [Gruvbox Material](https://github.com/sainnhe/gruvbox-material) - A modified version of Gruvbox with softer colors
+Themes are configured in the following files:
 
-These themes provide a consistent aesthetic across your development environment:
+| Tool | Configuration File | Notes |
+|------|-------------------|-------|
+| WezTerm | `~/.wezterm.lua` | Terminal theme setup |
+| Neovim | `~/.config/nvim/init.lua` | Editor theme (Catppuccin is default) |
+| bat | `~/.config/bat/config` | Syntax highlighting theme |
+| Starship | `~/.config/starship.toml` | Terminal prompt theme |
+| Fish | `~/.config/fish/config.fish` | Shell configuration |
 
-| Tool | Theme Support | How It's Implemented |
-|------|--------------|---------------------|
-| WezTerm | Catppuccin, Gruvbox Material | Custom color schemes and built-in themes |
-| Neovim | Catppuccin, Gruvbox Material | Installed via Lazy.nvim plugin manager |
-| bat | Various themes | Auto-installed via dotfiles script |
-| Starship | Custom palettes | Dynamically updated via `update_starship_theme` function |
-| fzf | Terminal colors | Uses terminal colors for consistent experience |
-| Fish | Terminal colors | Inherits from WezTerm's terminal colors |
+#### How to Customize Themes
 
-All these tools are configured to respect the `USER_THEME` environment variable, so changing it in one place updates the theme across your entire environment.
+To change themes for individual tools:
 
-#### Changing Theme Variants
+- **Neovim**:
+  - Edit `~/.config/nvim/init.lua`
+  - Change the colorscheme line to use a different theme
+  - Example: `vim.cmd.colorscheme("gruvbox-material")`
 
-You can easily switch between theme variants using the included `set_theme` function:
+- **WezTerm**:
+  - Edit `~/.wezterm.lua`
+  - Change the color_scheme setting
 
-```fish
-# Catppuccin variants
-set_theme "Catppuccin Mocha"    # Default dark theme
-set_theme "Catppuccin Latte"    # Light theme
-set_theme "Catppuccin Frappe"   # Medium-dark theme
-set_theme "Catppuccin Macchiato" # Darker theme
+- **Starship**:
+  - Edit `~/.config/starship.toml`
+  - Modify the palette configuration
 
-# Gruvbox variants
-set_theme "Gruvbox Material"    # Dark Gruvbox Material theme
-```
+- **bat**:
+  - Edit `~/.config/bat/config`
+  - Change the `--theme` parameter
 
-The function updates all theme-aware tools at once. Some tools like WezTerm and Neovim require a restart to fully apply the theme changes.
-
-Available theme variants:
-- Catppuccin:
-  - `Catppuccin Mocha` (default dark)
-  - `Catppuccin Latte` (light)
-  - `Catppuccin Frappe` (medium-dark)
-  - `Catppuccin Macchiato` (darker)
-- Gruvbox:
-  - `Gruvbox Material` (dark)
-
-For permanent changes, you can add the `set_theme` command to your `~/.config/fish/local.config.fish` file.
+For a more advanced setup with environment variable-based theme switching, you can implement a custom solution or restore the original dynamic theme management.
 
 ### Shells & Terminal
 
@@ -77,6 +66,11 @@ For permanent changes, you can add the `set_theme` command to your `~/.config/fi
 | [starship](https://starship.rs/) | Customizable prompt | Fast, informative prompt with Git integration and language support |
 | [wezterm](https://wezfurlong.org/wezterm/) | Terminal emulator | GPU-accelerated with excellent font handling and multiplexing, includes Nerd Fonts |
 | [direnv](https://direnv.net/) | Environment manager | Directory-based environment variable loading |
+
+Fish shell configuration is organized into modular files:
+- `config.fish.tmpl`: Main configuration file with environment setup
+- `aliases.fish.tmpl`: All shell aliases and utility functions
+- `conf.d/*.fish`: Auto-loaded configuration files for specific tools
 
 ### Editors & IDEs
 
@@ -95,6 +89,17 @@ For permanent changes, you can add the `set_theme` command to your `~/.config/fi
 | [fzf](https://github.com/junegunn/fzf) | Fuzzy finder | Powerful interactive filtering for command line |
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | Directory jumper | Faster navigation between frequently-used directories |
 | [atuin](https://github.com/atuinsh/atuin) | Shell history | Searchable, syncable shell history with context |
+
+#### Custom Utility Functions
+
+The dotfiles also include several custom utility functions to improve workflow:
+
+| Function | Description |
+|----------|-------------|
+| `watch-file` | Continuously display file content with syntax highlighting using bat |
+| `run-and-watch` | Run a command in the background and watch its output log file |
+| `dotfiles_doctor` | Check the health of your dotfiles installation and tools |
+| `set_theme` | Change theme across all configured applications |
 
 ### Git Tools
 
@@ -127,6 +132,7 @@ For permanent changes, you can add the `set_theme` command to your `~/.config/fi
 
 | Tool | Description | Why It's Useful |
 |------|-------------|-----------------|
+| [1Password](https://1password.com/) | Password manager | Secure password storage and management with browser integration |
 | [1Password CLI](https://1password.com/downloads/command-line/) | Password manager CLI | Access to secrets and passwords from the command line |
 
 ### Git Configuration
@@ -145,6 +151,9 @@ For permanent changes, you can add the `set_theme` command to your `~/.config/fi
 ```bash
 # Edit a dotfile
 chezmoi edit ~/.config/fish/config.fish
+
+# Edit shell aliases
+chezmoi edit ~/.config/fish/aliases.fish
 
 # Apply changes
 chezmoi apply

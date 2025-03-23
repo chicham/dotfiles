@@ -315,55 +315,9 @@ end
 # ALIASES AND SHORTCUTS
 ###########################################
 
-# Set up aliases for eza if installed
-if type -q eza
-    alias ls="eza --group-directories-first"
-    alias ll="eza -lh --group-directories-first"
-    alias la="eza -lah --group-directories-first"
-    alias lt="eza -T --group-directories-first"
-end
-
-# Use bat instead of cat if installed
-if type -q bat
-    # Set bat aliases
-    alias cat="bat --style=plain"
-end
-
-# Use fd instead of find if installed
-if type -q fd
-    alias find="fd"
-end
-
-# Set up git aliases
-if type -q git
-    alias g="git"
-    alias gs="git status"
-    alias ga="git add"
-    alias gc="git commit"
-    alias gp="git push"
-    alias gl="git pull"
-    alias gd="git diff"
-    alias gco="git checkout"
-    alias gb="git branch"
-    alias glog="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
-end
-
-# GitHub CLI aliases if installed
-if type -q gh
-    alias ghpr="gh pr create"
-    alias ghprv="gh pr view"
-    alias ghprl="gh pr list"
-end
-
-# Neovim aliases and setup
-if type -q nvim
-    alias vim="nvim"
-    alias vi="nvim"
-    alias v="nvim"
-
-    # Following kickstart.nvim approach: No automatic plugin updates
-    # Plugins will be installed on first interactive run of Neovim
-    # This is more reliable and matches kickstart.nvim's recommended approach
+# Source aliases file
+if test -f $HOME/.config/fish/aliases.fish
+    source $HOME/.config/fish/aliases.fish
 end
 
 ###########################################
@@ -498,33 +452,13 @@ end
 # MISCELLANEOUS SETTINGS
 ###########################################
 
-# Terminal title
+# Terminal title - show command name instead of username
 function fish_title
-    echo "{{ .firstName }} {{ .lastName }}: "(basename $PWD)
+    echo (status current-command)" "(basename $PWD)
 end
 
 # Suppress fish greeting
 set fish_greeting
-
-# Block conda/miniconda/anaconda installation attempts
-function conda
-    echo "⛔ Conda is not allowed in this environment."
-    echo "Please use alternative Python environment tools like venv, virtualenv, or uv."
-    echo "See $HOME/.local/share/conda_warning.txt for more information."
-    return 1
-end
-
-function miniconda
-    conda
-end
-
-function anaconda
-    conda
-end
-
-function mamba
-    conda
-end
 
 ###########################################
 # LOCAL CONFIGURATION
