@@ -350,66 +350,138 @@ if type -q nvim
     alias vi="nvim"
     alias v="nvim"
 
-    # Function to check and update LazyVim plugins
-    function nvim_update_plugins --description "Update Neovim LazyVim plugins"
-        echo "Updating LazyVim plugins..."
-        nvim --headless "+Lazy! sync" +qa
-    end
+    # Following kickstart.nvim approach: No automatic plugin updates
+    # Plugins will be installed on first interactive run of Neovim
+    # This is more reliable and matches kickstart.nvim's recommended approach
+end
 
-    # Auto-check LazyVim plugins if not checked recently
-    set -l nvim_last_updated_file "$HOME/.cache/nvim_last_plugin_check"
-    set -l current_time (date +%s)
+###########################################
+# DOTFILES MANAGEMENT
+###########################################
 
-    # Create cache directory and check update time
-    mkdir -p "$HOME/.cache"
+function dotfiles_doctor --description "Check dotfiles health and tool installations"
+    set -l success_icon "✓"
+    set -l warning_icon "!"
+    set -l error_icon "✗"
 
-    # Check if we need to update plugins (once a week)
-    if not test -f "$nvim_last_updated_file"; or test (math "$current_time - "(cat "$nvim_last_updated_file")) -gt 604800
-        nvim_update_plugins
-        echo $current_time >"$nvim_last_updated_file"
+    echo "Dotfiles Health Check"
+    echo ""
+    echo "System information:"
+    echo "  $success_icon hostname:       "(hostname)
+    echo "  $success_icon os:             "{{ .chezmoi.os }}
+    echo "  $success_icon arch:           "{{ .chezmoi.arch }}
+    echo -n "  $success_icon chezmoi version: "
+    command -v chezmoi >/dev/null 2>&1 && chezmoi --version 2>/dev/null || echo "not installed"
+    echo ""
+
+    # Get managed files from chezmoi
+    set -l managed_files (chezmoi managed)
+
+    echo "Tools and Configuration:"
+    echo ""
+
+    # Shell Tools
+    echo "## Shell Tools"
+    __check_tool_with_configs "fish" ".config/fish/config.fish:.config/fish/aliases.fish" "$managed_files"
+    __check_tool_with_configs "starship" ".config/starship.toml" "$managed_files"
+    __check_tool_with_configs "wezterm" ".wezterm.lua" "$managed_files"
+
+    echo ""
+    echo "## File Utilities"
+    __check_tool_with_configs "bat" ".config/bat/config" "$managed_files"
+    __check_tool_with_configs "eza" "" "$managed_files"
+    __check_tool_with_configs "fd" "" "$managed_files"
+    __check_tool_with_configs "zoxide" "" "$managed_files"
+    __check_tool_with_configs "fzf" "" "$managed_files"
+
+    echo ""
+    echo "## Git Tools"
+    __check_tool_with_configs "git" ".gitconfig:.git_template/hooks/pre-commit" "$managed_files"
+    __check_tool_with_configs "git-lfs" "" "$managed_files"
+    __check_tool_with_configs "difft" "" "$managed_files"
+    __check_tool_with_configs "gh" "" "$managed_files"
+    {{ if gt (len (glob ".config/glab-cli")) 0 -}}
+    __check_tool_with_configs "glab" ".config/glab-cli/config.yml:.config/glab-cli/aliases.yml" "$managed_files"
+    {{ end -}}
+
+    echo ""
+    echo "## Development Tools"
+    __check_tool_with_configs "nvim" ".config/nvim/init.lua" "$managed_files"
+    __check_tool_with_configs "direnv" ".config/direnv/direnvrc" "$managed_files"
+    __check_tool_with_configs "atuin" ".config/atuin/config.toml" "$managed_files"
+    __check_tool_with_configs "uv" "" "$managed_files"
+    __check_tool_with_configs "rustc" "" "$managed_files" "rustc --version"
+    __check_tool_with_configs "cargo" "" "$managed_files" "cargo --version"
+
+    echo ""
+    echo "## Cloud Tools"
+    __check_tool_with_configs "gcloud" "" "$managed_files"
+    __check_tool_with_configs "op" "" "$managed_files"
+    {{ if eq .chezmoi.os "darwin" -}}
+    __check_tool_with_configs "aerospace" ".aerospace.toml" "$managed_files"
+    {{ end -}}
+
+    echo ""
+    echo "Environment Variables:"
+    echo "  $success_icon USER_THEME:     $USER_THEME"
+    echo "  $success_icon EDITOR:         $EDITOR"
+    echo "  $success_icon TERM:           $TERM"
+
+    if command -v chezmoi >/dev/null 2>&1
+        echo ""
+        echo "Chezmoi Status:"
+        chezmoi doctor
     end
 end
+
+function __check_tool_with_configs --description "Check tool installation and its configs"
+    set -l tool_name $argv[1]
+    set -l config_paths $argv[2]
+    set -l managed_files $argv[3]
+    set -l check_cmd $argv[4]
+
+    set -l success_icon "✓"
+    set -l error_icon "✗"
+
+    # Check if tool is installed
+    if test -z "$check_cmd"
+        set check_cmd "$tool_name --version"
+    end
+
+    if command -v $tool_name >/dev/null 2>&1
+        # Get version info
+        set -l ver_info (eval $check_cmd 2>&1 | head -n 1)
+        echo "  $success_icon $tool_name: $ver_info"
+    else
+        echo "  $error_icon $tool_name: not installed"
+    end
+
+    # Check config files
+    if test -n "$config_paths"
+        set -l config_list (string split ":" $config_paths)
+
+        for cfg in $config_list
+            set -l managed_status ""
+            if contains $cfg $managed_files
+                set managed_status "(managed by chezmoi)"
+            end
+
+            set -l file_path "$HOME/$cfg"
+            if test -f $file_path
+                echo "    $success_icon config: $cfg $managed_status"
+            else
+                echo "    $error_icon config: $cfg missing $managed_status"
+            end
+        end
+    end
+end
+
 
 ###########################################
 # SSH AND AUTHENTICATION
 ###########################################
 
-# Set up SSH agent (either 1Password or standard)
-# 1Password configuration is now handled in conf.d/1password.fish.tmpl
-# Only use standard ssh-agent if 1Password is not available and we're not in an SSH session
-if not set -q SSH_TTY; and not set -q SSH_CLIENT; and not set -q SSH_CONNECTION; and not command -v op >/dev/null 2>&1
-    # Use standard ssh-agent
-    if status is-interactive
-        # Path to store SSH agent environment variables
-        set -l agent_file $HOME/.ssh/agent.fish
-
-        # Function to start the SSH agent
-        function __start_agent
-            echo "Starting SSH agent..."
-            ssh-agent -c | sed 's/^echo/# echo/' >$agent_file
-            chmod 600 $agent_file
-            source $agent_file
-
-            # Add default key if available
-            if test -f $HOME/.ssh/id_ed25519
-                ssh-add $HOME/.ssh/id_ed25519 2>/dev/null
-            end
-        end
-
-        # Check if agent is already running
-        if test -f $agent_file
-            source $agent_file
-            # Verify the agent is still running
-            if not ps -p $SSH_AGENT_PID | grep -q ssh-agent 2>/dev/null
-                # Agent process is not running, start a new one
-                __start_agent
-            end
-        else
-            # No agent file exists, start a new agent
-            __start_agent
-        end
-    end
-end
+# 1Password SSH agent configuration is handled in conf.d/1password.fish.tmpl when available.
 
 ###########################################
 # MISCELLANEOUS SETTINGS

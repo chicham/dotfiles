@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Hash: {{ join (list (include ".chezmoiscripts/darwin/Brewfile")) " " }}
+
+set -eu
+
+# Check if Homebrew is installed
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  # Add Homebrew to the appropriate shell path
+  if [[ "$(uname -m)" == "arm64" ]]; then
+    # For Apple Silicon
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  else
+    # For Intel Macs
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+fi
+
+# Install packages from Brewfile
+echo "Installing Homebrew packages..."
+brew bundle --no-lock --file={{ joinPath .chezmoi.sourceDir ".chezmoiscripts/darwin/Brewfile" | quote }}
+
+echo "Homebrew packages installed successfully."

@@ -1,4 +1,6 @@
-FROM ubuntu:22.04
+# Using Ubuntu 24.04 (Noble Numbat) to ensure newer GLIBC (2.38+) is available
+# This prevents errors with newer tools that require recent GLIBC versions
+FROM ubuntu:24.04
 
 # Install essential packages - only what's needed for installation scripts
 RUN apt-get update && apt-get install -y \
@@ -40,12 +42,11 @@ ENV CLOUDSDK_PYTHON="/usr/bin/python3"
 # Copy the repository to a temporary location
 COPY --chown=firstname.lastname:firstname.lastname . /tmp/artefiles
 
-# Copy the test script written in fish
-COPY --chown=firstname.lastname:firstname.lastname test-dotfiles.fish /home/firstname.lastname/test-dotfiles.fish
-RUN chmod +x /home/firstname.lastname/test-dotfiles.fish
+# Install chezmoi to ~/.local/bin
+RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin
 
-# Install chezmoi and apply dotfiles during build
-RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply --source=/tmp/artefiles
+# Apply dotfiles using chezmoi
+RUN $HOME/.local/bin/chezmoi init --apply --source=/tmp/artefiles
 
-# Set the entrypoint to run the fish test script with the fish shell installed by chezmoi
-ENTRYPOINT ["/home/firstname.lastname/.local/bin/fish", "/home/firstname.lastname/test-dotfiles.fish"]
+# Set the entrypoint to run the dotfiles_doctor function with the fish shell installed by chezmoi
+ENTRYPOINT ["/home/firstname.lastname/.local/bin/fish", "-c", "dotfiles_doctor"]

@@ -13,7 +13,7 @@ else
   TTY_FLAG="-i"
 fi
 
-# We're now using test-dotfiles.fish as our test script
+# We're now using the dotfiles_doctor function for testing
 
 # Build Docker image with progress=plain to show more verbose output
 docker build --progress=plain -t artefiles-test-linux -f Dockerfile.linux .

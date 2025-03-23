@@ -128,7 +128,6 @@ For permanent changes, you can add the `set_theme` command to your `~/.config/fi
 | Tool | Description | Why It's Useful |
 |------|-------------|-----------------|
 | [1Password CLI](https://1password.com/downloads/command-line/) | Password manager CLI | Access to secrets and passwords from the command line |
-| SSH Agent | SSH key manager | Securely manages SSH keys for authentication |
 
 ### Git Configuration
 
@@ -169,9 +168,9 @@ After installation is complete, you should:
    atuin login     # Existing account
    ```
 
-3. **Add the SSH Key** to GitHub/GitLab:
-   - Your SSH key will be displayed during installation
-   - Add this key to your GitHub/GitLab account settings
+3. **Create and Set Up SSH Keys**:
+   - Follow GitHub's guide to [generate SSH keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+   - Add the keys to your GitHub/GitLab account
 
 4. **Initialize Google Cloud SDK**:
    ```bash
