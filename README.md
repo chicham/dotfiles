@@ -14,7 +14,6 @@ This command will:
 
 1. Install chezmoi if it's not already installed
 1. Clone this repository
-1. Automatically install 1Password CLI if needed (via pre-read-source-state hook)
 1. Apply the dotfiles to your system
 
 ## Tools Included
@@ -130,10 +129,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 
 ### Security & Authentication
 
-| Tool | Description | Why It's Useful |
-|------|-------------|-----------------|
-| [1Password](https://1password.com/) | Password manager | Secure password storage and management with browser integration |
-| [1Password CLI](https://1password.com/downloads/command-line/) | Password manager CLI | Access to secrets and passwords from the command line |
+The security and authentication tools have been made optional and are not included by default in this template. You can add your preferred password manager and authentication tools separately.
 
 ### Git Configuration
 
@@ -166,12 +162,7 @@ chezmoi update
 
 After installation is complete, you should:
 
-1. **Set up 1Password CLI**:
-   ```bash
-   op account add  # Add your 1Password account
-   ```
-
-2. **Configure Atuin** (shell history sync):
+1. **Configure Atuin** (shell history sync):
    ```bash
    atuin register  # New account
    atuin login     # Existing account
