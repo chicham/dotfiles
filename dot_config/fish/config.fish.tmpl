@@ -18,8 +18,8 @@ set -gx TERM wezterm
 # - Others: "Dracula", "Nord", "Tokyo Night"
 #
 # Each tool will attempt to use this theme if supported, or fall back to a close match
-# Set the fish theme directly using fish_config theme save
-fish_config theme save "Catppuccin Mocha"
+# Set the fish theme directly using fish_config theme choose (no prompt)
+fish_config theme choose "Catppuccin Mocha"
 
 # WezTerm specific settings
 if test "$TERM_PROGRAM" = WezTerm
@@ -229,8 +229,8 @@ function set_theme --description "Change theme across all tools" --argument vari
     echo "Setting theme to $variant across all tools..."
 
     # Set fish theme directly
-    fish_config theme save "$variant"
-    echo "✓ Updated fish theme"
+    fish_config theme choose "$variant"
+    echo "✓ Updated fish theme to $variant"
 
     # Update fzf (if installed)
     if type -q fzf
@@ -425,7 +425,6 @@ function dotfiles_doctor --description "Check dotfiles health and tool installat
         end
     end
 
-    echo "  $success_icon FISH_THEME:     $current_theme"
     echo "  $success_icon EDITOR:         $EDITOR"
     echo "  $success_icon TERM:           $TERM"
 
