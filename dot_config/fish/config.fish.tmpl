@@ -18,7 +18,8 @@ set -gx TERM wezterm
 # - Others: "Dracula", "Nord", "Tokyo Night"
 #
 # Each tool will attempt to use this theme if supported, or fall back to a close match
-set -gx USER_THEME "Catppuccin Mocha"
+# Set the fish theme directly using fish_config theme save
+fish_config theme save "Catppuccin Mocha"
 
 # WezTerm specific settings
 if test "$TERM_PROGRAM" = WezTerm
@@ -110,33 +111,63 @@ function setup_fzf_options --description "Setup fzf to use terminal colors"
     set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
 end
 
-# Function to update bat theme based on USER_THEME
-function update_bat_theme --description "Update bat theme to match USER_THEME"
+# Function to update bat theme based on current fish theme
+function update_bat_theme --description "Update bat theme to match current theme" --argument theme_name
     set -l theme_file "$HOME/.config/bat/config"
+
+    # If no theme provided, use current fish theme
+    if test -z "$theme_name"
+        # Get current theme from fish
+        set theme_name "Catppuccin Mocha" # Default fallback
+        if type -q fish_config
+            # Try to get the current theme
+            set -l theme_output (fish_config theme show 2>/dev/null)
+            if test $status -eq 0
+                # Extract theme name from output
+                set theme_name (string match -r 'theme: (.*)' -- "$theme_output" | string replace -r 'theme: (.*)' '$1')
+            end
+        end
+    end
+
     if test -f "$theme_file"
         # Check if the theme is available in bat
         set -l available_themes (bat --list-themes | string collect)
 
-        if not string match -q "*$USER_THEME*" "$available_themes"
-            echo "Error: Theme '$USER_THEME' is not available in bat."
+        if not string match -q "*$theme_name*" "$available_themes"
+            echo "Error: Theme '$theme_name' is not available in bat."
             echo "Available themes:"
             bat --list-themes
             return 1
         end
 
         # Replace theme line if it exists
-        sed -i '' 's/^--theme=.*$/--theme="'"$USER_THEME"'"/' "$theme_file"
+        sed -i '' 's/^--theme=.*$/--theme="'"$theme_name"'"/' "$theme_file"
         # Clear bat cache to apply changes
         bat cache --build >/dev/null 2>&1
-        echo "✓ Bat theme updated to $USER_THEME"
+        echo "✓ Bat theme updated to $theme_name"
     end
 end
 
-# Function to update starship theme based on USER_THEME
-function update_starship_theme --description "Update starship theme to match USER_THEME"
+# Function to update starship theme based on current fish theme
+function update_starship_theme --description "Update starship theme to match current theme" --argument theme_name
     set -l config_file "$HOME/.config/starship.toml"
+
+    # If no theme provided, use current fish theme
+    if test -z "$theme_name"
+        # Get current theme from fish
+        set theme_name "Catppuccin Mocha" # Default fallback
+        if type -q fish_config
+            # Try to get the current theme
+            set -l theme_output (fish_config theme show 2>/dev/null)
+            if test $status -eq 0
+                # Extract theme name from output
+                set theme_name (string match -r 'theme: (.*)' -- "$theme_output" | string replace -r 'theme: (.*)' '$1')
+            end
+        end
+    end
+
     if test -f "$config_file"
-        set -l theme "$USER_THEME"
+        set -l theme "$theme_name"
         set -l palette ""
 
         # Determine which palette to use based on theme name
@@ -194,11 +225,12 @@ function set_theme --description "Change theme across all tools" --argument vari
         return 1
     end
 
-    # Set the environment variable
-    set -gx USER_THEME "$variant"
-
     # Update each tool
     echo "Setting theme to $variant across all tools..."
+
+    # Set fish theme directly
+    fish_config theme save "$variant"
+    echo "✓ Updated fish theme"
 
     # Update fzf (if installed)
     if type -q fzf
@@ -382,7 +414,18 @@ function dotfiles_doctor --description "Check dotfiles health and tool installat
 
     echo ""
     echo "Environment Variables:"
-    echo "  $success_icon USER_THEME:     $USER_THEME"
+    # Get current fish theme
+    set -l current_theme "Unknown"
+    if type -q fish_config
+        # Try to get the current theme
+        set -l theme_output (fish_config theme show 2>/dev/null)
+        if test $status -eq 0
+            # Extract theme name from output
+            set current_theme (string match -r 'theme: (.*)' -- "$theme_output" | string replace -r 'theme: (.*)' '$1')
+        end
+    end
+
+    echo "  $success_icon FISH_THEME:     $current_theme"
     echo "  $success_icon EDITOR:         $EDITOR"
     echo "  $success_icon TERM:           $TERM"
 

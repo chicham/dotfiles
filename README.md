@@ -7,12 +7,12 @@ A cross-platform dotfiles template managed with [chezmoi](https://chezmoi.io/).
 Install in one command:
 
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply artefactory/artefiles
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin init --apply artefactory/artefiles
 ```
 
 This command will:
 
-1. Install chezmoi if it's not already installed
+1. Install chezmoi to $HOME/.local/bin if it's not already installed
 1. Clone this repository
 1. Apply the dotfiles to your system
 
@@ -112,7 +112,7 @@ To change themes for individual tools:
   fish_config theme list
   ```
 
-For a more advanced setup with environment variable-based theme switching, you can implement a custom solution or restore the original dynamic theme management.
+The dotfiles use direct theme setting with `fish_config theme save` to apply themes consistently.
 
 ### Shells & Terminal
 
@@ -155,7 +155,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 | `watch-file` | Continuously display file content with syntax highlighting using bat |
 | `run-and-watch` | Run a command in the background and watch its output log file |
 | `dotfiles_doctor` | Check the health of your dotfiles installation and tools |
-| `set_theme` | Change theme across all configured applications |
+| `set_theme` | Change fish theme and update all configured applications to match |
 | `remote_exec` | Execute commands on remote servers with improved output handling |
 
 ### Git Tools

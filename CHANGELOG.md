@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Features
+
+- Replace USER_THEME global variable with direct fish theme setting using fish_config theme save
+
 
 ### Bug Fixes
 
@@ -22,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - Remove unnecessary remote install ([7c9d9d4](7c9d9d4ff78a1434f9a0b3f62a4b10d4bc61952c))
 
 - Various fixes for macos ([d80f717](d80f717ec945b825a0637751ac2861cbc21a52d7))
+
+- Missing fish config ([87035ea](87035ea78877602cedf234613a9fbdbffc8eabcf))
 
 
 ### Chores
@@ -113,6 +119,8 @@ All notable changes to this project will be documented in this file.
 
 - Re-add gitignore and changelog ([1fa0bf3](1fa0bf36aef27b935a84bb33897a9e0b0614ec8f))
 
+- Installation of fisher for fish plugins ([e8c226e](e8c226ec90d41cddcff6da3cebb4629f826bdb64))
+
 
 ### Docs
 
@@ -121,6 +129,8 @@ All notable changes to this project will be documented in this file.
 - Update documentation for theme system and Nerd Fonts ([37c18c0](37c18c0d82712a17c700b4ffc2ffc38bc325e66a))
 
 - Add contribution and tools description ([6f9de05](6f9de056af0a39a314828aa80f7bfceb715a7baa))
+
+- Add theme switching to readme ([5897c03](5897c03435c0f84cc5c8242f33d4effe3a357807))
 
 
 ### Refactor
