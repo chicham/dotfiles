@@ -109,6 +109,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 | [GitHub CLI](https://cli.github.com/) | GitHub CLI | Command-line interface for GitHub operations |
 | [difftastic](https://github.com/Wilfred/difftastic) | Diff tool | Syntax-aware diff for better code comparison |
 | [git-cliff](https://github.com/orhun/git-cliff) | Changelog generator | Automatically generates changelogs from conventional commits |
+| [git-extras](https://github.com/tj/git-extras) | Git utilities | Collection of useful Git commands that enhance workflow |
 | [pre-commit](https://pre-commit.com/) | Git hook manager | Automates code quality checks before each commit |
 
 ### Cloud & Package Management

@@ -3,7 +3,7 @@ function dotfiles_doctor --description "Check the health of your dotfiles instal
     "chezmoi" "fish" "starship" "wezterm" "direnv" \
     "nvim" "code" \
     "bat" "eza" "fd" "fzf" "zoxide" "atuin" \
-    "git" "git-lfs" "gh" "difft" "git-cliff" "pre-commit" \
+    "git" "git-lfs" "gh" "difft" "git-cliff" "git-extras" "pre-commit" \
     "gcloud" "uv"
 
   # Add platform-specific tools

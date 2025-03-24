@@ -19,6 +19,7 @@ packages:
       - 'fzf'
       - 'mactop'
       - 'rust'
+      - 'git-extras'
     casks:
       - 'wezterm'
       - 'google-chrome'
