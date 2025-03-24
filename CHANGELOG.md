@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Features
-
-- Replace USER_THEME global variable with direct fish theme setting using fish_config theme save
-
 
 ### Bug Fixes
 
@@ -28,6 +24,10 @@ All notable changes to this project will be documented in this file.
 - Various fixes for macos ([d80f717](d80f717ec945b825a0637751ac2861cbc21a52d7))
 
 - Missing fish config ([87035ea](87035ea78877602cedf234613a9fbdbffc8eabcf))
+
+- Duplicated config file ([bc85bbf](bc85bbf8afdf69350656ab75ac59e8bfbc9f979c))
+
+- Empty fish_theme ([b461912](b46191290b0cd15b05ea779c2e02d2e919cb5f38))
 
 
 ### Chores

@@ -164,7 +164,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 |------|-------------|-----------------|
 | [git](https://git-scm.com/) | Version control | Comprehensive version control with extensive configuration |
 | [git-lfs](https://git-lfs.github.com/) | Large file storage | Efficiently manages large files in Git repositories |
-| [GitHub CLI](https://cli.github.com/) | GitHub CLI | Command-line interface for GitHub operations |
+| [GitHub CLI](https://cli.github.com/) | GitHub CLI | Command-line interface for GitHub operations that allows you to manage issues, pull requests, and other GitHub workflows directly from your terminal. For configuration, see the [GitHub CLI Quickstart](https://docs.github.com/en/github-cli/github-cli/quickstart) |
 | [difftastic](https://github.com/Wilfred/difftastic) | Diff tool | Syntax-aware diff for better code comparison |
 | [git-cliff](https://github.com/orhun/git-cliff) | Changelog generator | Automatically generates changelogs from conventional commits |
 | [git-extras](https://github.com/tj/git-extras) | Git utilities | Collection of useful Git commands that enhance workflow |
