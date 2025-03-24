@@ -20,6 +20,23 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 - Edit file: `chezmoi edit ~/.file`
 - Update repository: `chezmoi update`
 
+## Installation Procedures
+
+### Adding New Tools
+
+- **Linux Installation**:
+  - Use installation scripts provided by developers OR
+  - Install from GitHub binaries
+  - Avoid adding system-wide dependencies with sudo/root requirements
+
+- **macOS Installation**:
+  - Add entry in `.chezmoidata/packages.yaml` file
+  - This file is read and executed by `.chezmoiscripts/darwin/run_onchange_darwin-install-packages.sh.tmpl`
+
+- **Documentation**:
+  - Always update the README.md when a new tool is installed
+  - Add description and usage examples to the appropriate section
+
 ## Code Style
 
 - Shell scripts: Follow POSIX sh compatibility

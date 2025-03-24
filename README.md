@@ -99,6 +99,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 | `run-and-watch` | Run a command in the background and watch its output log file |
 | `dotfiles_doctor` | Check the health of your dotfiles installation and tools |
 | `set_theme` | Change theme across all configured applications |
+| `remote_exec` | Execute commands on remote servers with improved output handling |
 
 ### Git Tools
 
@@ -189,6 +190,44 @@ After installation is complete, you should:
 
 7. **Personalize Git Config**:
    - Edit your personal git config if needed: `chezmoi edit ~/.gitconfig`
+
+## Contributing
+
+### Adding a New Tool
+
+To add a new tool to the dotfiles, follow these steps:
+
+1. **For macOS**:
+   - Add the package name to `.chezmoidata/packages.yaml` under the `darwin.brews` section
+   - For GUI applications, add to the `darwin.casks` section instead
+
+2. **For Linux**:
+   - Create an installation script in `.chezmoiscripts/linux/` directory
+   - Name it `run_onchange_install-toolname.sh`
+   - Use existing scripts as templates
+   - Prefer installation methods that don't require root/sudo
+   - Preferably install to `$HOME/.local/bin`
+
+3. **Update Documentation**:
+   - Add the tool to the README.md in the appropriate section
+   - Include name, description, and why it's useful
+   - Update the doctor function in `dot_config/fish/functions/dotfiles_doctor.fish`
+   - Add the tool name to the `tools_to_check` array
+
+4. **Test Your Changes**:
+   - Test on both macOS and Linux if possible
+   - For Linux-only testing, use the Docker test environment:
+     ```bash
+     ./docker-test.sh
+     ```
+
+### Code Style Guidelines
+
+- Shell scripts should follow POSIX sh compatibility
+- Use 2-space indentation for all files
+- Keep scripts idempotent (can be run multiple times without issue)
+- Add helpful comments for non-obvious code
+- Quote all variables: `"${var}"`
 
 ## License
 
