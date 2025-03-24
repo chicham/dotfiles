@@ -111,6 +111,8 @@ All notable changes to this project will be documented in this file.
 
 - Uv install on linux ([9dfdc7d](9dfdc7dafe4f5163c18ab629bd1562062b171ee9))
 
+- Re-add gitignore and changelog ([1fa0bf3](1fa0bf36aef27b935a84bb33897a9e0b0614ec8f))
+
 
 ### Docs
 

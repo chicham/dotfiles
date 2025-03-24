@@ -41,19 +41,76 @@ To change themes for individual tools:
 - **Neovim**:
   - Edit `~/.config/nvim/init.lua`
   - Change the colorscheme line to use a different theme
-  - Example: `vim.cmd.colorscheme("gruvbox-material")`
+  ```lua
+  -- Switch to Gruvbox Material (already included)
+  vim.cmd.colorscheme("gruvbox-material")
+
+  -- Or customize Catppuccin with a different flavor
+  require("catppuccin").setup({
+      flavour = "macchiato"  -- Options: latte, frappe, macchiato, mocha
+  })
+  vim.cmd.colorscheme("catppuccin")
+  ```
 
 - **WezTerm**:
   - Edit `~/.wezterm.lua`
   - Change the color_scheme setting
+  ```lua
+  -- Change from Catppuccin Mocha to another theme
+  config.color_scheme = "Catppuccin Frappe"  -- or "Catppuccin Latte" for light theme
+
+  -- Or switch to Gruvbox Material
+  -- config.color_scheme = "Gruvbox Material (Gogh)"
+  ```
 
 - **Starship**:
   - Edit `~/.config/starship.toml`
-  - Modify the palette configuration
+  - Change the palette setting to use a different Catppuccin flavor or another theme
+  ```toml
+  # Switch to Catppuccin Latte (light theme)
+  palette = "catppuccin_latte"
+
+  # Or switch to Catppuccin Frappe
+  # palette = "catppuccin_frappe"
+
+  # Or switch to Catppuccin Macchiato
+  # palette = "catppuccin_macchiato"
+
+  # Or switch to Catppuccin Mocha (default)
+  # palette = "catppuccin_mocha"
+
+  # Or switch to Gruvbox Material
+  # palette = "gruvbox_material"
+  ```
 
 - **bat**:
   - Edit `~/.config/bat/config`
   - Change the `--theme` parameter
+  ```
+  # Set the theme to "Catppuccin Mocha" (default)
+  --theme="Catppuccin Mocha"
+
+  # Or change to another theme
+  # --theme="Catppuccin Latte"
+  # --theme="gruvbox-dark"
+
+  # List all available themes with:
+  # bat --list-themes
+  ```
+
+- **Fish**:
+  - Catppuccin themes are built into Fish
+  - Use the following commands to switch between flavors:
+  ```fish
+  # Switch to one of the Catppuccin flavors
+  fish_config theme save "Catppuccin Latte"
+  fish_config theme save "Catppuccin Frappe"
+  fish_config theme save "Catppuccin Macchiato"
+  fish_config theme save "Catppuccin Mocha"
+
+  # To check available themes
+  fish_config theme list
+  ```
 
 For a more advanced setup with environment variable-based theme switching, you can implement a custom solution or restore the original dynamic theme management.
 
