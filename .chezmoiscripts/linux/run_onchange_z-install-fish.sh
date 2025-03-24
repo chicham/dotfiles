@@ -8,8 +8,12 @@ set -eu
 # Function to compare major.minor versions
 version_gt() {
   # Extract MAJOR.MINOR from versions ignoring patch
-  local ver1_major_minor=$(echo "$1" | cut -d. -f1-2)
-  local ver2_major_minor=$(echo "$2" | cut -d. -f1-2)
+  # shellcheck disable=SC3043
+  local ver1_major_minor
+  ver1_major_minor=$(echo "$1" | cut -d. -f1-2)
+  # shellcheck disable=SC3043
+  local ver2_major_minor
+  ver2_major_minor=$(echo "$2" | cut -d. -f1-2)
 
   # Compare using float comparison
   awk "BEGIN {exit !($ver1_major_minor > $ver2_major_minor)}"
@@ -22,7 +26,7 @@ get_latest_fish_version() {
   # Check if we hit rate limit
   if echo "$API_RESPONSE" | grep -q "API rate limit exceeded"; then
     echo "GitHub API rate limit exceeded. Using fallback version."
-    echo "3.6.1"  # Fallback to a known version
+    echo "3.6.1" # Fallback to a known version
   else
     FISH_VERSION=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
     # Remove 'fish-' prefix if present
@@ -40,7 +44,9 @@ get_latest_fish_version() {
 
 # Function to install or update fish
 install_fish() {
+  # shellcheck disable=SC3043
   local FISH_VERSION="$1"
+  # shellcheck disable=SC3043
   local FISH_INSTALL_DIR="$HOME/.local"
 
   echo "Installing fish shell version $FISH_VERSION..."
@@ -68,7 +74,7 @@ install_fish() {
   # Configure and build fish using cmake
   echo "Building fish with CMake..."
   cmake . -DCMAKE_INSTALL_PREFIX="$FISH_INSTALL_DIR"
-  make -j$(nproc 2>/dev/null || echo 1)
+  make -j"$(nproc 2> /dev/null || echo 1)"
   make install
 
   # Cleanup
@@ -79,7 +85,7 @@ install_fish() {
 }
 
 # Check if fish is already installed
-if command -v fish >/dev/null 2>&1; then
+if command -v fish > /dev/null 2>&1; then
   CURRENT_VERSION=$(fish --version | sed -E 's/.*version ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
   echo "Fish shell is already installed (version $CURRENT_VERSION)."
 

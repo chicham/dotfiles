@@ -8,9 +8,9 @@ if ! chezmoi="$(command -v chezmoi)"; then
   bin_dir="${HOME}/.local/bin"
   chezmoi="${bin_dir}/chezmoi"
   echo "Installing chezmoi to '${chezmoi}'" >&2
-  if command -v curl >/dev/null; then
+  if command -v curl > /dev/null; then
     chezmoi_install_script="$(curl -fsSL https://chezmoi.io/get)"
-  elif command -v wget >/dev/null; then
+  elif command -v wget > /dev/null; then
     chezmoi_install_script="$(wget -qO- https://chezmoi.io/get)"
   else
     echo "To install chezmoi, you must have curl or wget installed." >&2

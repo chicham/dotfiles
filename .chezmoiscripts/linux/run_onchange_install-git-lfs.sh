@@ -7,7 +7,7 @@ set -eu
 echo "Installing Git LFS..."
 
 # Check if git-lfs is already installed
-if command -v git-lfs >/dev/null 2>&1; then
+if command -v git-lfs > /dev/null 2>&1; then
   echo "Git LFS is already installed."
   exit 0
 fi
@@ -22,7 +22,7 @@ case "$ARCH" in
   x86_64)
     LFS_ARCH="amd64"
     ;;
-  aarch64|arm64)
+  aarch64 | arm64)
     LFS_ARCH="arm64"
     ;;
   *)
@@ -32,7 +32,7 @@ case "$ARCH" in
 esac
 
 # Download the latest Git LFS
-GIT_LFS_VERSION="3.4.0"  # Update this to the latest version as needed
+GIT_LFS_VERSION="3.4.0" # Update this to the latest version as needed
 LFS_URL="https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${LFS_ARCH}-v${GIT_LFS_VERSION}.tar.gz"
 
 echo "Downloading Git LFS from ${LFS_URL}..."

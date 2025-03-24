@@ -5,7 +5,7 @@
 
 set -eu
 
-if ! command -v eza >/dev/null 2>&1; then
+if ! command -v eza > /dev/null 2>&1; then
   echo "Installing eza..."
 
   # Get latest release
@@ -14,7 +14,7 @@ if ! command -v eza >/dev/null 2>&1; then
   # Check if we hit rate limit
   if echo "$API_RESPONSE" | grep -q "API rate limit exceeded"; then
     echo "GitHub API rate limit exceeded. Using fallback version."
-    LATEST_RELEASE="v0.20.24"  # Fallback to a known version
+    LATEST_RELEASE="v0.20.24" # Fallback to a known version
   else
     LATEST_RELEASE=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
   fi
@@ -34,7 +34,10 @@ if ! command -v eza >/dev/null 2>&1; then
   TEMP_DIR=$(mktemp -d)
   cd "${TEMP_DIR}"
   echo "Downloading eza from ${DOWNLOAD_URL}..."
-  curl -fLo eza.zip "$DOWNLOAD_URL" || { echo "Failed to download eza - check if version ${LATEST_RELEASE} exists"; exit 1; }
+  curl -fLo eza.zip "$DOWNLOAD_URL" || {
+    echo "Failed to download eza - check if version ${LATEST_RELEASE} exists"
+    exit 1
+  }
 
   # Extract zip file
   unzip eza.zip

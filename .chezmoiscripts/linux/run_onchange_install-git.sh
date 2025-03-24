@@ -6,7 +6,7 @@
 set -eu
 
 # Install Git if not already installed (if not available, skip as it's likely system-provided)
-if ! command -v git >/dev/null 2>&1; then
+if ! command -v git > /dev/null 2>&1; then
   echo "Git not found. On Linux systems, Git should be installed by the system administrator."
   echo "Skipping Git installation."
 else
@@ -14,7 +14,7 @@ else
 fi
 
 # Install GitHub CLI if not already installed
-if ! command -v gh >/dev/null 2>&1; then
+if ! command -v gh > /dev/null 2>&1; then
   echo "Installing GitHub CLI..."
 
   # Set up directories
@@ -94,7 +94,7 @@ else
 fi
 
 # Install Git LFS if not already installed
-if ! command -v git-lfs >/dev/null 2>&1; then
+if ! command -v git-lfs > /dev/null 2>&1; then
   echo "Installing Git LFS..."
 
   # Set up directories
@@ -158,7 +158,7 @@ if ! command -v git-lfs >/dev/null 2>&1; then
   rm -rf "${TEMP_DIR}"
 
   # Install Git LFS hooks
-  if command -v git >/dev/null 2>&1; then
+  if command -v git > /dev/null 2>&1; then
     "${BIN_DIR}/git-lfs" install --skip-repo
   fi
 

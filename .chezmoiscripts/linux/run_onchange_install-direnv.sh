@@ -5,7 +5,7 @@
 
 set -eu
 
-if ! command -v direnv >/dev/null 2>&1; then
+if ! command -v direnv > /dev/null 2>&1; then
   echo "Installing direnv..."
 
   # Get latest release using a more portable approach

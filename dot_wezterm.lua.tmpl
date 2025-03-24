@@ -1,3 +1,4 @@
+-- chezmoi:template:left-delimiter="-- [[" right-delimiter="]] --"
 -- Pull in the wezterm API
 local wezterm = require 'wezterm'
 
@@ -33,7 +34,7 @@ config.keys = {
   },
 
   -- Copy/paste
-  {{ if eq .chezmoi.os "darwin" }}
+  -- [[ if eq .chezmoi.os "darwin" ]] --
   {
     key = 'c',
     mods = 'SUPER',
@@ -44,7 +45,7 @@ config.keys = {
     mods = 'SUPER',
     action = act.PasteFrom 'Clipboard',
   },
-  {{ else }}
+  -- [[ else ]] --
   {
     key = 'c',
     mods = 'CTRL|SHIFT',
@@ -55,7 +56,7 @@ config.keys = {
     mods = 'CTRL|SHIFT',
     action = act.PasteFrom 'Clipboard',
   },
-  {{ end }}
+  -- [[ end ]] --
 
   -- Copy mode
   {
@@ -236,7 +237,7 @@ config.mouse_bindings = {
   -- Open URLs with CMD/CTRL+Click
   {
     event = { Up = { streak = 1, button = 'Left' } },
-    mods = {{ if eq .chezmoi.os "darwin" }}'CMD'{{ else }}'CTRL'{{ end }},
+    mods = -- [[ if eq .chezmoi.os "darwin" ]] --'CMD'-- [[ else ]] --'CTRL'-- [[ end ]] --,
     action = act.OpenLinkAtMouseCursor,
   },
 }
@@ -270,7 +271,7 @@ config.use_fancy_tab_bar = false
 config.window_padding = { left = 0, right = 0, top = 0, bottom = '.5cell' }
 
 -- Platform-specific configuration
-{{ if eq .chezmoi.os "darwin" }}
+-- [[ if eq .chezmoi.os "darwin" ]] --
 config.native_macos_fullscreen_mode = true
 
 -- Handle startup (maximize window on macOS)
@@ -278,10 +279,10 @@ wezterm.on("gui-startup", function()
   local tab, pane, window = mux.spawn_window({})
   window:gui_window():maximize()
 end)
-{{ else }}
+-- [[ else ]] --
 -- Linux specific settings
 config.use_ime = false
-{{ end }}
+-- [[ end ]] --
 
 config.mux_env_remove = {
   'SSH_AUTH_SOCK',

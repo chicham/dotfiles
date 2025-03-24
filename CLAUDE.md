@@ -53,3 +53,30 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 - Document environment assumptions
 - Quote all variables: `"${var}"`
 - Avoid hardcoded paths when possible
+
+## Template Customization
+
+- Chezmoi template delimiters can be customized in each file
+- Add a comment at the beginning of the file to define custom delimiters
+- Use language-appropriate comment syntax for better readability and syntax highlighting
+- Format: `<comment char> chezmoi:template:left-delimiter="<comment char> [[" right-delimiter="]] <comment char>"`
+- Examples for different languages:
+
+  ```sh
+  # Shell scripts (.sh, .profile, .zprofile)
+  # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+  ```
+
+  ```lua
+  -- Lua files (.lua)
+  -- chezmoi:template:left-delimiter="-- [[" right-delimiter="]] --"
+  ```
+
+  ```toml
+  # TOML files (.toml)
+  # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+  ```
+
+- This replaces the default `{{` and `}}` with more language-appropriate delimiters
+- Custom delimiters improve syntax highlighting and make templates easier to read
+- The custom delimiters are then used throughout the file for template logic and variable insertion

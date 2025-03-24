@@ -2,7 +2,7 @@
 set -eu
 
 # Install neovim on Linux in user space
-if ! command -v nvim >/dev/null 2>&1; then
+if ! command -v nvim > /dev/null 2>&1; then
   echo "Installing neovim..."
 
   # Create directories

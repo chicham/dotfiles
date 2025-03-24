@@ -1,8 +1,9 @@
+# [[ /* chezmoi:template:left-delimiter="#% [[" right-delimiter=%#"]]" */ ]]
 #!/bin/sh
 
 # This script removes Anaconda/Miniconda installations and sets up blocking
 # It works on both macOS and Linux
-{{ if ne .chezmoi.os "windows" -}}
+#% if ne .chezmoi.os "windows" -%#
 
 set -eu
 
@@ -73,8 +74,7 @@ for path in \
   "$HOME/.local/anaconda3" \
   "$HOME/.local/miniconda3" \
   "$HOME/.local/miniforge3" \
-  "$HOME/.local/mambaforge"
-do
+  "$HOME/.local/mambaforge"; do
   if [ -d "$path" ]; then
     if [ -f "$path/bin/conda" ] || [ -f "$path/condabin/conda" ]; then
       FOUND_CONDA=true
@@ -85,7 +85,7 @@ do
 done
 
 # Check for conda in PATH
-if command -v conda >/dev/null 2>&1; then
+if command -v conda > /dev/null 2>&1; then
   FOUND_CONDA=true
   CONDA_PATH=$(dirname "$(dirname "$(command -v conda)")")
   conda_name="conda (in PATH)"
@@ -141,4 +141,4 @@ EOF
   fi
 done
 
-{{ end -}}
+#% end -%#

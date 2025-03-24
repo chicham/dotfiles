@@ -1,10 +1,11 @@
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 # ~/.gitconfig
 # This is a template managed by chezmoi
 # Platform-specific and best practices Git configuration
 
 [user]
-    name = {{ .firstName }} {{ .lastName }}
-    email = {{ .email }}
+    name = # [[ .firstName ]] # # [[ .lastName ]] #
+    email = # [[ .email ]] #
 
 [core]
     # Use Neovim as default editor
@@ -199,12 +200,12 @@
 [credential]
     # Cache credentials for 1 hour (3600 seconds)
     helper = cache --timeout=3600
-    {{- if eq .chezmoi.os "darwin" }}
+    # [[ if eq .chezmoi.os "darwin" ]] #
     # Use macOS keychain for credential storage
     helper = osxkeychain
-    {{- end }}
+    # [[ end ]] #
 
-{{- if eq .chezmoi.os "darwin" }}
+# [[ if eq .chezmoi.os "darwin" ]] #
 [credential "https://github.com"]
     # Use GitHub CLI for authentication on GitHub.com
     helper =
@@ -214,7 +215,7 @@
     # Use GitHub CLI for authentication on GitHub Gists
     helper =
     helper = !/opt/homebrew/bin/gh auth git-credential
-{{- else }}
+# [[ else ]] #
 [credential "https://github.com"]
     # Use GitHub CLI for authentication on GitHub.com
     helper =
@@ -224,7 +225,7 @@
     # Use GitHub CLI for authentication on GitHub Gists
     helper =
     helper = !gh auth git-credential
-{{- end }}
+# [[ end ]] #
 
 [url "git@github.com:"]
     # Short syntax for SSH GitHub repositories

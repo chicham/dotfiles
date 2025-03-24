@@ -5,7 +5,7 @@
 
 set -eu
 
-if ! command -v fd >/dev/null 2>&1; then
+if ! command -v fd > /dev/null 2>&1; then
   echo "Installing fd-find..."
 
   # Define fallback version

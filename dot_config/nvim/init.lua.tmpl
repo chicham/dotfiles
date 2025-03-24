@@ -1,3 +1,4 @@
+-- chezmoi:template:left-delimiter="-- [[" right-delimiter="]] --"
 -- Neovim Configuration
 -- Fast, focused configuration for efficient editing
 
@@ -654,14 +655,14 @@ require("lazy").setup({
         -- tsserver is deprecated, use typescript-language-server instead
         tsserver = {},
       }
-{{ if eq .chezmoi.os "darwin" }}
+-- [[ if eq .chezmoi.os "darwin" ]] --
       -- Additional LSPs for macOS
       servers.bashls = {}
       servers.clangd = {}
       servers.cssls = {}
       servers.html = {}
       servers.jsonls = {}
-{{ end }}
+-- [[ end ]] --
 
       -- Set up servers with capabilities
       for server_name, config in pairs(servers) do
@@ -704,14 +705,14 @@ require("lazy").setup({
           "lua_ls",
           "pyright",
           "typescript-language-server",
-{{ if eq .chezmoi.os "darwin" }}
+-- [[ if eq .chezmoi.os "darwin" ]] --
           -- Additional LSPs for macOS
           "bashls",
           "clangd",
           "cssls",
           "html",
           "jsonls",
-{{ end }}
+-- [[ end ]] --
         },
         automatic_installation = true,
       })

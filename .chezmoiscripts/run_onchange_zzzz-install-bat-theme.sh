@@ -4,7 +4,7 @@ set -e
 echo "Installing Catppuccin themes for bat..."
 
 # Check if bat is installed
-if ! command -v bat &>/dev/null; then
+if ! command -v bat &> /dev/null; then
   echo "Warning: bat is not installed. Skipping theme installation."
   exit 0
 fi
@@ -16,9 +16,9 @@ mkdir -p "$BAT_THEMES_DIR"
 # Function to download themes
 download_themes() {
   local method=$1
-  
+
   echo "Downloading Catppuccin themes using $method..."
-  
+
   if [ "$method" = "curl" ]; then
     # Download with curl
     curl -o "$BAT_THEMES_DIR/Catppuccin Latte.tmTheme" -sL "https://github.com/catppuccin/bat/raw/main/themes/Catppuccin%20Latte.tmTheme"
@@ -35,14 +35,14 @@ download_themes() {
     echo "Error: Unknown download method: $method"
     return 1
   fi
-  
+
   return 0
 }
 
 # Try to download themes with wget first, then fall back to curl
-if command -v wget &>/dev/null; then
+if command -v wget &> /dev/null; then
   download_themes "wget"
-elif command -v curl &>/dev/null; then
+elif command -v curl &> /dev/null; then
   download_themes "curl"
 else
   echo "Error: Neither wget nor curl is available. Please install one of them first."

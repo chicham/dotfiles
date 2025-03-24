@@ -15,12 +15,12 @@ install_rust() {
 }
 
 # Check if rustup is installed
-if command -v rustup >/dev/null 2>&1; then
+if command -v rustup > /dev/null 2>&1; then
   echo "Rust is already installed. Updating..."
   rustup update
 else
   # Check if rust is installed through another method
-  if command -v rustc >/dev/null 2>&1; then
+  if command -v rustc > /dev/null 2>&1; then
     echo "Rust is installed but not managed by rustup. Installing rustup..."
     install_rust
   else

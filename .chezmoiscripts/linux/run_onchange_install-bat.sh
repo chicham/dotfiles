@@ -5,7 +5,7 @@
 
 set -eu
 
-if ! command -v bat >/dev/null 2>&1; then
+if ! command -v bat > /dev/null 2>&1; then
   echo "Installing bat..."
 
   # Get the latest release version using compatible grep and sed
@@ -14,7 +14,7 @@ if ! command -v bat >/dev/null 2>&1; then
   # Check if we hit rate limit
   if echo "$API_RESPONSE" | grep -q "API rate limit exceeded"; then
     echo "GitHub API rate limit exceeded. Using fallback version."
-    LATEST_RELEASE="v0.24.0"  # Fallback to a known version
+    LATEST_RELEASE="v0.24.0" # Fallback to a known version
   else
     LATEST_RELEASE=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
   fi
@@ -35,7 +35,10 @@ if ! command -v bat >/dev/null 2>&1; then
   cd "${TEMP_DIR}"
 
   echo "Downloading bat from ${DOWNLOAD_URL}..."
-  curl -fsSLo bat.tar.gz "$DOWNLOAD_URL" || { echo "Failed to download bat - check if version ${LATEST_RELEASE} exists"; exit 1; }
+  curl -fsSLo bat.tar.gz "$DOWNLOAD_URL" || {
+    echo "Failed to download bat - check if version ${LATEST_RELEASE} exists"
+    exit 1
+  }
 
   # Check if download was successful
   if [ ! -s bat.tar.gz ]; then

@@ -11,7 +11,7 @@ set -eu
 if [ -d "${HOME}/.local/google-cloud-sdk" ]; then
   echo "Google Cloud SDK is already installed at ${HOME}/.local/google-cloud-sdk."
   if [ -f "${HOME}/.local/google-cloud-sdk/bin/gcloud" ]; then
-    echo "Version: $(${HOME}/.local/google-cloud-sdk/bin/gcloud --version | head -n 1)"
+    echo "Version: $("${HOME}"/.local/google-cloud-sdk/bin/gcloud --version | head -n 1)"
 
     # Create a symlink to make it available in PATH
     mkdir -p "${HOME}/.local/bin"
@@ -23,7 +23,7 @@ fi
 echo "Installing Google Cloud SDK..."
 
 # Check for Python
-if ! command -v python3 >/dev/null 2>&1; then
+if ! command -v python3 > /dev/null 2>&1; then
   echo "Python 3 is required for Google Cloud SDK but not found."
   echo "Please install Python 3.8 to 3.13 before continuing."
   exit 1
@@ -69,7 +69,7 @@ echo "Running installation script..."
   --additional-components=gke-gcloud-auth-plugin
 
 # Ensure the environment settings are created for fish
-"$INSTALL_DIR/bin/gcloud" init --skip-diagnostics --quiet 2>/dev/null || true
+"$INSTALL_DIR/bin/gcloud" init --skip-diagnostics --quiet 2> /dev/null || true
 
 # Clean up
 cd - > /dev/null
@@ -78,7 +78,7 @@ rm -rf "${TEMP_DIR}"
 # Verify installation
 if [ -f "$INSTALL_DIR/bin/gcloud" ]; then
   echo "Google Cloud SDK installed successfully!"
-  echo "Version: $($INSTALL_DIR/bin/gcloud --version | head -n 1)"
+  echo "Version: $("$INSTALL_DIR"/bin/gcloud --version | head -n 1)"
 else
   echo "WARNING: Installation failed. Check the logs above for errors."
 fi

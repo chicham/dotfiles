@@ -1,4 +1,5 @@
-{{- if eq .chezmoi.os "darwin" }}
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+# [[ if eq .chezmoi.os "darwin" ]] #
 # Reference: https://github.com/i3/i3/blob/next/etc/config
 
 # Set to 'true' to automatically start AeroSpace when logging in
@@ -107,4 +108,4 @@ k = 'resize height -50'
 l = 'resize width +50'
 enter = 'mode main'
 esc = 'mode main'
-{{- end }}
+# [[ end ]] #

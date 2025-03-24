@@ -17,9 +17,6 @@ mkdir -p "${BIN_DIR}" "${SHARE_DIR}"
 TEMP_DIR=$(mktemp -d)
 cd "${TEMP_DIR}"
 
-# Determine architecture
-ARCH=$(uname -m)
-
 # Get latest stable release information
 echo "Determining latest WezTerm stable release..."
 GITHUB_RESPONSE=$(curl -s https://api.github.com/repos/wez/wezterm/releases/latest)
@@ -69,9 +66,18 @@ if [ -d "usr/bin" ]; then
   echo "Found usr/bin directory, using binaries from there"
 
   # Copy the binaries from usr/bin
-  cp -f usr/bin/wezterm "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm binary from usr/bin"; exit 1; }
-  cp -f usr/bin/wezterm-mux-server "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm-mux-server binary from usr/bin"; exit 1; }
-  cp -f usr/bin/strip-ansi-escapes "${BIN_DIR}/" || { echo "ERROR: Failed to copy strip-ansi-escapes binary from usr/bin"; exit 1; }
+  cp -f usr/bin/wezterm "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy wezterm binary from usr/bin"
+    exit 1
+  }
+  cp -f usr/bin/wezterm-mux-server "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy wezterm-mux-server binary from usr/bin"
+    exit 1
+  }
+  cp -f usr/bin/strip-ansi-escapes "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy strip-ansi-escapes binary from usr/bin"
+    exit 1
+  }
 else
   # Try to find the binaries anywhere in the extracted directory
   wezterm_bin=$(find . -name "wezterm" -type f | head -1)
@@ -89,9 +95,18 @@ else
   echo "strip-ansi-escapes: $strip_ansi_bin"
 
   # Copy the binaries from their found locations
-  cp -f "$wezterm_bin" "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm binary"; exit 1; }
-  cp -f "$wezterm_mux_bin" "${BIN_DIR}/" || { echo "ERROR: Failed to copy wezterm-mux-server binary"; exit 1; }
-  cp -f "$strip_ansi_bin" "${BIN_DIR}/" || { echo "ERROR: Failed to copy strip-ansi-escapes binary"; exit 1; }
+  cp -f "$wezterm_bin" "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy wezterm binary"
+    exit 1
+  }
+  cp -f "$wezterm_mux_bin" "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy wezterm-mux-server binary"
+    exit 1
+  }
+  cp -f "$strip_ansi_bin" "${BIN_DIR}/" || {
+    echo "ERROR: Failed to copy strip-ansi-escapes binary"
+    exit 1
+  }
 fi
 
 # Copy shell integration assets for terminal integration

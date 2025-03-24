@@ -4,7 +4,7 @@
 
 set -eu
 
-if ! command -v difft >/dev/null 2>&1; then
+if ! command -v difft > /dev/null 2>&1; then
   echo "Installing difft..."
 
   # Get the latest release version using GitHub API
@@ -13,7 +13,7 @@ if ! command -v difft >/dev/null 2>&1; then
   # Check if we hit rate limit
   if echo "$API_RESPONSE" | grep -q "API rate limit exceeded"; then
     echo "GitHub API rate limit exceeded. Using fallback version."
-    LATEST_RELEASE="0.63.0"  # Fallback to a known version
+    LATEST_RELEASE="0.63.0" # Fallback to a known version
   else
     LATEST_RELEASE=$(echo "$API_RESPONSE" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
   fi
@@ -34,7 +34,10 @@ if ! command -v difft >/dev/null 2>&1; then
   cd "${TEMP_DIR}"
 
   echo "Downloading difftastic from ${DOWNLOAD_URL}..."
-  curl -fsSLo difft.tar.gz "$DOWNLOAD_URL" || { echo "Failed to download difftastic - check if version ${LATEST_RELEASE} exists"; exit 1; }
+  curl -fsSLo difft.tar.gz "$DOWNLOAD_URL" || {
+    echo "Failed to download difftastic - check if version ${LATEST_RELEASE} exists"
+    exit 1
+  }
 
   # Check if download was successful
   if [ ! -s difft.tar.gz ]; then

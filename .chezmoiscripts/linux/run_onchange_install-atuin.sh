@@ -6,7 +6,7 @@
 set -eu
 
 # Check if atuin-upgrade is available (which means atuin is installed)
-if command -v atuin-upgrade >/dev/null 2>&1; then
+if command -v atuin-upgrade > /dev/null 2>&1; then
   echo "atuin is installed, running atuin-upgrade to update..."
   atuin-upgrade
 else
