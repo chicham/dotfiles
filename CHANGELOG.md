@@ -131,6 +131,8 @@ All notable changes to this project will be documented in this file.
 
 - Avoid reinstalling existing themes and components ([548e503](548e503cb6906651bb0bb90b4ee82d78bad93731))
 
+- Improve chezmoi integration ([087d833](087d8332602d7a0060a5925af7418170540357c7))
+
 
 ### Docs
 

@@ -187,8 +187,15 @@ The dotfiles also include several custom utility functions to improve workflow:
 | Font | Description | Why It's Useful |
 |------|-------------|-----------------|
 | [FiraCode Nerd Font](https://www.nerdfonts.com/) | Monospace font | Programming ligatures with icons for development |
-| [Source Code Pro Nerd Font](https://www.nerdfonts.com/) | Monospace font | Clean, readable code font with added icons |
-| [Monaspace Nerd Font](https://www.nerdfonts.com/) | Monospace font | Modern coding font with Nerd Font icons |
+
+FiraCode Nerd Font is installed automatically if not already present. To install additional Nerd Fonts, use the included fish function:
+
+```fish
+# Install any Nerd Font by name
+install_nerd_font JetBrainsMono  # or any other Nerd Font name
+```
+
+Browse available fonts at [Nerd Fonts website](https://www.nerdfonts.com/).
 
 ### Security & Authentication
 
