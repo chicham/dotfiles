@@ -1,28 +1,30 @@
-{{- $user := env "USER" -}}
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 
-{{- $firstName := "First" -}}
-{{- $lastName := "Last" -}}
+# [[ $user := env "USER" ]] #
 
-{{- $dotParts := splitList "." $user -}}
-{{- if eq (len $dotParts) 2 -}}
-{{- $firstName = index $dotParts 0 | title -}}
-{{- $lastName = index $dotParts 1 | title -}}
-{{- else -}}
-{{- $underscoreParts := splitList "_" $user -}}
-{{- if eq (len $underscoreParts) 2 -}}
-{{- $firstName = index $underscoreParts 0 | title -}}
-{{- $lastName = index $underscoreParts 1 | title -}}
-{{- end -}}
-{{- end -}}
+# [[ $firstName := "First" ]] #
+# [[ $lastName := "Last" ]] #
 
-{{- $email := printf "%s.%s@artefact.com" (lower $firstName) (lower $lastName) -}}
+# [[ $dotParts := splitList "." $user ]] #
+# [[ if eq (len $dotParts) 2 ]] #
+# [[ $firstName = index $dotParts 0 | title ]] #
+# [[ $lastName = index $dotParts 1 | title ]] #
+# [[ else ]] #
+# [[ $underscoreParts := splitList "_" $user ]] #
+# [[ if eq (len $underscoreParts) 2 ]] #
+# [[ $firstName = index $underscoreParts 0 | title ]] #
+# [[ $lastName = index $underscoreParts 1 | title ]] #
+# [[ end ]] #
+# [[ end ]] #
 
-sourceDir = {{ .chezmoi.sourceDir | quote }}
+# [[ $email := printf "%s.%s@artefact.com" (lower $firstName) (lower $lastName) ]] #
+
+sourceDir = # [[ .chezmoi.sourceDir | quote ]] #
 
 [data]
-  firstName = {{ $firstName | quote }}
-  lastName = {{ $lastName | quote }}
-  email = {{ $email | quote }}
+  firstName = # [[ $firstName | quote ]] #
+  lastName = # [[ $lastName | quote ]] #
+  email = # [[ $email | quote ]] #
 
 [diff]
   command = "difft"

@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file.
 
 - Empty fish_theme ([b461912](b46191290b0cd15b05ea779c2e02d2e919cb5f38))
 
+- Template issue ([ffe8703](ffe870332d25d65da05e661f1e4dad7b6605f998))
+
 
 ### Chores
 
@@ -133,6 +135,8 @@ All notable changes to this project will be documented in this file.
 - Add theme switching to readme ([5897c03](5897c03435c0f84cc5c8242f33d4effe3a357807))
 
 - Gh cli config ([09a56ae](09a56aecb1d4f552b8653f1a85a646de147f4b1a))
+
+- Update uv description ([42be809](42be809ffbc8e8adae90f1b5bcb05d49dfd64152))
 
 
 ### Refactor
