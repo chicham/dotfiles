@@ -160,6 +160,15 @@ if type -q docker
     end
 end
 
+# Configure nbdime for Jupyter notebook diffs if installed
+if type -q nbdime
+    # Check if nbdime is already configured in .gitconfig
+    if not git config --get diff.jupyternotebook.command >/dev/null 2>&1
+        echo "Configuring nbdime as git diff/merge driver for Jupyter notebooks..."
+        nbdime config-git --global --enable
+    end
+end
+
 ###########################################
 # ALIASES AND SHORTCUTS
 ###########################################

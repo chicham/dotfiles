@@ -173,6 +173,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 | [git-cliff](https://github.com/orhun/git-cliff) | Changelog generator | Automatically generates changelogs from conventional commits |
 | [git-extras](https://github.com/tj/git-extras) | Git utilities | Collection of useful Git commands that enhance workflow |
 | [pre-commit](https://pre-commit.com/) | Git hook manager | Automates code quality checks before each commit |
+| [nbdime](https://github.com/jupyter/nbdime) | Notebook diff | Special diff and merge for Jupyter notebooks, automatically configured if installed |
 
 ### Cloud & Package Management
 

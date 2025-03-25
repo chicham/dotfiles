@@ -135,6 +135,8 @@ All notable changes to this project will be documented in this file.
 
 - Only install fira code font ([baae163](baae163353b1f7ca6dc39bd55bcefd6d07ebfb24))
 
+- Improve Nerd Font installation with fast detection ([25b9407](25b9407eb630d37a0a652f53cea4d251742b239d))
+
 
 ### Docs
 
