@@ -102,6 +102,12 @@ set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
 # TOOL INITIALIZATION
 ###########################################
 
+# Check if FiraCode Nerd Font is installed and install if needed
+if not is_nerd_font_installed "FiraCode"
+    echo "FiraCode Nerd Font not installed. Installing..."
+    install_nerd_font "FiraCode"
+end
+
 # Initialize starship prompt if installed
 if type -q starship
     starship init fish | source

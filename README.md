@@ -188,11 +188,25 @@ The dotfiles also include several custom utility functions to improve workflow:
 |------|-------------|-----------------|
 | [FiraCode Nerd Font](https://www.nerdfonts.com/) | Monospace font | Programming ligatures with icons for development |
 
-FiraCode Nerd Font is installed automatically if not already present. To install additional Nerd Fonts, use the included fish function:
+The dotfiles include utilities for managing Nerd Fonts:
+
+* **Automatic Installation**: FiraCode Nerd Font is automatically checked and installed at shell startup if not present
+* **Fast Detection**: Uses a quick file check method instead of slower system font queries
+* **Manual Installation**: Install any Nerd Font using the included fish function:
 
 ```fish
 # Install any Nerd Font by name
-install_nerd_font JetBrainsMono  # or any other Nerd Font name
+install_nerd_font JetBrainsMono
+install_nerd_font Hack
+install_nerd_font SourceCodePro
+```
+
+The `is_nerd_font_installed` function lets you check if a font is installed:
+
+```fish
+if is_nerd_font_installed "JetBrainsMono"
+    echo "JetBrainsMono is installed"
+end
 ```
 
 Browse available fonts at [Nerd Fonts website](https://www.nerdfonts.com/).

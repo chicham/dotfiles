@@ -133,6 +133,8 @@ All notable changes to this project will be documented in this file.
 
 - Improve chezmoi integration ([087d833](087d8332602d7a0060a5925af7418170540357c7))
 
+- Only install fira code font ([baae163](baae163353b1f7ca6dc39bd55bcefd6d07ebfb24))
+
 
 ### Docs
 

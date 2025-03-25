@@ -1,4 +1,26 @@
 # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+# Check if a specific Nerd Font is installed
+function is_nerd_font_installed --description "Check if a Nerd Font is installed" --argument font_name
+    set -l found 1 # Default to not found (return false)
+
+    # [[ if eq .chezmoi.os "darwin" ]] #
+    # Fast check on macOS - check for common font filename patterns
+    if test -e "$HOME/Library/Fonts/$font_name"NerdFont-Regular.ttf -o \
+            -e "$HOME/Library/Fonts/$font_name Nerd Font Complete.ttf" -o \
+            -e "$HOME/Library/Fonts/$font_name Regular Nerd Font Complete.ttf"
+        set found 0 # Font found
+    end
+    # [[ else ]] #
+    # Fast check on Linux - quick check in font directory
+    if test -d "$HOME/.local/share/fonts" && ls "$HOME/.local/share/fonts/" 2>/dev/null | grep -q "$font_name.*Nerd"
+        set found 0 # Font found
+    end
+    # [[ end ]] #
+
+    return $found
+end
+
+# Install a Nerd Font
 function install_nerd_font --description "Install a Nerd Font" --argument font_name
     if test -z "$font_name"
         echo "Usage: install_nerd_font FONTNAME"
@@ -44,27 +66,10 @@ function install_nerd_font --description "Install a Nerd Font" --argument font_n
         echo $latest_version
     end
 
-    # Check if a font is already installed
+    # Use the global function to check if font is installed
     function font_installed
-        set -l found 1 # Default to not found (return false)
-
-        # [[ if eq .chezmoi.os "darwin" ]] #
-        # On macOS, use system_profiler to list fonts
-        if type -q system_profiler
-            if system_profiler SPFontsDataType 2>/dev/null | grep -i "$font_name.*Nerd.*Font" >/dev/null 2>&1
-                set found 0 # Font found
-            end
-        end
-        # [[ else ]] #
-        # On Linux, use fc-list to check for installed fonts
-        if type -q fc-list
-            if fc-list | grep -i "$font_name.*Nerd.*Font" >/dev/null 2>&1
-                set found 0 # Font found
-            end
-        end
-        # [[ end ]] #
-
-        return $found
+        is_nerd_font_installed $font_name
+        return $status
     end
 
     # Set font directory based on OS using chezmoi templating
