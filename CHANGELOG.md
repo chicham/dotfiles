@@ -33,6 +33,8 @@ All notable changes to this project will be documented in this file.
 
 - Use updated delimiters for templating ([404b26a](404b26ae18c63f7d29e57c3bfc644d01020ba1fd))
 
+- Do not install already installed fonts ([15736ee](15736ee168fda440141a39625308f4d3b01bca96))
+
 
 ### Chores
 

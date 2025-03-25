@@ -1,4 +1,5 @@
 #!/bin/sh
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 
 # Install Nerd Fonts: Fira Code, Source Code Pro, and Monaspace
 # -e: exit on error
@@ -32,14 +33,14 @@ DOWNLOAD_DIR="$(mktemp -d)"
 trap 'rm -rf "$DOWNLOAD_DIR"' EXIT
 
 # Set fonts directory based on OS using chezmoi templating
-{{ if eq .chezmoi.os "darwin" }}
+# [[ if eq .chezmoi.os "darwin" ]] #
 # macOS fonts directory
 FONTS_DIR="$HOME/Library/Fonts"
-{{ else }}
+# [[ else ]] #
 # Linux fonts directory
 FONTS_DIR="$HOME/.local/share/fonts"
 mkdir -p "$FONTS_DIR"
-{{ end }}
+# [[ end ]] #
 
 log_task "Installing Nerd Fonts"
 
@@ -50,13 +51,25 @@ NERD_FONTS_VERSION="3.1.1"  # Specify version for stability
 # Function to check if a font is already installed
 font_installed() {
   local font_name="$1"
-  local font_count=0
+  local found=1 # Default to not found (return false)
 
-  # Check if any files matching the font name exist in the fonts directory
-  font_count=$(find "$FONTS_DIR" -type f \( -name "*${font_name}*Nerd*Font*.ttf" -o -name "*${font_name}*Nerd*Font*.otf" \) | wc -l)
+  # [[ if eq .chezmoi.os "darwin" ]] #
+  # On macOS, use system_profiler to list fonts
+  if command_exists system_profiler; then
+    if system_profiler SPFontsDataType | grep -i "${font_name}.*Nerd.*Font" > /dev/null 2>&1; then
+      found=0 # Font found
+    fi
+  fi
+  # [[ else ]] #
+  # On Linux, use fc-list to check for installed fonts
+  if command_exists fc-list; then
+    if fc-list | grep -i "${font_name}.*Nerd.*Font" > /dev/null 2>&1; then
+      found=0 # Font found
+    fi
+  fi
+  # [[ end ]] #
 
-  # Return true if any matching fonts are found
-  test "$font_count" -gt 0
+  return $found
 }
 
 # Function to download and install a font
@@ -114,22 +127,22 @@ for font in $FONTS; do
 done
 
 # Update font cache on Linux
-{{ if ne .chezmoi.os "darwin" }}
+# [[ if ne .chezmoi.os "darwin" ]] #
 if command_exists fc-cache; then
   log_subtask "Updating font cache..."
   fc-cache -f
   log_success "Font cache updated"
 fi
-{{ end }}
+# [[ end ]] #
 
 log_success "Nerd Font installation complete"
 
 # Update WezTerm configuration to use the installed fonts
 log_task "Updating WezTerm configuration to use Nerd Fonts"
-{{ if eq .chezmoi.os "darwin" }}
+# [[ if eq .chezmoi.os "darwin" ]] #
 log_subtask "See ~/.config/wezterm/wezterm.lua to customize font settings"
 echo "Now you can update your WezTerm configuration to use FiraCode Nerd Font, Source Code Pro Nerd Font, or Monaspace Nerd Font"
-{{ else }}
+# [[ else ]] #
 log_subtask "See ~/.config/wezterm/wezterm.lua to customize font settings"
 echo "Now you can update your WezTerm configuration to use FiraCode Nerd Font, Source Code Pro Nerd Font, or Monaspace Nerd Font"
-{{ end }}
+# [[ end ]] #

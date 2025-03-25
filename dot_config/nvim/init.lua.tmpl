@@ -405,13 +405,28 @@ require("lazy").setup({
   -- EditorConfig support
   { "editorconfig/editorconfig-vim" },
 
-  -- Chezmoi integration
+  -- Plenary - utilities library
+  { "nvim-lua/plenary.nvim" },
+
+  -- Chezmoi integration - enhanced version
   {
-    "alker0/chezmoi.vim",
-    lazy = false,
-    init = function()
-      vim.g["chezmoi#auto_apply"] = false
-      vim.g["chezmoi#use_tmp_buffer"] = true
+    "andre-kotake/nvim-chezmoi",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      require("nvim-chezmoi").setup({
+        edit = {
+          apply_on_save = "never" -- Options: "auto", "confirm", "never"
+        },
+        window = {
+          execute_template = {
+            relative = "editor",
+            style = "minimal",
+            border = "single"
+          }
+        }
+      })
     end,
   },
 
