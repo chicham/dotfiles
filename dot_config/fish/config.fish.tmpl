@@ -102,10 +102,17 @@ set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
 # TOOL INITIALIZATION
 ###########################################
 
+# Explicitly source the Nerd Font functions to ensure they are available
+if test -f $HOME/.config/fish/functions/install_nerd_font.fish
+    source $HOME/.config/fish/functions/install_nerd_font.fish
+end
+
 # Check if FiraCode Nerd Font is installed and install if needed
-if not is_nerd_font_installed "FiraCode"
-    echo "FiraCode Nerd Font not installed. Installing..."
-    install_nerd_font "FiraCode"
+if functions -q is_nerd_font_installed
+    if not is_nerd_font_installed "FiraCode"
+        echo "FiraCode Nerd Font not installed. Installing..."
+        install_nerd_font "FiraCode"
+    end
 end
 
 # Initialize starship prompt if installed
