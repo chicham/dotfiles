@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 - Template issue ([ffe8703](ffe870332d25d65da05e661f1e4dad7b6605f998))
 
+- Use updated delimiters for templating ([404b26a](404b26ae18c63f7d29e57c3bfc644d01020ba1fd))
+
 
 ### Chores
 
