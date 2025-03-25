@@ -63,7 +63,7 @@ font_installed() {
 install_font() {
   local font_name="$1"
 
-  # Check if font is already installed
+  # Check if font is already installed - this check is now just for logging
   if font_installed "$font_name"; then
     log_success "$font_name Nerd Font already installed, skipping"
     return 0
@@ -104,9 +104,13 @@ install_font() {
   log_success "$font_name Nerd Font installed"
 }
 
-# Install each font
+# Check each font and only install if not already installed
 for font in $FONTS; do
-  install_font "$font"
+  if ! font_installed "$font"; then
+    install_font "$font"
+  else
+    log_success "$font Nerd Font already installed, skipping"
+  fi
 done
 
 # Update font cache on Linux

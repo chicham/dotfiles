@@ -125,6 +125,10 @@ All notable changes to this project will be documented in this file.
 
 - Installation of fisher for fish plugins ([e8c226e](e8c226ec90d41cddcff6da3cebb4629f826bdb64))
 
+- Do not install already installed fonts ([435212d](435212d66c9f8b027dd3ed5dd578079a170d9d13))
+
+- Avoid reinstalling existing themes and components ([548e503](548e503cb6906651bb0bb90b4ee82d78bad93731))
+
 
 ### Docs
 
