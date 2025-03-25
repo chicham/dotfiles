@@ -37,6 +37,8 @@ All notable changes to this project will be documented in this file.
 
 - Loading order of functions ([f888f00](f888f003fad74551e8973cacd83990c93ccc9886))
 
+- Incorrect test of nbdime config ([9e92487](9e9248769d6527a92b417a48eb55a981ed389c8c))
+
 
 ### Chores
 
