@@ -176,7 +176,7 @@ The dotfiles also include several custom utility functions to improve workflow:
 |------|-------------|-----------------|
 | [Google Cloud SDK](https://cloud.google.com/sdk) | Cloud tools | Command-line tools for Google Cloud (gcloud, gsutil, bq) |
 | [Homebrew](https://brew.sh/) | Package manager | Simple package installation for macOS (automatically installed) |
-| [uv](https://github.com/astral-sh/uv) | Python package manager | Ultra-fast Python package installation and management |
+| [uv](https://github.com/astral-sh/uv) | Python package manager | Ultra-fast Python package installation and management. Provides faster pip replacement, virtual environment management, and dependency resolution. See [uv features](https://github.com/astral-sh/uv/blob/main/README.md#-features) for more details. Run Python scripts in isolated environments with `uv run python script.py` |
 
 ### Fonts
 
