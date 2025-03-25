@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
 
 - Do not install already installed fonts ([15736ee](15736ee168fda440141a39625308f4d3b01bca96))
 
+- Loading order of functions ([f888f00](f888f003fad74551e8973cacd83990c93ccc9886))
+
 
 ### Chores
 
@@ -136,6 +138,8 @@ All notable changes to this project will be documented in this file.
 - Only install fira code font ([baae163](baae163353b1f7ca6dc39bd55bcefd6d07ebfb24))
 
 - Improve Nerd Font installation with fast detection ([25b9407](25b9407eb630d37a0a652f53cea4d251742b239d))
+
+- Add notebook diff config using nbdime ([731e1b8](731e1b8e2b8a677e2fe184212da764d27163b0ab))
 
 
 ### Docs
