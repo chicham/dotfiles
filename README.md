@@ -34,12 +34,12 @@ Themes are configured in the following files:
 | Starship | `~/.config/starship.toml` | Terminal prompt theme |
 | Fish | `~/.config/fish/config.fish` | Shell configuration |
 
-#### How to Customize Themes
+#### How to Update Themes
 
-To change themes for individual tools:
+Each tool has a fixed theme configuration that needs to be updated individually. Here's how to update themes for each tool:
 
 - **Neovim**:
-  - Edit `~/.config/nvim/init.lua`
+  - Edit the config file with: `chezmoi edit ~/.config/nvim/init.lua`
   - Change the colorscheme line to use a different theme
   ```lua
   -- Switch to Gruvbox Material (already included)
@@ -53,7 +53,7 @@ To change themes for individual tools:
   ```
 
 - **WezTerm**:
-  - Edit `~/.wezterm.lua`
+  - Edit the config file with: `chezmoi edit ~/.wezterm.lua`
   - Change the color_scheme setting
   ```lua
   -- Change from Catppuccin Mocha to another theme
@@ -64,7 +64,7 @@ To change themes for individual tools:
   ```
 
 - **Starship**:
-  - Edit `~/.config/starship.toml`
+  - Edit the config file with: `chezmoi edit ~/.config/starship.toml`
   - Change the palette setting to use a different Catppuccin flavor or another theme
   ```toml
   # Switch to Catppuccin Latte (light theme)
@@ -84,7 +84,7 @@ To change themes for individual tools:
   ```
 
 - **bat**:
-  - Edit `~/.config/bat/config`
+  - Edit the config file with: `chezmoi edit ~/.config/bat/config`
   - Change the `--theme` parameter
   ```
   # Set the theme to "Catppuccin Mocha" (default)
@@ -93,26 +93,30 @@ To change themes for individual tools:
   # Or change to another theme
   # --theme="Catppuccin Latte"
   # --theme="gruvbox-dark"
-
-  # List all available themes with:
-  # bat --list-themes
+  ```
+  - After changing the theme, rebuild the bat cache:
+  ```
+  bat cache --build
+  ```
+  - To see all available themes:
+  ```
+  bat --list-themes
   ```
 
 - **Fish**:
-  - Catppuccin themes are built into Fish
-  - Use the following commands to switch between flavors:
+  - Use fish_config to change the theme directly:
   ```fish
-  # Switch to one of the Catppuccin flavors
-  fish_config theme save "Catppuccin Latte"
-  fish_config theme save "Catppuccin Frappe"
-  fish_config theme save "Catppuccin Macchiato"
-  fish_config theme save "Catppuccin Mocha"
-
-  # To check available themes
+  # To see all available themes
   fish_config theme list
+
+  # Set a specific Catppuccin theme
+  fish_config theme choose "Catppuccin Mocha"
+  fish_config theme choose "Catppuccin Latte"
+  fish_config theme choose "Catppuccin Frappe"
+  fish_config theme choose "Catppuccin Macchiato"
   ```
 
-The dotfiles use direct theme setting with `fish_config theme save` to apply themes consistently.
+> **Note**: After updating themes, you may need to restart your terminal for all changes to take effect.
 
 ### Shells & Terminal
 

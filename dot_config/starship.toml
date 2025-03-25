@@ -1,7 +1,7 @@
 # Starship with theme colors
 # This config preserves default Starship behavior while applying theme colors
 
-# Define theme palette (dynamically set by fish theme function)
+# Define theme palette (fixed to Catppuccin Mocha)
 palette = "catppuccin_mocha"
 
 # Apply Catppuccin colors to default modules
