@@ -12,21 +12,9 @@ if command -v git-extras > /dev/null 2>&1; then
   exit 0
 fi
 
-# Create temporary directory
-TEMP_DIR=$(mktemp -d)
-cd "${TEMP_DIR}"
-
-# Clone the git-extras repository
-echo "Cloning git-extras repository..."
-git clone --depth 1 https://github.com/tj/git-extras.git
-cd git-extras
-
-# Install to user's .local directory
-PREFIX="${HOME}/.local" make install
-
-# Clean up
-cd - > /dev/null
-rm -rf "${TEMP_DIR}"
+# Use the official network installation script instead of building from source
+# This avoids the dependency on bsdmainutils and the 'column' command
+curl -sSL https://raw.githubusercontent.com/tj/git-extras/main/install.sh | bash /dev/stdin --prefix="${HOME}/.local"
 
 echo "git-extras has been installed to ${HOME}/.local/bin"
 echo "Please ensure ${HOME}/.local/bin is in your PATH."
