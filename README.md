@@ -148,7 +148,7 @@ Fish shell configuration is organized into modular files:
 | [fd](https://github.com/sharkdp/fd) | Find replacement | User-friendly, fast alternative to the `find` command |
 | [fzf](https://github.com/junegunn/fzf) | Fuzzy finder | Powerful interactive filtering for command line |
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | Directory jumper | Faster navigation between frequently-used directories |
-| [atuin](https://github.com/atuinsh/atuin) | Shell history | Searchable, syncable shell history with context |
+| [atuin](https://github.com/atuinsh/atuin) | Shell history | Searchable, syncable shell history with context. Can be used to share command history between machines. |
 
 #### Custom Utility Functions
 
@@ -253,25 +253,26 @@ After installation is complete, you should:
    atuin login     # Existing account
    ```
 
-3. **Create and Set Up SSH Keys**:
+2. **Create and Set Up SSH Keys**:
    - Follow GitHub's guide to [generate SSH keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
    - Add the keys to your GitHub/GitLab account
 
-4. **Initialize Google Cloud SDK**:
+3. **Initialize Google Cloud SDK**:
    ```bash
    gcloud init
    ```
 
-5. **Set Up GitHub CLI** (if you use GitHub):
+4. **Set Up GitHub CLI** (if you use GitHub):
    ```bash
    gh auth login
    ```
+   **Note**: A GitHub account is mandatory for proper functionality of git, gh, and other GitHub-dependent tools.
 
-6. **Configure Neovim**:
+5. **Configure Neovim**:
    - Launch it once to install plugins: `nvim`
    - Wait for the initial plugin installation to complete
 
-7. **Personalize Git Config**:
+6. **Personalize Git Config**:
    - Edit your personal git config if needed: `chezmoi edit ~/.gitconfig`
 
 ## Contributing

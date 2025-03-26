@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 - Incorrect test of nbdime config ([9e92487](9e9248769d6527a92b417a48eb55a981ed389c8c))
 
+- Incorrect test of nbdime config ([88d3525](88d3525554374cb66166d18b4c34db9b146204b1))
+
 
 ### Chores
 
