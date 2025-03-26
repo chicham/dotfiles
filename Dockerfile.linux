@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 \
     fuse \
     libfuse2 \
+    bsdmainutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up FUSE configuration for AppImages
