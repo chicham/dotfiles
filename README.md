@@ -2,7 +2,9 @@
 
 A cross-platform dotfiles template managed with [chezmoi](https://chezmoi.io/).
 
-## Installation
+## Quick Start Guide
+
+### Installation
 
 Install in one command:
 
@@ -10,11 +12,43 @@ Install in one command:
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin init --apply artefactory/artefiles
 ```
 
-This command will:
+This command will install chezmoi, clone this repository, and apply the dotfiles to your system.
 
-1. Install chezmoi to $HOME/.local/bin if it's not already installed
-1. Clone this repository
-1. Apply the dotfiles to your system
+### Common Workflows
+
+| I want to... | Command |
+|--------------|---------|
+| Update my dotfiles | `chezmoi update` |
+| Edit a configuration file | `chezmoi edit ~/.config/file` |
+| Check if everything is working | `dotfiles_doctor` |
+| Start a new Python project | `mkdir project && cd project && echo 'layout uv' > .envrc && direnv allow` |
+| Work with a remote server | `remote_exec server "command"` or use WezTerm's SSH features |
+| Use Jupyter notebooks | Install with `uv pip install jupyterlab` and run with `jupyter lab` |
+
+See the [CHEATSHEET.md](CHEATSHEET.md) for a complete reference of commands and shortcuts.
+
+### Configuration Structure
+
+```
+~/.config/
+  ├── fish/            # Shell configuration
+  │   ├── config.fish  # Main shell config
+  │   └── aliases.fish # Command aliases
+  ├── nvim/            # Editor configuration
+  ├── direnv/          # Environment management
+  ├── bat/             # Syntax highlighting
+  └── starship.toml    # Prompt configuration
+
+~/.ssh/config          # SSH configuration
+~/.wezterm.lua         # Terminal configuration
+~/.gitconfig           # Git configuration
+```
+
+### Troubleshooting
+
+- **Something's not working?** Run `dotfiles_doctor` to check your installation
+- **Want to reset a file?** Use `chezmoi apply --force ~/.path/to/file`
+- **Need help with chezmoi?** See `chezmoi help` or [chezmoi documentation](https://www.chezmoi.io/docs/how-to/)
 
 ## Tools Included
 
@@ -484,6 +518,77 @@ After installation is complete, you should:
      # Edit SSH config
      chezmoi edit ~/.ssh/config
      ```
+
+## Tips and Best Practices
+
+### Customizing Your Configuration
+
+The dotfiles are designed to be personalized. Here's how to make the most of them:
+
+1. **User-Specific Configuration**:
+   - Create a `~/.config/fish/local.config.fish` file for machine-specific settings
+   - Add environment variables in `~/.profile` for system-wide settings
+   - Use template variables in `.chezmoidata.toml` for personalization
+
+2. **Theming Your Environment**:
+   - Set your preferred theme with `set_theme` (options: `catppuccin_mocha`, `catppuccin_latte`, `catppuccin_frappe`, `catppuccin_macchiato`, `gruvbox_material`)
+   - Or edit individual theme files as described in the [Theme Configuration](#theme-configuration) section
+
+3. **Customizing for Researchers/Developers**:
+   - Create a project template directory with pre-configured `.envrc` files
+   - Set up SSH configs for your common remote servers
+   - Configure port forwarding for Jupyter access
+
+4. **Using chezmoi Effectively**:
+   - Use `chezmoi cd` to navigate to your source directory
+   - Preview changes with `chezmoi diff` before applying
+   - Apply only specific files with `chezmoi apply ~/.config/specific_file`
+   - Use `chezmoi edit` to make changes to dotfiles
+
+5. **Troubleshooting**:
+   - Run `dotfiles_doctor` to check for issues
+   - View chezmoi logs with `chezmoi doctor`
+   - Reset problematic files with `chezmoi apply --force <file>`
+
+### Workflow Examples
+
+#### Setting Up a New Machine
+
+```bash
+# Install dotfiles
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin init --apply artefactory/artefiles
+
+# Personalize Git config
+chezmoi edit ~/.gitconfig
+
+# Configure SSH keys
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Set preferred theme
+fish -c "set_theme catppuccin_mocha"
+
+# Check installation
+dotfiles_doctor
+```
+
+#### Daily Development Workflow
+
+```bash
+# Update dotfiles
+chezmoi update
+
+# Create new Python project
+mkdir -p ~/projects/new_project
+cd ~/projects/new_project
+echo 'layout uv' > .envrc
+direnv allow
+
+# Install dependencies
+uv pip install requests pytest
+
+# Work with remote server
+remote_exec myserver "uptime"
+```
 
 ## Contributing
 

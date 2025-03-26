@@ -146,6 +146,11 @@ All notable changes to this project will be documented in this file.
 - Add notebook diff config using nbdime ([731e1b8](731e1b8e2b8a677e2fe184212da764d27163b0ab))
 
 
+### Tests
+
+- Enhance Docker testing infrastructure ([abc6780](abc678058ad690f1b4f3bcf1580d5d335e2bc788))
+
+
 ### Docs
 
 - Add TEST.md with instructions for testing without modifying local system ([0c3b498](0c3b4988f83add15d04b57626ca554845bb74230))
@@ -159,6 +164,12 @@ All notable changes to this project will be documented in this file.
 - Gh cli config ([09a56ae](09a56aecb1d4f552b8653f1a85a646de147f4b1a))
 
 - Update uv description ([42be809](42be809ffbc8e8adae90f1b5bcb05d49dfd64152))
+
+- Update the documentation ([3b8bb9f](3b8bb9fb96e5826b505aa28811b5f98877e379ec))
+
+- Add Jupyter notebook integration documentation ([3598dd4](3598dd42e572d7f450f810f59774feefbc392046))
+
+- Add git-extras installation and usage documentation ([1fef6eb](1fef6eb7cb04bea2690205c2f1c668c7120bea66))
 
 
 ### Refactor
