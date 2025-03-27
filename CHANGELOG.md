@@ -171,6 +171,8 @@ All notable changes to this project will be documented in this file.
 
 - Add git-extras installation and usage documentation ([1fef6eb](1fef6eb7cb04bea2690205c2f1c668c7120bea66))
 
+- Comprehensive documentation improvements ([6181813](61818135dea7d5dcc9fdf8dc89fa2416566f4d5e))
+
 
 ### Refactor
 

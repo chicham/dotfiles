@@ -205,28 +205,6 @@
     helper = osxkeychain
     # [[ end ]] #
 
-# [[ if eq .chezmoi.os "darwin" ]] #
-[credential "https://github.com"]
-    # Use GitHub CLI for authentication on GitHub.com
-    helper =
-    helper = !/opt/homebrew/bin/gh auth git-credential
-
-[credential "https://gist.github.com"]
-    # Use GitHub CLI for authentication on GitHub Gists
-    helper =
-    helper = !/opt/homebrew/bin/gh auth git-credential
-# [[ else ]] #
-[credential "https://github.com"]
-    # Use GitHub CLI for authentication on GitHub.com
-    helper =
-    helper = !gh auth git-credential
-
-[credential "https://gist.github.com"]
-    # Use GitHub CLI for authentication on GitHub Gists
-    helper =
-    helper = !gh auth git-credential
-# [[ end ]] #
-
 [url "git@github.com:"]
     # Short syntax for SSH GitHub repositories
     insteadOf = gh:
