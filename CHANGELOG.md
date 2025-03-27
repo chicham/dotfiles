@@ -47,6 +47,10 @@ All notable changes to this project will be documented in this file.
 
 - Wrong variable templates ([6be8fd0](6be8fd0818d0bfe1e84dfb8acdac7532cf79a729))
 
+- On remote server git may be blocked ([0ebd5aa](0ebd5aad9b5a641b793fac073cb033efb8490d80))
+
+- Disable kitty mapping ([4c7f3f0](4c7f3f0f389c8238b5b456005f5fae22097488ff))
+
 
 ### Chores
 
@@ -150,6 +154,8 @@ All notable changes to this project will be documented in this file.
 - Improve Nerd Font installation with fast detection ([25b9407](25b9407eb630d37a0a652f53cea4d251742b239d))
 
 - Add notebook diff config using nbdime ([731e1b8](731e1b8e2b8a677e2fe184212da764d27163b0ab))
+
+- Shorthand for git urls ([fa63eba](fa63ebaebb11fa78c6fc8ec56ba8b7dceff30789))
 
 
 ### Tests
