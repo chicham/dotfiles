@@ -210,17 +210,37 @@
     # It will not auto-login without explicit authentication
     helper = !gh auth git-credential
 
+# [[ if eq .chezmoi.os "darwin" ]] #
 [url "git@github.com:"]
     # Short syntax for SSH GitHub repositories
     insteadOf = gh:
+# [[ else ]] #
+[url "https://github.com/"]
+    # Short syntax for HTTPS GitHub repositories on Linux
+    insteadOf = gh:
+# [[ end ]] #
 
+# [[ if eq .chezmoi.os "darwin" ]] #
 [url "ssh://git@github.com/"]
     # Use SSH instead of HTTPS for GitHub
     insteadOf = https://github.com/
+# [[ else ]] #
+# On remote servers, prefer HTTPS over SSH to avoid firewall issues
+[url "https://github.com/"]
+    insteadOf = git://github.com/
+    insteadOf = ssh://git@github.com/
+    insteadOf = git@github.com:
+# [[ end ]] #
 
+# [[ if eq .chezmoi.os "darwin" ]] #
 [url "git@gitlab.com:"]
     # Short syntax for SSH GitLab repositories
     insteadOf = gl:
+# [[ else ]] #
+[url "https://gitlab.com/"]
+    # Short syntax for HTTPS GitLab repositories on Linux
+    insteadOf = gl:
+# [[ end ]] #
 
 [lfs]
     # Enable Git LFS
