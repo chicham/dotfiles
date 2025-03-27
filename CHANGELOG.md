@@ -43,6 +43,10 @@ All notable changes to this project will be documented in this file.
 
 - Do not automatically login ([38d267a](38d267a0ccffdbe716dc0b26b3e6c4a1b6aa09c6))
 
+- Git tools installation ([a90a8a5](a90a8a53944f3406c4a3534d757f721bf40797b3))
+
+- Wrong variable templates ([6be8fd0](6be8fd0818d0bfe1e84dfb8acdac7532cf79a729))
+
 
 ### Chores
 

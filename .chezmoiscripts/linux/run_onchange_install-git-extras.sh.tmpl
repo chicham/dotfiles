@@ -20,10 +20,19 @@ mkdir -p "${HOME}/.local/bin"
 TMP_DIR=$(mktemp -d)
 cd "${TMP_DIR}"
 
-# Clone the repository instead of using the installer script
-# This gives us more control over the installation process
-git clone --depth 1 https://github.com/tj/git-extras.git
-cd git-extras
+# Get the latest release version
+echo "Checking for the latest git-extras release..."
+LATEST_VERSION=$(curl -s https://api.github.com/repos/tj/git-extras/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+echo "Latest git-extras version: $LATEST_VERSION"
+
+# Download the source tarball
+DOWNLOAD_URL="https://github.com/tj/git-extras/archive/refs/tags/${LATEST_VERSION}.tar.gz"
+echo "Downloading from $DOWNLOAD_URL"
+curl -L "$DOWNLOAD_URL" -o "git-extras-${LATEST_VERSION}.tar.gz"
+
+# Extract the source
+tar -xzf "git-extras-${LATEST_VERSION}.tar.gz"
+cd "git-extras-${LATEST_VERSION#v}"
 
 # Use make install with custom PREFIX to install without sudo
 # This follows the recommended approach from the official documentation
@@ -34,10 +43,3 @@ cd - >/dev/null
 rm -rf "${TMP_DIR}"
 
 echo "git-extras has been installed to ${HOME}/.local/bin"
-
-# Check if ~/.local/bin is in PATH
-if ! echo "$PATH" | grep -q "${HOME}/.local/bin"; then
-  echo "WARNING: ${HOME}/.local/bin is not in your PATH. Please add it to your shell configuration."
-  echo "For example, add this line to your ~/.profile or ~/.bashrc:"
-  echo "  export PATH=\"\${HOME}/.local/bin:\${PATH}\""
-fi
