@@ -1,0 +1,43 @@
+#!/bin/sh
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+# vim: set ft=bash:
+set -eu
+
+# Install git-extras on Linux in user space without root
+
+echo "Installing git-extras..."
+
+# Check if git-extras is already installed
+if command -v git-extras > /dev/null 2>&1; then
+  echo "git-extras is already installed."
+  exit 0
+fi
+
+# Make sure ~/.local/bin exists
+mkdir -p "${HOME}/.local/bin"
+
+# Create a temporary directory for the installation
+TMP_DIR=$(mktemp -d)
+cd "${TMP_DIR}"
+
+# Clone the repository instead of using the installer script
+# This gives us more control over the installation process
+git clone --depth 1 https://github.com/tj/git-extras.git
+cd git-extras
+
+# Use make install with custom PREFIX to install without sudo
+# This follows the recommended approach from the official documentation
+make install PREFIX="${HOME}/.local"
+
+# Clean up
+cd - >/dev/null
+rm -rf "${TMP_DIR}"
+
+echo "git-extras has been installed to ${HOME}/.local/bin"
+
+# Check if ~/.local/bin is in PATH
+if ! echo "$PATH" | grep -q "${HOME}/.local/bin"; then
+  echo "WARNING: ${HOME}/.local/bin is not in your PATH. Please add it to your shell configuration."
+  echo "For example, add this line to your ~/.profile or ~/.bashrc:"
+  echo "  export PATH=\"\${HOME}/.local/bin:\${PATH}\""
+fi

@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 
 - Incorrect test of nbdime config ([88d3525](88d3525554374cb66166d18b4c34db9b146204b1))
 
+- Do not automatically login ([38d267a](38d267a0ccffdbe716dc0b26b3e6c4a1b6aa09c6))
+
 
 ### Chores
 

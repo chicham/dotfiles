@@ -1,4 +1,5 @@
 #!/bin/sh
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 # Script to install or update GitHub CLI (gh) on Linux using binary releases
 
 set -eu
@@ -37,7 +38,7 @@ if [ "${needs_install}" = "true" ]; then
   trap 'rm -rf ${tmp_dir}' EXIT
 
   # Use architecture from chezmoi
-  arch="{{ .chezmoi.arch }}"
+  arch="# [[ .chezmoi.arch ]] #"
 
   # Set download URL
   download_url="https://github.com/cli/cli/releases/download/v${latest_version}/gh_${latest_version}_linux_${arch}.tar.gz"

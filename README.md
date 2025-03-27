@@ -487,7 +487,7 @@ After installation is complete, you should:
    ```bash
    gh auth login
    ```
-   **Note**: A GitHub account is mandatory for proper functionality of git, gh, and other GitHub-dependent tools.
+   **Note**: A GitHub account is mandatory for proper functionality of git, gh, and other GitHub-dependent tools. The configuration is set to use GitHub CLI as a git credential helper, but it requires manual authentication - always run `gh auth login` when needed rather than relying on automatic login.
 
 5. **Configure Neovim**:
    - Launch it once to install plugins: `nvim`

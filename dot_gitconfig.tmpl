@@ -205,6 +205,11 @@
     helper = osxkeychain
     # [[ end ]] #
 
+    # Use GitHub CLI as the credential helper
+    # This requires running 'gh auth login' manually first
+    # It will not auto-login without explicit authentication
+    helper = !gh auth git-credential
+
 [url "git@github.com:"]
     # Short syntax for SSH GitHub repositories
     insteadOf = gh:
