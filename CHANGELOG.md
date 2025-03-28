@@ -185,6 +185,8 @@ All notable changes to this project will be documented in this file.
 
 - Comprehensive documentation improvements ([6181813](61818135dea7d5dcc9fdf8dc89fa2416566f4d5e))
 
+- Update changelog ([c47990e](c47990e5cfee7168ff1a888b0174200f0e236486))
+
 
 ### Refactor
 
