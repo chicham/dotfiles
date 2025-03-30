@@ -51,6 +51,8 @@ All notable changes to this project will be documented in this file.
 
 - Disable kitty mapping ([4c7f3f0](4c7f3f0f389c8238b5b456005f5fae22097488ff))
 
+- Remove annoying nbdime message ([8196943](8196943a2565274daeea68eabd4d19d43058f23a))
+
 
 ### Chores
 

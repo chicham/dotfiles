@@ -174,11 +174,20 @@ end
 
 # Configure nbdime for Jupyter notebook diffs if installed
 if type -q nbdime
-    # Check if nbdime is already configured in .gitconfig by testing if the config value exists
-    set -l nbdime_config (git config --get diff.jupyternotebook.command)
-    if test -z "$nbdime_config"
+    # Check if nbdime is already configured in .gitconfig by checking both configuration options
+    set -l notebook_diff_config (git config --get diff.jupyternotebook.command)
+    set -l nbdime_difftool_config (git config --get difftool.nbdime.cmd)
+
+    if test -z "$notebook_diff_config" && test -z "$nbdime_difftool_config"
         echo "Configuring nbdime as git diff/merge driver for Jupyter notebooks..."
         nbdime config-git --global --enable
+
+        # Verify configuration was successful
+        set -l config_check (git config --get diff.jupyternotebook.command)
+        if test -z "$config_check"
+            echo "Trying alternative configuration approach for nbdime..."
+            nbdime config-git --global --enable --skip-git-and-pip-check
+        end
     end
 end
 

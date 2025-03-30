@@ -22,7 +22,9 @@ template_exists() {
 
 # Function to check if nbdime is already configured in git
 nbdime_configured() {
-  if git config --global --get difftool.nbdime.cmd > /dev/null 2>&1; then
+  # Check for both diff.jupyternotebook.command and difftool.nbdime.cmd
+  if git config --global --get diff.jupyternotebook.command > /dev/null 2>&1 \
+    || git config --global --get difftool.nbdime.cmd > /dev/null 2>&1; then
     return 0 # Already configured
   fi
   return 1 # Not configured
@@ -70,7 +72,17 @@ fi
 # Set up nbdime git integration only if not already configured
 if ! nbdime_configured; then
   echo "Setting up nbdime git integration..."
-  nbdime config-git --enable --global
+  # Run nbdime config-git with --global flag first to ensure it affects global gitconfig
+  nbdime config-git --global --enable
+
+  # Verify configuration was successful
+  if nbdime_configured; then
+    echo "Successfully configured nbdime git integration"
+  else
+    echo "Warning: Failed to configure nbdime git integration"
+    # Try alternative approach if the first attempt failed
+    nbdime config-git --global --enable --skip-git-and-pip-check
+  fi
 else
   echo "nbdime git integration already configured, skipping"
 fi
