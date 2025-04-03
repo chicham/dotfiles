@@ -3,6 +3,10 @@
 
 set -eu
 
+# Make sure ~/.local/bin exists and is in PATH
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+
 # Install uv if it's not already installed
 if ! command -v uv > /dev/null 2>&1; then
   echo "Installing uv..."

@@ -3,7 +3,9 @@ install.sh
 LICENSE
 README.md
 CHANGELOG.md
+CLAUSE.md
 TODO.md
+CHEATSHEET.md
 TEST.md
 cliff.toml
 Dockerfile.linux

@@ -1,16 +1,21 @@
 #!/bin/bash
-set -e
+set -eu
 
 echo "Installing Catppuccin themes for bat..."
 
-# Check if bat is installed
-if ! command -v bat &> /dev/null; then
-  echo "Warning: bat is not installed. Skipping theme installation."
-  exit 0
+# Check if bat is installed (check both PATH and ~/.local/bin)
+BAT_CMD="bat"
+if ! command -v bat > /dev/null 2>&1; then
+  if [ -x "$HOME/.local/bin/bat" ]; then
+    BAT_CMD="$HOME/.local/bin/bat"
+  else
+    echo "Warning: bat is not installed. Skipping theme installation."
+    exit 0
+  fi
 fi
 
 # Get bat themes directory
-BAT_THEMES_DIR="$(bat --config-dir)/themes"
+BAT_THEMES_DIR="$($BAT_CMD --config-dir)/themes"
 mkdir -p "$BAT_THEMES_DIR"
 
 # Define theme names and URLs
@@ -86,6 +91,6 @@ for i in "${!THEMES[@]}"; do
 done
 
 # Build bat cache
-bat cache --build
+"$BAT_CMD" cache --build
 
 echo "Catppuccin themes for bat installation completed"

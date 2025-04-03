@@ -53,6 +53,11 @@ All notable changes to this project will be documented in this file.
 
 - Remove annoying nbdime message ([8196943](8196943a2565274daeea68eabd4d19d43058f23a))
 
+- Various fixes ([de21731](de21731916a408acc8683f3ddbf0becd740c1266))
+
+- Improve bat theme installation to check for ~/.local/bin/bat
+- Fix Python tools installation to check for uv in ~/.local/bin
+
 
 ### Chores
 

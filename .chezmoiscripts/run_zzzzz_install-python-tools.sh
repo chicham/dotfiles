@@ -30,16 +30,22 @@ nbdime_configured() {
   return 1 # Not configured
 }
 
-# Ensure uv is installed first
+# Ensure uv is installed first - check both PATH and ~/.local/bin
+UV_CMD="uv"
 if ! command_exists uv; then
-  echo "uv is required but not installed. Install uv first."
-  exit 1
+  if [ -x "$HOME/.local/bin/uv" ]; then
+    UV_CMD="$HOME/.local/bin/uv"
+    echo "Using uv from $HOME/.local/bin"
+  else
+    echo "uv is required but not installed. Install uv first."
+    exit 1
+  fi
 fi
 
 # Install or update Python tools with a single command
 echo "Installing/updating Python development tools..."
-uv tool install --upgrade nbdime
-uv tool install --upgrade pre-commit
+"$UV_CMD" tool install --upgrade nbdime
+"$UV_CMD" tool install --upgrade pre-commit
 echo "Python tools installed/updated successfully."
 
 # Initialize pre-commit git template directory

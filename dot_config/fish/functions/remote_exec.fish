@@ -13,8 +13,8 @@ end
 
 # Completion for remote hosts (first argument)
 # Uses Fish's built-in SSH host completion
-complete -f -c remote_exec -n "not __fish_seen_subcommand_from (__fish_complete_ssh)" -a "(__fish_complete_ssh)" -d "Remote server"
+complete -f -c remote_exec -n "__fish_is_first_arg" -a "(__fish_complete_user_at_hosts)" -d "Remote server"
 
 # Completion for commands (second argument onwards)
 # Once a host is selected, provide command completions
-complete -f -c remote_exec -n "__fish_seen_subcommand_from (__fish_complete_ssh)" -a "(__fish_complete_command)" -d "Command"
+complete -f -c remote_exec -n "not __fish_is_first_arg" -a "(__fish_complete_command)" -d "Command"

@@ -90,57 +90,71 @@ end
 ###########################################
 
 # Continuously display file content with syntax highlighting
-function watch-file --argument-names file
+function watch-file --argument-names file language
     if test -z "$file"
-        echo "Usage: watch-file <filename>"
+        echo "Usage: watch-file <filename> [language]"
+        echo "  Optional [language] parameter lets you specify syntax highlighting language"
         return 1
     end
 
-    # Get the file extension for syntax detection
-    set -l ext (string match -r '\.([^\.]+)$' "$file" | string replace -r '.*\.' '')
-
     # Use tail to follow the file and pipe to bat for syntax highlighting
-    if test -n "$ext" && type -q bat
-        # If extension detected, use it for syntax
-        tail -f "$file" | bat --paging=never --language="$ext"
-    else if type -q bat
-        # Let bat auto-detect the syntax
-        tail -f "$file" | bat --paging=never
+    if type -q bat
+        if test -n "$language"
+            # Use specified language
+            tail -f "$file" | bat --paging=never --language="$language"
+        else
+            # Let bat auto-detect the syntax
+            tail -f "$file" | bat --paging=never
+        end
     else
         # Fallback to plain tail -f
         tail -f "$file"
     end
 end
 
-# Run command from stdin or arguments in the background and watch the log file
-function run-and-watch --argument-names logfile
-    # Set default log file if not provided
-    if test -z "$logfile"
-        set logfile "nohup.log"
-    end
-
-    # Check if we're receiving data from stdin (pipe)
-    if status is-pipe
-        # Read the command from stdin
-        set -l cmd (cat)
-
-        # Run the command with nohup
-        echo "Starting command in background from pipe: $cmd"
-        echo "Log file: $logfile"
-
-        # Execute the command with nohup and redirect output to the log file
-        nohup sh -c "$cmd" > "$logfile" 2>&1 &
-
-        # Get the PID of the background process
-        set -l pid $last_pid
-        echo "Process started with PID: $pid"
-
-        # Watch the log file
-        watch-file "$logfile"
-    else
-        # If not called in a pipe, show usage
-        echo "Usage: <command> | run-and-watch [logfile]"
-        echo "Example: python script.py --arg 1 | run-and-watch log.txt"
+# Run command in the background with nohup
+function launch --description "Run command in the background with nohup"
+    if test (count $argv) -lt 1
+        echo "Usage: launch <command> [arguments...] [logfile]"
+        echo "Example: launch rsync -avz src/ dest/ log.txt"
         return 1
     end
+
+    # Extract the command name (first argument)
+    set -l cmd_name $argv[1]
+
+    # Get all but the last argument (potential commands and args)
+    set -l args_no_last $argv[1..-2]
+
+    # Get the last argument (potential logfile)
+    set -l last_arg $argv[-1]
+
+    # Check if the last argument might be a logfile (ends with .log)
+    if string match -q "*.log" $last_arg
+        set logfile $last_arg
+        set cmd_args $args_no_last
+    else
+        # Default log file
+        set logfile "nohup.log"
+        set cmd_args $argv
+    end
+
+    # Convert arguments array to string
+    set -l cmd_str (string join " " $cmd_args)
+
+    # Run the command with nohup
+    echo "Starting command in background: $cmd_str"
+    echo "Log file: $logfile"
+
+    # Execute the command with nohup and redirect output to the log file
+    nohup sh -c "$cmd_str" > "$logfile" 2>&1 &
+
+    # Get the PID of the background process
+    set -l pid $last_pid
+    echo "Process started with PID: $pid"
+    echo "To watch the log: watch-file $logfile"
 end
+
+# Add completion for the launch command
+# Use the standard command completion for the first argument
+complete -c launch -n "__fish_is_first_token" -a "(__fish_complete_command)"

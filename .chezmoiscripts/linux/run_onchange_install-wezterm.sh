@@ -1,11 +1,9 @@
 #!/bin/sh
 
-# Install WezTerm CLI components for remote Linux servers (non-GUI)
+# Install or update WezTerm CLI components for remote Linux servers (non-GUI)
 # https://github.com/wez/wezterm
 
 set -eu
-
-echo "Installing WezTerm CLI components..."
 
 # Set directories
 INSTALL_DIR="${HOME}/.local"
@@ -13,9 +11,18 @@ BIN_DIR="${INSTALL_DIR}/bin"
 SHARE_DIR="${INSTALL_DIR}/share"
 mkdir -p "${BIN_DIR}" "${SHARE_DIR}"
 
-# Create temporary directory
-TEMP_DIR=$(mktemp -d)
-cd "${TEMP_DIR}"
+# Function to get current version (if available)
+get_current_version() {
+  if [ -f "${BIN_DIR}/wezterm" ]; then
+    # Try to get version using wezterm command
+    "${BIN_DIR}/wezterm" --version 2> /dev/null | head -n 1 | sed -E 's/.*([0-9]{8}-[0-9]{6}-[a-z0-9]{8}).*/\1/' || echo "unknown"
+  else
+    echo "not_installed"
+  fi
+}
+
+# Get current version
+CURRENT_VERSION=$(get_current_version)
 
 # Get latest stable release information
 echo "Determining latest WezTerm stable release..."
@@ -40,9 +47,23 @@ fi
 
 echo "Using WezTerm version: $LATEST_VERSION"
 
+# Check if WezTerm is already installed with the same version
+if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
+  echo "WezTerm is already at the latest version ($LATEST_VERSION). No update needed."
+  exit 0
+elif [ "$CURRENT_VERSION" = "not_installed" ]; then
+  echo "Installing WezTerm CLI components..."
+else
+  echo "Updating WezTerm from $CURRENT_VERSION to $LATEST_VERSION..."
+fi
+
+# Create temporary directory
+TEMP_DIR=$(mktemp -d)
+cd "${TEMP_DIR}"
+
 # Download the WezTerm stable release
 echo "Downloading WezTerm stable release..."
-DOWNLOAD_URL="https://github.com/wez/wezterm/releases/download/$LATEST_VERSION/wezterm-$LATEST_VERSION.Ubuntu20.04.tar.xz"
+DOWNLOAD_URL="https://github.com/wez/wezterm/releases/download/$LATEST_VERSION/wezterm-$LATEST_VERSION.Ubuntu22.04.tar.xz"
 echo "Download URL: $DOWNLOAD_URL"
 
 curl -fsSL -o wezterm.tar.xz "$DOWNLOAD_URL" || {
