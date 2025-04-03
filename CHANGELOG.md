@@ -163,6 +163,8 @@ All notable changes to this project will be documented in this file.
 
 - Installation updates ([a261efe](a261efe25090a1de09575a976f0873a932e7d1e2))
 
+- Make watch-files friendlier ([f6e8534](f6e8534c623fcc7e7e6404b5ce7d79e92e735fef))
+
 
 ### Tests
 
