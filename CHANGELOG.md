@@ -55,6 +55,8 @@ All notable changes to this project will be documented in this file.
 
 - Various fixes ([de21731](de21731916a408acc8683f3ddbf0becd740c1266))
 
+- Typo in chezmoiignore ([fc00e4c](fc00e4c84ae5236aa558c4ee130173621c54e207))
+
 
 ### Chores
 

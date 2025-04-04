@@ -2,6 +2,31 @@
 
 A cross-platform dotfiles template managed with [chezmoi](https://chezmoi.io/).
 
+## Prerequisites
+
+Before installing these dotfiles, please ensure you have:
+
+1. **GitHub Account** - Required for proper functionality of git, gh, and other GitHub-dependent tools
+2. **SSH Keys** - Generate and add to your GitHub account:
+   ```bash
+   # Generate new SSH key
+   ssh-keygen -t ed25519 -C "your_email@example.com"
+
+   # Add to SSH agent
+   eval "$(ssh-agent -s)"
+   ssh-add ~/.ssh/id_ed25519
+
+   # Copy public key to clipboard
+   # macOS:
+   cat ~/.ssh/id_ed25519.pub | pbcopy
+
+   # Linux:
+   cat ~/.ssh/id_ed25519.pub | xclip -selection clipboard
+   # or
+   cat ~/.ssh/id_ed25519.pub | wl-copy
+   ```
+   Then add the key to your [GitHub account settings](https://github.com/settings/keys)
+
 ## Quick Start Guide
 
 ### Installation
@@ -53,6 +78,53 @@ See the [CHEATSHEET.md](CHEATSHEET.md) for a complete reference of commands and 
 ## Tools Included
 
 This dotfiles template includes a carefully curated set of development tools, each chosen for their productivity benefits. All tools are automatically installed and configured.
+
+### WezTerm - Modern Terminal with Built-in Multiplexer
+
+WezTerm is a modern terminal emulator with built-in multiplexer functionality that eliminates the need for tmux on both local and remote systems:
+
+#### Tmux-like Features
+- **Panes and Tabs**: Split your terminal into multiple panes and organize work in tabs
+- **Persistent Sessions**: Keep your terminal sessions running even when you disconnect
+- **Keybindings**: Configured with tmux-compatible shortcuts (using `Ctrl+b` as leader key)
+
+Common keybindings:
+- `Ctrl+b c`: Create new tab
+- `Ctrl+b %`: Split pane vertically
+- `Ctrl+b "`: Split pane horizontally
+- `Ctrl+b arrows`: Navigate between panes
+- `Ctrl+b d`: Detach session
+- `Ctrl+b z`: Zoom/unzoom pane
+
+#### SSH Multiplexing
+
+WezTerm's [SSH multiplexing feature](https://wezterm.org/multiplexing.html#ssh-domains) allows you to:
+- Create persistent SSH sessions that survive network disconnections
+- Detach and reattach to the same session later
+- Keep your work running on the server even after disconnecting
+- Use the same multiplexer features (tabs/panes) on remote servers
+
+**Connecting to SSH with Multiplexing:**
+```bash
+# Connect to a multiplexed SSH session
+wezterm cli spawn --domain-name SSHMUX:my.server
+
+# Alternative format using SSH prefix
+wezterm connect SSHMUX:my.server
+```
+
+**Using the Command Palette for SSHMUX:**
+1. Press `Ctrl+Shift+P` to open the command palette
+2. For a new multiplexed session:
+   - Select "New Tab (domain `SSHMUX:domain-name`)"
+3. To reattach to an existing session:
+   - Select "Attach domain `SSHMUX:domain-name`"
+
+**Detaching and Managing Sessions:**
+1. Detach from a session with `Ctrl+b d`
+2. List available sessions with `wezterm cli list`
+
+**Note:** For multiplexing to work, WezTerm needs to be installed on the remote server. Your SSH domains are automatically discovered from your `~/.ssh/config` file.
 
 ### Theme Configuration
 
@@ -152,13 +224,13 @@ Each tool has a fixed theme configuration that needs to be updated individually.
 
 > **Note**: After updating themes, you may need to restart your terminal for all changes to take effect.
 
-### Shells & Terminal
+### Additional Terminal & Shell Tools
 
 | Tool | Description | Why It's Useful |
 |------|-------------|-----------------|
 | [fish](https://fishshell.com/) | Modern shell | Intelligent autosuggestions, syntax highlighting, and user-friendly defaults |
 | [starship](https://starship.rs/) | Customizable prompt | Fast, informative prompt with Git integration and language support |
-| [wezterm](https://wezfurlong.org/wezterm/) | Terminal emulator | GPU-accelerated with excellent font handling and multiplexing, includes Nerd Fonts |
+| [atuin](https://github.com/atuinsh/atuin) | Shell history | Searchable, syncable shell history with context. Can be used to share command history between machines. |
 | [direnv](https://direnv.net/) | Environment manager | Directory-based environment variable loading |
 
 Fish shell configuration is organized into modular files:
@@ -177,12 +249,11 @@ Fish shell configuration is organized into modular files:
 
 | Tool | Description | Why It's Useful |
 |------|-------------|-----------------|
+| [zoxide](https://github.com/ajeetdsouza/zoxide) | Directory jumper | Faster navigation between frequently-used directories with `z` command |
 | [bat](https://github.com/sharkdp/bat) | Cat replacement | Syntax highlighting and Git integration for file viewing |
 | [eza](https://github.com/eza-community/eza) | ls replacement | Rich features for listing files with color and Git status |
 | [fd](https://github.com/sharkdp/fd) | Find replacement | User-friendly, fast alternative to the `find` command |
 | [fzf](https://github.com/junegunn/fzf) | Fuzzy finder | Powerful interactive filtering for command line |
-| [zoxide](https://github.com/ajeetdsouza/zoxide) | Directory jumper | Faster navigation between frequently-used directories |
-| [atuin](https://github.com/atuinsh/atuin) | Shell history | Searchable, syncable shell history with context. Can be used to share command history between machines. |
 
 #### Custom Utility Functions
 
@@ -226,18 +297,62 @@ These settings help with:
 - Connection persistence for long compute sessions
 - Faster reconnections using control sockets
 
-##### WezTerm SSH Integration
+##### WezTerm as a Terminal Multiplexer
 
-WezTerm automatically reads your SSH configuration from `~/.ssh/config`, making it easy to:
-- Connect to your configured hosts directly from WezTerm
-- Maintain persistent connections to remote servers
-- Use multiple tabs/panes within the same SSH session
+WezTerm is a modern terminal emulator with built-in multiplexer functionality that eliminates the need for tmux on both local and remote systems:
 
-To use WezTerm's SSH capabilities:
+#### Tmux-like Features
+- **Panes and Tabs**: Split your terminal into multiple panes and organize work in tabs
+- **Persistent Sessions**: Keep your terminal sessions running even when you disconnect
+- **Keybindings**: Configured with tmux-compatible shortcuts (using `Ctrl+b` as leader key)
+
+Common keybindings:
+- `Ctrl+b c`: Create new tab
+- `Ctrl+b %`: Split pane vertically
+- `Ctrl+b "`: Split pane horizontally
+- `Ctrl+b arrows`: Navigate between panes
+- `Ctrl+b d`: Detach session
+- `Ctrl+b z`: Zoom/unzoom pane
+
+#### SSH Multiplexing
+
+WezTerm's [SSH multiplexing feature](https://wezterm.org/multiplexing.html#ssh-domains) allows you to:
+- Create persistent SSH sessions that survive network disconnections
+- Detach and reattach to the same session later
+- Keep your work running on the server even after disconnecting
+- Use the same multiplexer features (tabs/panes) on remote servers
+
+**Connecting to SSH with Multiplexing:**
+```bash
+# Connect to a multiplexed SSH session
+wezterm cli spawn --domain-name SSHMUX:my.server
+
+# Alternative format using SSH prefix
+wezterm connect SSHMUX:my.server
+```
+
+**Using the Command Palette for SSHMUX:**
+1. Press `Ctrl+Shift+P` to open the command palette
+2. For a new multiplexed session:
+   - Select "New Tab (domain `SSHMUX:domain-name`)"
+3. To reattach to an existing session:
+   - Select "Attach domain `SSHMUX:domain-name`"
+
+**Detaching and Managing Sessions:**
+1. Detach from a session with `Ctrl+b d`
+2. List available sessions with `wezterm cli list`
+
+**Note:** For multiplexing to work, WezTerm needs to be installed on the remote server. Your SSH domains are automatically discovered from your `~/.ssh/config` file.
+
+#### Standard SSH Integration
+
+WezTerm also provides standard SSH connectivity without multiplexing:
 
 1. Your SSH hosts defined in `~/.ssh/config` are automatically available
 2. Access them via `Ctrl+Shift+P` → "Connect to SSH Host..."
 3. Select the desired host from the list
+
+This provides a seamless way to work with remote servers directly from your terminal.
 
 ##### File Transfers with Remote Servers
 
