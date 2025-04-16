@@ -1,9 +1,9 @@
-# [[ /* chezmoi:template:left-delimiter="#% [[" right-delimiter=%#"]]" */ ]]
+# [[ /* chezmoi:template:left-delimiter="# [[" right-delimiter="]] #" */ ]]
 #!/bin/sh
 
-# This script removes Anaconda/Miniconda installations and sets up blocking
-# It works on both macOS and Linux
-#% if ne .chezmoi.os "windows" -%#
+# Removes Anaconda/Miniconda installations and blocks future installations with shell functions.
+# Provides alternative tool recommendations (venv, uv) and cleans up related configurations.
+# [[ if ne .chezmoi.os "windows" ]] #
 
 set -eu
 
@@ -11,26 +11,18 @@ echo "Checking for Anaconda/Miniconda installations..."
 
 # Function to remove conda completely
 remove_conda() {
-  local conda_path=$1
-  local conda_name=$2
+  conda_path=$1
+  conda_name=$2
 
-  echo "Found $conda_name installation at $conda_path"
+  echo "Found $conda_name at $conda_path"
   echo "Removing $conda_name..."
 
-  # Run conda's uninstall script if it exists
-  if [ -f "$conda_path/bin/conda" ]; then
-    # Deactivate any conda environments first
-    if [ -n "${CONDA_PREFIX:-}" ]; then
-      echo "Deactivating conda environment..."
-      # This is a safe way to deactivate since we don't have direct access to conda deactivate
-      unset CONDA_PREFIX
-      unset CONDA_DEFAULT_ENV
-      unset CONDA_PYTHON_EXE
-
-      # Reset the PATH to remove conda paths
-      # This is a simplified approach as we can't directly modify PATH in a script that will be sourced
-      PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "conda" | tr '\n' ':' | sed 's/:$//')
-    fi
+  # Deactivate any conda environments first
+  if [ -n "${CONDA_PREFIX:-}" ]; then
+    echo "Deactivating conda environment..."
+    unset CONDA_PREFIX
+    unset CONDA_DEFAULT_ENV
+    unset CONDA_PYTHON_EXE
   fi
 
   # Remove the entire directory
@@ -41,11 +33,8 @@ remove_conda() {
   for rc_file in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
     if [ -f "$rc_file" ]; then
       echo "Cleaning up $rc_file..."
-      # Create a temporary file
       tmp_file=$(mktemp)
-      # Filter out conda initialization lines
       grep -v "conda initialize\|conda.sh\|__conda\|Conda\|miniforge\|mambaforge\|anaconda\|miniconda" "$rc_file" > "$tmp_file" || true
-      # Replace the original file
       mv "$tmp_file" "$rc_file"
     fi
   done
@@ -74,12 +63,12 @@ for path in \
   "$HOME/.local/anaconda3" \
   "$HOME/.local/miniconda3" \
   "$HOME/.local/miniforge3" \
-  "$HOME/.local/mambaforge"; do
+  "$HOME/.local/mambaforge" \
+  "/opt/conda"; do
   if [ -d "$path" ]; then
     if [ -f "$path/bin/conda" ] || [ -f "$path/condabin/conda" ]; then
       FOUND_CONDA=true
-      conda_name=$(basename "$path")
-      remove_conda "$path" "$conda_name"
+      remove_conda "$path" "$(basename "$path")"
     fi
   fi
 done
@@ -88,12 +77,9 @@ done
 if command -v conda > /dev/null 2>&1; then
   FOUND_CONDA=true
   CONDA_PATH=$(dirname "$(dirname "$(command -v conda)")")
-  conda_name="conda (in PATH)"
-  echo "Found $conda_name at $CONDA_PATH"
-
-  # Get user confirmation before removing
-  echo "Removing conda executable from PATH ($CONDA_PATH)..."
-  remove_conda "$CONDA_PATH" "$conda_name"
+  echo "Found conda in PATH at $CONDA_PATH"
+  echo "Removing conda executable from PATH..."
+  remove_conda "$CONDA_PATH" "conda"
 fi
 
 # Final message
@@ -125,20 +111,25 @@ echo "Created warning file at $HOME/.local/share/conda_warning.txt"
 # Add aliases to bash and zsh to block conda commands
 for shell_rc in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc"; do
   if [ -f "$shell_rc" ]; then
-    echo "Adding conda blocking aliases to $shell_rc..."
+    echo "Adding conda blocking functions to $shell_rc..."
 
     # Only add if not already present
     if ! grep -q "# Block conda/miniconda/anaconda" "$shell_rc"; then
       cat >> "$shell_rc" << 'EOF'
 
 # Block conda/miniconda/anaconda installation attempts
-alias conda="echo '⛔ Conda is not allowed in this environment.' && echo 'Please use alternative Python environment tools like venv, virtualenv, or uv.' && echo 'See \$HOME/.local/share/conda_warning.txt for more information.'"
-alias miniconda="conda"
-alias anaconda="conda"
-alias mamba="conda"
+conda() {
+    echo "⛔ Conda is not allowed in this environment."
+    echo "Please use alternative Python environment tools like venv, virtualenv, or uv."
+    echo "See $HOME/.local/share/conda_warning.txt for more information."
+    return 1
+}
+miniconda() { conda; }
+anaconda() { conda; }
+mamba() { conda; }
 EOF
     fi
   fi
 done
 
-#% end -%#
+# [[ end ]] #

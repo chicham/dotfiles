@@ -1,7 +1,8 @@
 #!/bin/sh
-# Script to install Python development tools using uv
-# Installs pre-commit and nbdime on both macOS and Linux
-# This script runs last due to "zzzzz" in the name
+# Installs and configures Python development tools using uv package manager:
+# - nbdime for Jupyter notebook diffing (--force flag handles existing installs)
+# - pre-commit for git hooks with template directory setup
+# Runs last (zzzzz prefix) to ensure dependencies are available
 
 set -eu
 
@@ -22,9 +23,8 @@ template_exists() {
 
 # Function to check if nbdime is already configured in git
 nbdime_configured() {
-  # Check for both diff.jupyternotebook.command and difftool.nbdime.cmd
-  if git config --global --get diff.jupyternotebook.command > /dev/null 2>&1 \
-    || git config --global --get difftool.nbdime.cmd > /dev/null 2>&1; then
+  # Check specifically for the jupyter notebook diff command configuration
+  if git config --global --get diff.jupyternotebook.command > /dev/null 2>&1; then
     return 0 # Already configured
   fi
   return 1 # Not configured
@@ -42,11 +42,16 @@ if ! command_exists uv; then
   fi
 fi
 
-# Install or update Python tools with a single command
-echo "Installing/updating Python development tools..."
-"$UV_CMD" tool install --upgrade nbdime
-"$UV_CMD" tool install --upgrade pre-commit
-echo "Python tools installed/updated successfully."
+# Install/upgrade Python tools with proper error handling
+echo "Installing/upgrading Python development tools..."
+
+# Install or upgrade nbdime to handle existing installations
+"$UV_CMD" tool install --upgrade nbdime || echo "Error: Failed to install/upgrade nbdime"
+
+# Install or upgrade pre-commit
+"$UV_CMD" tool install --upgrade pre-commit || echo "Error: Failed to install/upgrade pre-commit"
+
+echo "Python development tools installation complete."
 
 # Initialize pre-commit git template directory
 echo "Checking pre-commit git templates..."
@@ -86,8 +91,6 @@ if ! nbdime_configured; then
     echo "Successfully configured nbdime git integration"
   else
     echo "Warning: Failed to configure nbdime git integration"
-    # Try alternative approach if the first attempt failed
-    nbdime config-git --global --enable --skip-git-and-pip-check
   fi
 else
   echo "nbdime git integration already configured, skipping"

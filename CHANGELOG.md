@@ -55,8 +55,7 @@ All notable changes to this project will be documented in this file.
 
 - Various fixes ([de21731](de21731916a408acc8683f3ddbf0becd740c1266))
 
-- Improve bat theme installation to check for ~/.local/bin/bat
-- Fix Python tools installation to check for uv in ~/.local/bin
+- Typo in chezmoiignore ([fc00e4c](fc00e4c84ae5236aa558c4ee130173621c54e207))
 
 
 ### Chores
@@ -163,6 +162,10 @@ All notable changes to this project will be documented in this file.
 - Add notebook diff config using nbdime ([731e1b8](731e1b8e2b8a677e2fe184212da764d27163b0ab))
 
 - Shorthand for git urls ([fa63eba](fa63ebaebb11fa78c6fc8ec56ba8b7dceff30789))
+
+- Installation updates ([a261efe](a261efe25090a1de09575a976f0873a932e7d1e2))
+
+- Make watch-files friendlier ([f6e8534](f6e8534c623fcc7e7e6404b5ce7d79e92e735fef))
 
 
 ### Tests

@@ -4,6 +4,91 @@
 # -u: exit on unset variables
 set -eu
 
+# Install GitHub CLI first if not already installed
+install_github_cli() {
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "Installing GitHub CLI..." >&2
+    bin_dir="${HOME}/.local/bin"
+    mkdir -p "${bin_dir}"
+    
+    # Get latest version
+    latest_version=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+    
+    # Download and install for current architecture
+    arch=$(uname -m)
+    case "${arch}" in
+      x86_64) arch_name="amd64" ;;
+      aarch64|arm64) arch_name="arm64" ;;
+      *) echo "Unsupported architecture: ${arch}" >&2; exit 1 ;;
+    esac
+    
+    download_url="https://github.com/cli/cli/releases/download/v${latest_version}/gh_${latest_version}_linux_${arch_name}.tar.gz"
+    tmp_dir=$(mktemp -d)
+    curl -sL "${download_url}" | tar xz -C "${tmp_dir}"
+    cp "${tmp_dir}"/gh_*/bin/gh "${bin_dir}/"
+    rm -rf "${tmp_dir}"
+    echo "GitHub CLI installed successfully" >&2
+  else
+    echo "GitHub CLI already installed" >&2
+  fi
+}
+
+# Ensure GitHub CLI authentication, exit if authentication fails
+ensure_github_auth() {
+  # Check if already authenticated
+  if gh auth status >/dev/null 2>&1; then
+    echo "GitHub CLI already authenticated" >&2
+    return 0
+  fi
+
+  echo "GitHub CLI authentication required" >&2
+  
+  # Check if we have a token in environment variables
+  if [ -n "${GH_TOKEN:-}" ] || [ -n "${GITHUB_TOKEN:-}" ]; then
+    echo "Using token from environment variables" >&2
+    # Verify token works
+    if ! gh auth status 2> err_msg >/dev/null; then
+      echo "ERROR: Invalid GitHub token provided in environment variables" >&2
+      echo "ERROR: Details: $err_msg" >&2
+      exit 1
+    fi
+    return 0
+  fi
+  
+  # Check if we're in an interactive environment
+  if [ -t 0 ] && [ -t 1 ] && [ -t 2 ]; then
+    echo "Starting interactive GitHub authentication..." >&2
+    
+    # Default required scopes for full functionality
+    SCOPES="repo,read:org,gist"
+    
+    # Attempt browser-based authentication with SSH for git operations
+    # This is preferred as it's more secure and supports 2FA
+    if gh auth login \
+      --git-protocol ssh \
+      --scopes "${SCOPES}" \
+      --web || \
+      # Fallback to HTTPS if SSH fails
+      gh auth login \
+      --git-protocol https \
+      --scopes "${SCOPES}" \
+      --web; then
+      echo "GitHub CLI authentication successful" >&2
+      return 0
+    fi
+  fi
+
+  echo "ERROR: GitHub CLI authentication required to enable full functionality." >&2
+  echo "For interactive environments, run this script in a terminal." >&2
+  echo "For non-interactive environments, set GH_TOKEN environment variable." >&2
+  exit 1
+}
+
+# Install and authenticate GitHub CLI before anything else
+install_github_cli
+ensure_github_auth
+
+# Install chezmoi if not already installed
 if ! chezmoi="$(command -v chezmoi)"; then
   bin_dir="${HOME}/.local/bin"
   chezmoi="${bin_dir}/chezmoi"
