@@ -33,3 +33,5 @@ dot_wezterm.lua.tmpl
 # SSH client config (remote servers shouldn't override SSH client settings)
 dot_ssh/config.tmpl
 {{ end }}
+
+**/*.old.*
