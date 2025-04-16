@@ -265,12 +265,6 @@ return {
 					tags_filter = "+journal",
 				},
 			},
-
-			emacs_config = {
-				-- Used to correctly handle Org ID for org-roam integration
-				executable_path = "emacsclient",
-				config_path = "~/.emacs.d/init.el",
-			},
 		})
 	end,
 }
