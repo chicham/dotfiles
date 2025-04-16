@@ -16,4 +16,4 @@ email = # [[ output "gh" "api" "user" "--jq" ".email" | trim | default (printf "
 
 [diff]
   command = "difft"
-  args = ["--display", "inline"]
+  args = ["--display=inline", "{{ .Destination }}", "{{ .Target }}"]
