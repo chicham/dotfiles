@@ -3,7 +3,7 @@ install.sh
 LICENSE
 README.md
 CHANGELOG.md
-CLAUSE.md
+CLAUDE.md
 TODO.md
 CHEATSHEET.md
 TEST.md
@@ -23,3 +23,5 @@ scripts/install-wezterm-remote.sh
 # Exclude macOS-specific files on Linux
 .chezmoiscripts/darwin/**
 {{ end }}
+
+**/*.old.*

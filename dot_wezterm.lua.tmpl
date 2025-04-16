@@ -15,25 +15,17 @@ end
 
 -- This is where you actually apply your config choices
 
--- Set leader key (Ctrl+b for tmux compatibility)
+-- Set leader key (Ctrl+a as in your old config)
 config.leader = {
-  key = 'b',
+  key = 'a',
   mods = 'CTRL',
-  timeout_milliseconds = 1000,
+  timeout_milliseconds = 2000,
 }
 
 config.disable_default_key_bindings = true
 
 config.keys = {
-  -- Tmux-compatible keybindings
-  -- Leader key sends itself when pressed twice
-  {
-    key = 'b',
-    mods = 'LEADER',
-    action = act.SendKey { key = 'b', mods = 'CTRL' },
-  },
-
-  -- Copy/paste
+  -- Copy/paste bindings from both configs
   -- [[ if eq .chezmoi.os "darwin" ]] --
   {
     key = 'c',
@@ -58,6 +50,25 @@ config.keys = {
   },
   -- [[ end ]] --
 
+  -- Selection bindings from old config
+  {
+    key = 'Insert',
+    mods = 'CTRL',
+    action = act.CopyTo 'PrimarySelection',
+  },
+  {
+    key = 'Insert',
+    mods = 'CTRL',
+    action = act.PasteFrom 'PrimarySelection',
+  },
+
+  -- Toggle fullscreen from old config
+  {
+    key = 't',
+    mods = 'LEADER',
+    action = act.ToggleFullScreen,
+  },
+
   -- Copy mode
   {
     key = '[',
@@ -76,6 +87,20 @@ config.keys = {
     mods = 'LEADER',
     action = act.SpawnTab 'CurrentPaneDomain',
   },
+
+  -- Tab navigation from old config
+  {
+    key = 'Tab',
+    mods = 'LEADER',
+    action = act.ActivateTabRelative(1),
+  },
+  {
+    key = 'Tab',
+    mods = 'LEADER|SHIFT',
+    action = act.ActivateTabRelative(-1),
+  },
+
+  -- Also keep the n/p tab navigation from standard config
   {
     key = 'n',
     mods = 'LEADER',
@@ -86,13 +111,15 @@ config.keys = {
     mods = 'LEADER',
     action = act.ActivateTabRelative(-1),
   },
+
+  -- Close tab
   {
     key = '&',
-    mods = 'LEADER|SHIFT',
+    mods = 'LEADER',
     action = act.CloseCurrentTab { confirm = true },
   },
 
-  -- Window navigation (0-9)
+  -- Window navigation (0-9) from standard config
   { key = '0', mods = 'LEADER', action = act.ActivateTab(0) },
   { key = '1', mods = 'LEADER', action = act.ActivateTab(1) },
   { key = '2', mods = 'LEADER', action = act.ActivateTab(2) },
@@ -104,16 +131,21 @@ config.keys = {
   { key = '8', mods = 'LEADER', action = act.ActivateTab(8) },
   { key = '9', mods = 'LEADER', action = act.ActivateTab(9) },
 
-  -- Window/pane management
+  -- Configuration and window management
   {
     key = 'r',
     mods = 'LEADER',
     action = act.ReloadConfiguration,
   },
   {
-    key = 'w',
-    mods = 'LEADER',
+    key = 'P',
+    mods = 'LEADER|SHIFT',
     action = act.ShowTabNavigator,
+  },
+  {
+    key = 'p',
+    mods = 'LEADER',
+    action = act.ShowLauncher,
   },
   {
     key = 'k',
@@ -126,7 +158,27 @@ config.keys = {
     action = act.CloseCurrentPane { confirm = true },
   },
 
-  -- Split panes (tmux style)
+  -- Split panes (using your preferred bindings from old config)
+  {
+    -- |
+    key = 'v',
+    mods = 'LEADER',
+    action = act.SplitPane {
+      direction = 'Right',
+      size = { Percent = 50 },
+    },
+  },
+  {
+    -- -
+    key = 'h',
+    mods = 'LEADER',
+    action = act.SplitPane {
+      direction = 'Down',
+      size = { Percent = 50 },
+    },
+  },
+
+  -- Also keep tmux style splits from standard config
   {
     key = '%',
     mods = 'LEADER|SHIFT',
@@ -144,7 +196,14 @@ config.keys = {
     },
   },
 
-  -- Zoom pane
+  -- Zoom pane (using 'm' from old config)
+  {
+    key = 'm',
+    mods = 'LEADER',
+    action = act.TogglePaneZoomState,
+  },
+
+  -- Also keep 'z' for zoom from standard config
   {
     key = 'z',
     mods = 'LEADER',
@@ -189,28 +248,6 @@ config.keys = {
     action = act.ActivatePaneDirection 'Up',
   },
 
-  -- Navigate panes with vi keys
-  {
-    key = 'h',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Left',
-  },
-  {
-    key = 'l',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Right',
-  },
-  {
-    key = 'j',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Down',
-  },
-  {
-    key = 'k',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Up',
-  },
-
   -- Detach domain
   {
     key = 'd',
@@ -249,10 +286,10 @@ config.inactive_pane_hsb = {
   brightness = 0.8,
 }
 
--- Essential configuration
+-- Essential configuration with Catppuccin theme
 config.audible_bell = 'Disabled'
 config.color_scheme = 'Catppuccin Mocha'
-config.enable_kitty_keyboard = false
+config.enable_kitty_keyboard = false -- Using standard config value
 config.enable_scroll_bar = true
 config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'monospace' }
 config.font_size = 14.0
