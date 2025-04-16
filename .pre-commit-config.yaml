@@ -4,7 +4,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -20,7 +20,7 @@ repos:
 
   # Shell script checking
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.10.0.1
     hooks:
       - id: shellcheck
         args: ["-x"]
@@ -34,7 +34,7 @@ repos:
 
   # Check for spelling mistakes
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.4.1
     hooks:
       - id: codespell
         args: ["--ignore-words=.codespellignore"]
@@ -42,26 +42,26 @@ repos:
 
   # Validate YAML files
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: v1.37.0
     hooks:
       - id: yamllint
         args: ["-d", "relaxed"]
 
   # Format and validate TOML files
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.23.1
+    rev: v0.24.2
     hooks:
       - id: toml-sort-fix
 
   # Check for secrets
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.1
+    rev: v8.24.3
     hooks:
       - id: gitleaks
 
   # Conventional commit messages
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.1.0
+    rev: v4.0.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
