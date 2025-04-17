@@ -1,16 +1,23 @@
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+
 # Fish shell configuration file
 
 ###########################################
 # HOMEBREW INITIALIZATION - MUST COME FIRST
 ###########################################
 
-{{ if eq .chezmoi.os "darwin" -}}
+# [[ if eq .chezmoi.os "darwin" -]] #
+# Helper function to check if Homebrew is installed
+function is_brew_installed
+    command -v brew >/dev/null 2>&1
+end
+
 # Initialize Homebrew first to ensure correct binary paths
-if command -v brew >/dev/null 2>&1
+if is_brew_installed
     # Use brew shellenv to properly set up all Homebrew environment variables
     eval "$(brew shellenv)"
 end
-{{- end }}
+# [[ end ]] #
 
 # Add ~/.local/bin to PATH if it exists
 if test -d $HOME/.local/bin
@@ -55,9 +62,9 @@ if test -d $HOME/.cargo/bin
 end
 
 # Google Cloud SDK configuration
-{{ if eq .chezmoi.os "darwin" -}}
+# [[ if eq .chezmoi.os "darwin" -]] #
 # Check for Google Cloud SDK in Homebrew locations on macOS
-if command -v brew >/dev/null 2>&1
+if is_brew_installed
     set -l brew_prefix (brew --prefix)
     if test -d "$brew_prefix/Caskroom/google-cloud-sdk"
         fish_add_path "$brew_prefix/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
@@ -67,7 +74,7 @@ if command -v brew >/dev/null 2>&1
         end
     end
 end
-{{ else -}}
+# [[ else -]] #
 # Linux Google Cloud SDK installation
 if test -d $HOME/.local/google-cloud-sdk
     # Directly add the bin directory to PATH
@@ -81,7 +88,7 @@ if test -d $HOME/.local/google-cloud-sdk
         source $HOME/.local/google-cloud-sdk/path.fish.inc
     end
 end
-{{ end -}}
+# [[ end -]] #
 
 # Add atuin (shell history) bin directory to PATH if it exists
 if test -d $HOME/.atuin/bin
@@ -99,18 +106,41 @@ set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
 # TOOL INITIALIZATION
 ###########################################
 
+# [[ if eq .chezmoi.os "darwin" -]] #
+# On macOS, use Homebrew to install fonts if needed
+function ensure_nerd_font_installed --argument font_name
+    if is_brew_installed
+        # Convert font name to homebrew cask name format
+        set -l font_cask_name "font-"(string lower $font_name)"-nerd-font"
+        
+        # Check if the font is already installed via Homebrew
+        if not brew list --cask $font_cask_name &>/dev/null
+            echo "$font_name Nerd Font not installed. Installing via Homebrew..."
+            brew install --cask $font_cask_name
+        else
+            echo "$font_name Nerd Font is already installed."
+        end
+    else
+        echo "Homebrew is not installed. Cannot install $font_name Nerd Font."
+    end
+end
+
+# Install FiraCode Nerd Font if needed
+ensure_nerd_font_installed "fira-code"
+# [[ else -]] #
 # Explicitly source the Nerd Font functions to ensure they are available
 if test -f $HOME/.config/fish/functions/install_nerd_font.fish
     source $HOME/.config/fish/functions/install_nerd_font.fish
 end
 
-# Check if FiraCode Nerd Font is installed and install if needed
+# On Linux, use the install_nerd_font function
 if functions -q is_nerd_font_installed
     if not is_nerd_font_installed "FiraCode"
         echo "FiraCode Nerd Font not installed. Installing..."
         install_nerd_font "FiraCode"
     end
 end
+# [[ end -]] #
 
 # Initialize starship prompt if installed
 if type -q starship
@@ -205,8 +235,8 @@ function dotfiles_doctor --description "Check dotfiles health and tool installat
     echo ""
     echo "System information:"
     echo "  $success_icon hostname:       "(hostname)
-    echo "  $success_icon os:             "{{ .chezmoi.os }}
-    echo "  $success_icon arch:           "{{ .chezmoi.arch }}
+    echo "  $success_icon os:             # [[ .chezmoi.os ]] #
+    echo "  $success_icon arch:           # [[ .chezmoi.arch ]] #
     echo -n "  $success_icon chezmoi version: "
     command -v chezmoi >/dev/null 2>&1 && chezmoi --version 2>/dev/null || echo "not installed"
     echo ""
@@ -237,9 +267,9 @@ function dotfiles_doctor --description "Check dotfiles health and tool installat
     __check_tool_with_configs "git-lfs" "" "$managed_files"
     __check_tool_with_configs "difft" "" "$managed_files"
     __check_tool_with_configs "gh" "" "$managed_files"
-    {{ if gt (len (glob ".config/glab-cli")) 0 -}}
+    # [[ if gt (len (glob ".config/glab-cli")) 0 -]] #
     __check_tool_with_configs "glab" ".config/glab-cli/config.yml:.config/glab-cli/aliases.yml" "$managed_files"
-    {{ end -}}
+    # [[ end ]] #
 
     echo ""
     echo "## Development Tools"
@@ -254,9 +284,9 @@ function dotfiles_doctor --description "Check dotfiles health and tool installat
     echo "## Cloud Tools"
     __check_tool_with_configs "gcloud" "" "$managed_files"
     __check_tool_with_configs "op" "" "$managed_files"
-    {{ if eq .chezmoi.os "darwin" -}}
+    # [[ if eq .chezmoi.os "darwin" -]] #
     __check_tool_with_configs "aerospace" ".aerospace.toml" "$managed_files"
-    {{ end -}}
+    # [[ end ]] #
 
     echo ""
     echo "Environment Variables:"
