@@ -1,4 +1,4 @@
-return {
+git return {
 	"nvim-orgmode/orgmode",
 	ft = { "org" },
 	dependencies = {
