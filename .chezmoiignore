@@ -14,14 +14,18 @@ test-dotfiles.sh
 test-dotfiles.fish
 .install-1password-cli.sh
 scripts/install-wezterm-remote.sh
+Dockerfile.linux
 
 # OS-specific exclusions
 {{ if eq .chezmoi.os "darwin" }}
 # Exclude Linux-specific files on macOS
 .chezmoiscripts/linux/**
+dot_config/fish/functions/install_nerd_font.fish
 {{ else if eq .chezmoi.os "linux" }}
 # Exclude macOS-specific files on Linux
 .chezmoiscripts/darwin/**
+dot_config/aerospace/aerospace.toml.tmpl
 {{ end }}
+
 
 **/*.old.*
