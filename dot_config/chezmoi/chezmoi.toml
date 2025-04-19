@@ -3,8 +3,8 @@
     email = "{{ (gh api user | jq -r '.email') }}"
 
 [diff]
-    command = "difft"
-    args = ["--display=inline", "--color=always", "{{.Destination}}", "{{.Target}}"]
+command = "difft"
+args = ["--display=inline", "--color=always", "{{.Destination}}", "{{.Target}}"]
 
 [merge]
-    command = "vimdiff"
+command = "vimdiff"
