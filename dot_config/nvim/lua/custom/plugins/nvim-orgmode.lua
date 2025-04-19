@@ -5,7 +5,14 @@ return {
 		"nvim-treesitter/nvim-treesitter",
 	},
 	config = function()
-		-- Explicitly load the org parser first
+		 -- Ensure the org parser is installed and loaded by Treesitter
+		require('nvim-treesitter.configs').setup {
+			ensure_installed = { 'org' }, -- Add 'org' to the list of parsers
+			highlight = {
+				enable = true,
+				additional_vim_regex_highlighting = { 'org' },
+			},
+		}
 
 		-- Setup orgmode with GTD-focused research workflow
 		require("orgmode").setup({
