@@ -26,8 +26,8 @@
     symlinks = true
     # Ensure proper quoting of file names
     quotepath = false
-    # Use bat as pager for better syntax highlighting
-    pager = bat
+    # Use bat as pager
+    pager = "bat --style=plain"
     # Store global exclusions
     excludesfile = ~/.gitignore_global
     # Store global attributes
@@ -111,11 +111,10 @@
     prompt = false
 
 [pager]
-    # Use bat for most operations, but disable for diffs
-    diff = false
-    show = false
-    log = false
-    # Always use a pager for difftool
+    # Use bat with proper flags for difftastic output
+    diff = "bat --style=plain"
+    show = "bat --style=plain"
+    log = "bat --style=plain"
     difftool = true
 
 # Check Git version and use the appropriate conflict style
