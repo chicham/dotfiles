@@ -20,17 +20,10 @@ repos:
 
   # Shell script checking
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.10.0.1
     hooks:
       - id: shellcheck
         args: ["-x"]
-
-  # Shell script formatting
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: shfmt
-        args: [-i, '2', -ci, -bn, -sr]
 
   # Check for spelling mistakes
   - repo: https://github.com/codespell-project/codespell
