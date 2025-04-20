@@ -25,13 +25,6 @@ repos:
       - id: shellcheck
         args: ["-x"]
 
-  # Shell script formatting
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: shfmt
-        args: [-i, '2', -ci, -bn, -sr]
-
   # Check for spelling mistakes
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
