@@ -1,6 +1,6 @@
 [data]
-    name = "{{ (gh auth status --show-token | grep -oP '(?<=Logged in to github.com as )\S+') }}"
-    email = "{{ (gh api user | jq -r '.email') }}"
+name = "{{ (gh auth status --show-token | grep -oP '(?<=Logged in to github.com as )\\S+') }}"
+email = "{{ (gh api user | jq -r '.email') }}"
 
 [diff]
 command = "difft"
