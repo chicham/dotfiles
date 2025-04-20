@@ -3,8 +3,9 @@ name = "{{ (gh auth status --show-token | grep -oP '(?<=Logged in to github.com 
 email = "{{ (gh api user | jq -r '.email') }}"
 
 [diff]
-command = "difft"
+command = "/opt/homebrew/bin/difft"
 args = ["--display=inline", "--color=always", "{{.Destination}}", "{{.Target}}"]
 
 [merge]
-command = "vimdiff"
+command = "nvim"
+args = ["-f", "-c", "Gvdiffsplit! {{.Destination}} {{.Target}}", "{{.Source}}"]
