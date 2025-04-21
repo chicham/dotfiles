@@ -5,7 +5,7 @@
 
 [user]
     name = # [[ .name ]] #
-# [[ if ne .email "" ]] #
+# [[ if (hasKey . "email") ]] #
     email = # [[ .email ]] #
 # [[ end ]] #
 
