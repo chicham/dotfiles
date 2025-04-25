@@ -64,20 +64,19 @@ end)
 -- ┃                        KEYBOARD & INPUT SETTINGS                           ┃
 -- ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
--- Set leader key (Ctrl+a as in your old config)
+-- Set leader key to Ctrl+a with 2 second timeout
 config.leader = {
-  key = 'a',
-  mods = 'CTRL',
+  key = 'a', mods = 'CTRL',
   timeout_milliseconds = 2000,
 }
 
 -- International keyboard layout support settings
 config.use_ime = true                                  -- Enable Input Method Editor for international layouts
-config.treat_east_asian_ambiguous_width_as_wide = false -- Improve handling of East Asian characters
+config.treat_east_asian_ambiguous_width_as_wide = false-- Improve handling of East Asian characters
 config.allow_win32_input_mode = false                  -- Disable Windows-specific input handling
-config.enable_csi_u_key_encoding = false               -- Disable extended Unicode key support (can cause compatibility issues)
+config.enable_csi_u_key_encoding = false                -- Enable extended Unicode key support
 config.use_dead_keys = true                            -- Enable dead keys for accent/diacritic input
-config.enable_kitty_keyboard = false                   -- Disable Kitty keyboard protocol (can cause compatibility issues)
+config.enable_kitty_keyboard = false                    -- Enable Kitty keyboard protocol
 
 -- Alt key configuration
 config.send_composed_key_when_left_alt_is_pressed = true  -- Send composed characters with left Alt
@@ -86,97 +85,45 @@ config.send_composed_key_when_right_alt_is_pressed = true -- Send composed chara
 -- Disable default key bindings to avoid conflicts
 config.disable_default_key_bindings = true
 
+-- ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+-- ┃                              KEY BINDINGS                                  ┃
+-- ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
 config.keys = {
   -- Show debug overlay to troubleshoot key binding and other issues
   { key = 'D', mods = 'LEADER|SHIFT', action = act.ShowDebugOverlay },
 
-  -- Tmux-compatible keybindings
-  -- Leader key sends itself when pressed twice
-  {
-    key = 'b',
-    mods = 'LEADER',
-    action = act.SendKey { key = 'b', mods = 'CTRL' },
-  },
-
-  -- Copy/paste
+  -- ╭─────────────────╮
+  -- │ Copy and Paste  │
+  -- ╰─────────────────╯
   -- [[ if eq .chezmoi.os "darwin" ]] --
-  {
-    key = 'c',
-    mods = 'SUPER',
-    action = act.CopyTo 'Clipboard',
-  },
-  {
-    key = 'v',
-    mods = 'SUPER',
-    action = act.PasteFrom 'Clipboard',
-  },
+  { key = 'c', mods = 'SUPER', action = act.CopyTo 'Clipboard' },
+  { key = 'v', mods = 'SUPER', action = act.PasteFrom 'Clipboard' },
   -- [[ else ]] --
-  {
-    key = 'c',
-    mods = 'CTRL|SHIFT',
-    action = act.CopyTo 'Clipboard',
-  },
-  {
-    key = 'v',
-    mods = 'CTRL|SHIFT',
-    action = act.PasteFrom 'Clipboard',
-  },
+  { key = 'c', mods = 'CTRL|SHIFT', action = act.CopyTo 'Clipboard' },
+  { key = 'v', mods = 'CTRL|SHIFT', action = act.PasteFrom 'Clipboard' },
   -- [[ end ]] --
-
   { key = 'Insert', mods = 'CTRL', action = act.CopyTo 'PrimarySelection' },
   { key = 'Insert', mods = 'SHIFT', action = act.PasteFrom 'PrimarySelection' },
+  { key = ']', mods = 'LEADER', action = act.PasteFrom 'Clipboard' },
 
-  -- Copy mode
-  {
-    key = '[',
-    mods = 'LEADER',
-    action = act.ActivateCopyMode,
-  },
-  {
-    key = ']',
-    mods = 'LEADER',
-    action = act.PasteFrom 'Clipboard',
-  },
+  -- ╭─────────────────╮
+  -- │  Window & Tabs  │
+  -- ╰─────────────────╯
+  { key = 't', mods = 'LEADER', action = act.ToggleFullScreen },
+  { key = 'c', mods = 'LEADER', action = act.SpawnTab 'CurrentPaneDomain' },
+  { key = '&', mods = 'LEADER', action = act.CloseCurrentTab { confirm = true } },
+  { key = 'x', mods = 'LEADER', action = act.CloseCurrentPane { confirm = true } },
+  { key = 'r', mods = 'LEADER', action = act.ReloadConfiguration },
+  { key = 'd', mods = 'LEADER', action = act.DetachDomain 'CurrentPaneDomain' },
 
-  -- Tab management
-  {
-    key = 'c',
-    mods = 'LEADER',
-    action = act.SpawnTab 'CurrentPaneDomain',
-  },
-
-  -- Tab navigation from old config
-  {
-    key = 'Tab',
-    mods = 'LEADER',
-    action = act.ActivateTabRelative(1),
-  },
-  {
-    key = 'Tab',
-    mods = 'LEADER|SHIFT',
-    action = act.ActivateTabRelative(-1),
-  },
-
-  -- Also keep the n/p tab navigation from standard config
-  {
-    key = 'n',
-    mods = 'LEADER',
-    action = act.ActivateTabRelative(1),
-  },
-  {
-    key = 'p',
-    mods = 'LEADER',
-    action = act.ActivateTabRelative(-1),
-  },
-
-  -- Close tab
-  {
-    key = '&',
-    mods = 'LEADER',
-    action = act.CloseCurrentTab { confirm = true },
-  },
-
-  -- Tab navigation (0-9)
+  -- ╭─────────────────╮
+  -- │  Tab Navigation │
+  -- ╰─────────────────╯
+  { key = 'Tab', mods = 'LEADER', action = act.ActivateTabRelative(1) },
+  { key = 'Tab', mods = 'LEADER|SHIFT', action = act.ActivateTabRelative(-1) },
+  { key = 'n', mods = 'LEADER', action = act.ActivateTabRelative(1) },
+  { key = 'p', mods = 'LEADER', action = act.ActivateTabRelative(-1) },
   { key = '0', mods = 'LEADER', action = act.ActivateTab(0) },
   { key = '1', mods = 'LEADER', action = act.ActivateTab(1) },
   { key = '2', mods = 'LEADER', action = act.ActivateTab(2) },
@@ -188,143 +135,32 @@ config.keys = {
   { key = '8', mods = 'LEADER', action = act.ActivateTab(8) },
   { key = '9', mods = 'LEADER', action = act.ActivateTab(9) },
 
-  -- Configuration and window management
-  {
-    key = 'r',
-    mods = 'LEADER',
-    action = act.ReloadConfiguration,
-  },
-  {
-    key = 'P',
-    mods = 'LEADER|SHIFT',
-    action = act.ShowTabNavigator,
-  },
-  {
-    key = 'p',
-    mods = 'LEADER',
-    action = act.ShowLauncher,
-  },
-  {
-    key = 'k',
-    mods = 'LEADER',
-    action = act.ClearScrollback 'ScrollbackOnly',
-  },
-  {
-    key = 'x',
-    mods = 'LEADER',
-    action = act.CloseCurrentPane { confirm = true },
-  },
+  -- ╭─────────────────╮
+  -- │  Pane Handling  │
+  -- ╰─────────────────╯
+  { key = 'v', mods = 'LEADER', action = act.SplitPane { direction = 'Right', size = { Percent = 50 } } },
+  { key = 'h', mods = 'LEADER', action = act.SplitPane { direction = 'Down', size = { Percent = 50 } } },
+  { key = 'z', mods = 'LEADER', action = act.TogglePaneZoomState },
+  { key = 'o', mods = 'LEADER', action = act.RotatePanes 'Clockwise' },
+  { key = 's', mods = 'LEADER', action = act.PaneSelect { mode = 'SwapWithActive' } },
+  { key = 'w', mods = 'LEADER', action = act.PaneSelect },
 
-  -- Split panes (using your preferred bindings from old config)
-  {
-    -- |
-    key = 'v',
-    mods = 'LEADER',
-    action = act.SplitPane {
-      direction = 'Right',
-      size = { Percent = 50 },
-    },
-  },
-  {
-    -- -
-    key = 'h',
-    mods = 'LEADER',
-    action = act.SplitPane {
-      direction = 'Down',
-      size = { Percent = 50 },
-    },
-  },
+  -- ╭─────────────────╮
+  -- │ Pane Navigation │
+  -- ╰─────────────────╯
+  { key = 'LeftArrow', mods = 'LEADER', action = act.ActivatePaneDirection 'Left' },
+  { key = 'RightArrow', mods = 'LEADER', action = act.ActivatePaneDirection 'Right' },
+  { key = 'UpArrow', mods = 'LEADER', action = act.ActivatePaneDirection 'Up' },
+  { key = 'DownArrow', mods = 'LEADER', action = act.ActivatePaneDirection 'Down' },
 
-  -- Also keep tmux style splits from standard config
-  {
-    key = '%',
-    mods = 'LEADER|SHIFT',
-    action = act.SplitPane {
-      direction = 'Right',
-      size = { Percent = 50 },
-    },
-  },
-  {
-    key = '"',
-    mods = 'LEADER|SHIFT',
-    action = act.SplitPane {
-      direction = 'Down',
-      size = { Percent = 50 },
-    },
-  },
-
-  -- Zoom pane (using 'm' from old config)
-  {
-    key = 'm',
-    mods = 'LEADER',
-    action = act.TogglePaneZoomState,
-  },
-
-  -- Also keep 'z' for zoom from standard config
-  {
-    key = 'z',
-    mods = 'LEADER',
-    action = act.TogglePaneZoomState,
-  },
-
-  -- Rotate panes
-  {
-    key = 'o',
-    mods = 'LEADER',
-    action = act.RotatePanes 'Clockwise',
-  },
-
-  -- Swap panes
-  {
-    key = 's',
-    mods = 'LEADER',
-    action = act.PaneSelect {
-      mode = 'SwapWithActive',
-    },
-  },
-
-  -- Navigate panes with arrow keys
-  {
-    key = 'LeftArrow',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Left',
-  },
-  {
-    key = 'RightArrow',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Right',
-  },
-  {
-    key = 'DownArrow',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Down',
-  },
-  {
-    key = 'UpArrow',
-    mods = 'LEADER',
-    action = act.ActivatePaneDirection 'Up',
-  },
-
-  -- Detach domain
-  {
-    key = 'd',
-    mods = 'LEADER',
-    action = act.DetachDomain 'CurrentPaneDomain',
-  },
-
-  -- Select pane
-  {
-    key = 'q',
-    mods = 'LEADER',
-    action = act.PaneSelect,
-  },
-
-  -- Search
-  {
-    key = 'f',
-    mods = 'LEADER',
-    action = act.Search 'CurrentSelectionOrEmptyString',
-  },
+  -- ╭─────────────────╮
+  -- │   UI Controls   │
+  -- ╰─────────────────╯
+  { key = 'P', mods = 'LEADER|SHIFT', action = act.ShowTabNavigator },
+  { key = 'p', mods = 'LEADER', action = act.ShowLauncher },
+  { key = 'k', mods = 'LEADER', action = act.ClearScrollback 'ScrollbackOnly' },
+  { key = '[', mods = 'LEADER', action = act.ActivateCopyMode },
+  { key = 'f', mods = 'LEADER', action = act.Search 'CurrentSelectionOrEmptyString' },
 }
 
 -- ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -368,13 +204,14 @@ config.native_macos_fullscreen_mode = true          -- Use native macOS fullscre
 -- [[ end ]] --
 
 -- Font configuration with fallback options
-config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'JetBrains Mono' }
-config.font_size = 13.0
+config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'monospace' }
+config.font_size = 14.0
 config.line_height = 1.1
+-- Ligatures are enabled by default
 
 -- Tab bar configuration
 config.tab_bar_at_bottom = true                     -- Place tab bar at bottom of window
-config.hide_tab_bar_if_only_one_tab = false         -- Always show tab bar even with one tab (useful for seeing reload notifications)
+config.hide_tab_bar_if_only_one_tab = false         -- Always show tab bar for notifications
 config.show_new_tab_button_in_tab_bar = false
 config.use_fancy_tab_bar = false                    -- Use simple tab bar style
 
@@ -386,32 +223,24 @@ config.force_reverse_video_cursor = true            -- Use reverse video style c
 -- ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 -- Terminal settings
-config.scrollback_lines = 10000                     -- Number of lines to keep in scrollback buffer
+config.scrollback_lines = 5000                      -- Number of lines to keep in scrollback buffer
 config.term = 'xterm-256color'                      -- Terminal compatibility mode
 config.audible_bell = 'Disabled'                    -- Disable audible bell
 config.scroll_to_bottom_on_input = true             -- Auto-scroll to bottom when typing
-config.alternate_buffer_wheel_scroll_speed = 3      -- Mouse wheel scroll speed when in alternate screen applications
-config.debug_key_events = false                     -- Log key events for troubleshooting
+config.debug_key_events = false                      -- Log key events for troubleshooting
 config.prefer_to_spawn_tabs = true                  -- Prefer creating tabs instead of windows
-config.pane_focus_follows_mouse = false             -- Don't automatically focus pane when mouse hovers over it
-config.switch_to_last_active_tab_when_closing_tab = true -- Switch to previously active tab when current tab is closed
 
 -- Use default hyperlink detection rules
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
 
+-- Environment variable handling
+config.mux_env_remove = {
+  'SSH_AUTH_SOCK',                                  -- Remove SSH agent variables that can cause issues
+  'SSH_CLIENT',
+}
+
 -- Disable graphics systems that may cause conflicts
 config.enable_wayland = false
 config.enable_kitty_graphics = false
-
--- Remove SSH_AUTH_SOCK from multiplexer environment to prevent conflicts in SSH sessions
-config.mux_env_remove = {
-  'SSH_AUTH_SOCK',
-}
-
--- Platform-specific overrides
--- [[ if eq .chezmoi.os "linux" ]] --
--- Linux specific settings
-config.use_ime = false
--- [[ end ]] --
 
 return config
