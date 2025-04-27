@@ -11,13 +11,16 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
   - Do not install GUI applications on Linux
   - Focus on CLI tools and terminal utilities only
   - Avoid root/sudo requirements when possible
+- Configuration must maintain feature parity between macOS and Linux except for graphical tools
+  - When adding a CLI tool to one platform, add it to the other platform as well
+  - Ensure consistent user experience across environments
 
 ## Commands
 
-- Install/initialize: `./install.sh`
 - Apply changes: `chezmoi apply`
 - Add file: `chezmoi add ~/.file`
 - Edit file: `chezmoi edit ~/.file`
+- Merge file: `chezmoi merge ~/.file`
 - Update repository: `chezmoi update`
 
 ## Installation Procedures
@@ -34,9 +37,10 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 ### Adding New Tools
 
 - **Linux Installation**:
-  - Use installation scripts provided by developers OR
-  - Install from GitHub binaries
-  - Avoid adding system-wide dependencies with sudo/root requirements
+  - Get the latest version from GitHub API if possible, else fallback to a specific version
+  - Retrieve binaries from GitHub releases if available
+  - If GitHub releases aren't available, use installation script/download from developer's website
+  - NEVER use sudo for installation
 
 - **macOS Installation**:
   - Add entry in `.chezmoidata/packages.yaml` file
@@ -44,16 +48,18 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 
 - **Documentation**:
   - Always update the README.md when a new tool is installed
+  - Always update the CHEATSHEET.md with usage examples
   - Add description and usage examples to the appropriate section
 
 ## Code Style
 
 - Shell scripts: Follow POSIX sh compatibility
 - Use 2-space indentation
-- Add comments for non-obvious code sections
+- Add comments for non-obvious code sections only
 - Prefer parameter substitution for variable handling: `${var:-default}`
 - Error handling: Set `set -eu` in shell scripts
 - Naming: Use snake_case for variables and functions
+- Prefer simple solutions over complex scripts
 
 ## Best Practices
 
@@ -62,6 +68,7 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 - Document environment assumptions
 - Quote all variables: `"${var}"`
 - Avoid hardcoded paths when possible
+- Always run pre-commit hooks to verify changes
 
 ## Development Workflow
 
