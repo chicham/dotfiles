@@ -7,12 +7,8 @@ email = # [[ output "gh" "api" "user" "--jq" ".email" | trim | default (printf "
 
 [merge]
   command = 'nvim'
-  args = [
-    "-d",
-    "{{ `{{ .Destination }}` }}",
-    "{{ `{{ .Source }}` }}",
-    "{{ `{{ .Target }}` }}",
-  ]
+  args = ["-f", "-c", "Gvdiffsplit!", "{{ .Destination }}", "{{ .Target }}", "{{ .Source }}"]
+
 
 [diff]
   command = "difft"
