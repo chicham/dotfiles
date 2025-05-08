@@ -119,6 +119,8 @@ This cheatsheet provides quick reference for common commands and workflows. For 
 | Create PR | `ghpr` (alias for `gh pr create`) |
 | View PR | `ghprv` (alias for `gh pr view`) |
 | List PRs | `ghprl` (alias for `gh pr list`) |
+| GitHub Copilot suggest | `ghcs "natural language prompt"` | Get command suggestions |
+| GitHub Copilot explain | `ghce "shell command"` | Explain what a command does |
 
 ### Git Shortcuts
 
