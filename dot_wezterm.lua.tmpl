@@ -75,9 +75,9 @@ config.leader = {
 config.use_ime = true                                  -- Enable Input Method Editor for international layouts
 config.treat_east_asian_ambiguous_width_as_wide = false-- Improve handling of East Asian characters
 config.allow_win32_input_mode = false                  -- Disable Windows-specific input handling
-config.enable_csi_u_key_encoding = true                -- Enable extended Unicode key support
+config.enable_csi_u_key_encoding = false               -- Enable extended Unicode key support
 config.use_dead_keys = true                            -- Enable dead keys for accent/diacritic input
-config.enable_kitty_keyboard = true                    -- Enable Kitty keyboard protocol
+config.enable_kitty_keyboard = false                   -- Enable Kitty keyboard protocol
 
 -- Alt key configuration
 config.send_composed_key_when_left_alt_is_pressed = true  -- Send composed characters with left Alt
@@ -205,8 +205,9 @@ config.native_macos_fullscreen_mode = true          -- Use native macOS fullscre
 -- [[ end ]] --
 
 -- Font configuration with fallback options
-config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'monospace' }
-config.font_size = 14.0
+config.font = wezterm.font_with_fallback { 'FiraCode Nerd Font', 'Fira Code', 'JetBrains Mono' }
+config.font_size = 13.0
+config.line_height = 1.1
 -- Ligatures are enabled by default
 
 -- Tab bar configuration
@@ -223,11 +224,12 @@ config.force_reverse_video_cursor = true            -- Use reverse video style c
 -- ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 -- Terminal settings
-config.scrollback_lines = 5000                      -- Number of lines to keep in scrollback buffer
-config.term = 'xterm-256color'                      -- Terminal compatibility mode
+config.scrollback_lines = 10000                     -- Number of lines to keep in scrollback buffer
+config.term = 'wezterm'
 config.audible_bell = 'Disabled'                    -- Disable audible bell
 config.scroll_to_bottom_on_input = true             -- Auto-scroll to bottom when typing
-config.debug_key_events = true                      -- Log key events for troubleshooting
+config.alternate_buffer_wheel_scroll_speed = 3
+config.debug_key_events = false                     -- Log key events for troubleshooting
 config.prefer_to_spawn_tabs = true                  -- Prefer creating tabs instead of windows
 
 -- Use default hyperlink detection rules
