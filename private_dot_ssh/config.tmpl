@@ -1,37 +1,55 @@
 # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 
 Host *
-  ServerAliveInterval 60
-  ServerAliveCountMax 5
+  # Connection stability settings
+  ServerAliveInterval 30
+  ServerAliveCountMax 6
   TCPKeepAlive yes
+
+  # Connection multiplexing for better performance
   ControlMaster auto
   ControlPath ~/.ssh/control:%h:%p:%r
   ControlPersist 10m
+
+  # Security and authentication settings
+  StrictHostKeyChecking ask
+  VerifyHostKeyDNS yes
+  HashKnownHosts yes
+
+  # Connection timeout and retry settings
+  ConnectTimeout 30
+  ConnectionAttempts 3
+
+  # Compression for better performance over slow connections
+  Compression yes
+
 # [[ if lookPath "op" ]] #
-  # Only include 1Password agent if op command is available
+  # 1Password SSH agent integration
+# [[ if eq .chezmoi.os "darwin" ]] #
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+# [[ else ]] #
   IdentityAgent ~/.1password/agent.sock
+# [[ end ]] #
 # [[ end ]] #
 
 Host github.com
   User git
 # [[ if lookPath "op" ]] #
-  IdentityFile ~/.ssh/github.pub
+  IdentityFile ~/.ssh/Github.pub
   IdentitiesOnly yes
-# [[ end ]] #
 
-# [[ if lookPath "op" ]] #
 # Work hosts that depend on 1Password secrets
 Host # [[ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/Title" ]] #
   User # [[ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/username" ]] #
   HostName # [[ onepasswordRead "op://Work/2oxg3bs6wjvkaeosomineufwmy/url" ]] #
-  IdentityFile ~/.ssh/work.pub
+  IdentityFile ~/.ssh/Artefact.pub
   IdentitiesOnly yes
   ForwardAgent yes
 
 Host # [[ onepasswordRead "op://Work/g2d6jymgnpl2wzkn4plter4a2a/Title" ]] #
   User # [[ onepasswordRead "op://Work/g2d6jymgnpl2wzkn4plter4a2a/username" ]] #
   HostName # [[ onepasswordRead "op://Work/g2d6jymgnpl2wzkn4plter4a2a/url" ]] #
-  IdentityFile ~/.ssh/work.pub
+  IdentityFile ~/.ssh/Artefact.pub
   IdentitiesOnly yes
   ForwardAgent yes
 # [[ end ]] #
