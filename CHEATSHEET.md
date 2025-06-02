@@ -122,6 +122,75 @@ This cheatsheet provides quick reference for common commands and workflows. For 
 | GitHub Copilot suggest | `ghcs "natural language prompt"` | Get command suggestions |
 | GitHub Copilot explain | `ghce "shell command"` | Explain what a command does |
 
+### Neovim Git Integration
+
+| Category | Shortcut | Description |
+|----------|----------|-------------|
+| **Status & Logs** | `<leader>gs` | Open Git status window |
+| | `<leader>gl` | View Git log with commit graph |
+| | `<leader>gla` | Log with all branches |
+| | `<leader>glf` | Log for current file |
+| | `<leader>gls` | Search commit messages |
+| | `<leader>glr` | Show reflog |
+| | `<leader>gbl` | Browse file commit history (FZF) |
+| **Diff Viewing** | `<leader>gd` | Diff file history |
+| | `<leader>gD` | Diff repository history |
+| | `<leader>gdd` | Diff against index |
+| | `<leader>gdD` | Diff against last commit |
+| **Staging** | `<leader>ga` | Stage hunk under cursor |
+| | `<leader>gA` | Stage all changes in buffer |
+| | `<leader>gw` | Write and stage current file |
+| **Unstaging & Reset** | `<leader>gu` | Undo stage hunk |
+| | `<leader>gU` | Unstage file |
+| | `<leader>gr` | Reset hunk under cursor |
+| | `<leader>gR` | Reset entire file |
+| **Navigation** | `<leader>gj` | Jump to next hunk |
+| | `<leader>gk` | Jump to previous hunk |
+| | `]c` | Jump to next git change |
+| | `[c` | Jump to previous git change |
+| **Branch & Commits** | `<leader>gb` | Browse branches |
+| | `<leader>gc` | Commit changes |
+| | `<leader>gC` | Amend commit |
+| | `<leader>gcf` | Commit fixup |
+| **Stash** | `<leader>gt` | Browse stashes |
+| | `<leader>gts` | Stash changes |
+| | `<leader>gtp` | Pop stash |
+| **Rebase** | `<leader>gri` | Interactive rebase |
+| | `<leader>grc` | Rebase continue |
+| | `<leader>gra` | Rebase abort |
+| | `<leader>grs` | Rebase skip |
+| | `<leader>grf` | Rebase autosquash |
+| **Remote Operations** | `<leader>gf` | Fetch changes |
+| | `<leader>gp` | Push changes |
+| | `<leader>gP` | Push force-with-lease |
+| | `<leader>gpl` | Pull changes |
+| **Blame & GitHub** | `<leader>gB` | Blame current line |
+| | `<leader>go` | Open in GitHub browser |
+| | `<leader>gO` | Open selection in GitHub (visual mode) |
+| **Preview & Toggles** | `<leader>gh` | Preview hunk |
+| | `<leader>gtb` | Toggle inline blame |
+| | `<leader>gtd` | Toggle show deleted |
+
+#### Flog Buffer Commands
+
+When in a Flog window, you can use these built-in commands:
+
+| Command | Action |
+|---------|--------|
+| `<CR>` or `o` | Open commit in side window |
+| `)` / `(` | Jump to next/previous commit |
+| `<C-N>` / `<C-P>` | Jump to next/previous commit and open |
+| `dd` or `dv` | Open diff for commit under cursor |
+| `cc` | Create a commit |
+| `ca` | Amend current HEAD commit |
+| `cf` | Create fixup commit |
+| `co` | Checkout commit |
+| `cob` | Checkout branch |
+| `ri` | Interactive rebase |
+| `g?` | Show help |
+| `u` | Update/reload Flog window |
+| `gq` | Quit Flog |
+
 ### Git Shortcuts
 
 | Alias | Command | Description |
