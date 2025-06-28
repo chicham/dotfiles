@@ -16,6 +16,31 @@
     email = # [[ .email ]] #
 # [[ end ]] #
 # [[ end ]] #
+# [[ if .signingKey -]] #
+    signingkey = # [[ .signingKey ]] #
+# [[ end -]] #
+
+# [[ if .signingKey -]] #
+[commit]
+    # Sign commits by default
+    gpgsign = true
+
+[tag]
+    # Sign tags by default
+    gpgsign = true
+
+[gpg]
+    # Use SSH for signing
+    format = ssh
+
+[gpg "ssh"]
+    # Use 1Password for signing
+    # [[ if eq .chezmoi.os "darwin" -]] #
+    program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    # [[ else -]] #
+    program = "/usr/local/bin/op-ssh-sign"
+    # [[ end -]] #
+# [[ end -]] #
 
 [core]
     # Use Neovim as default editor
@@ -194,8 +219,6 @@
     current = rev-parse --abbrev-ref HEAD
     # Check out a pull request from GitHub using the gh cli
     pr = "!f() { gh pr checkout $1; }; f"
-    # List aliases
-    aliases = config --get-regexp '^alias\\.'
 
     # Amend the previous commit without changing the commit message
     amend = commit --amend --no-edit
