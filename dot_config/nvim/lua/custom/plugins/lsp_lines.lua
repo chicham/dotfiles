@@ -31,12 +31,11 @@
 --
 return {
   'rachartier/tiny-inline-diagnostic.nvim',
-  event = 'VeryLazy', -- Or `LspAttach`
-  priority = 1000, -- needs to be loaded in first
+  event = 'LspAttach',
   config = function()
     require('tiny-inline-diagnostic').setup {
       preset = 'powerline',
     }
-    vim.diagnostic.config { virtual_text = false } -- Ensure virtual text is off for inline diagnostics
+    vim.diagnostic.config { virtual_text = false }
   end,
 }
