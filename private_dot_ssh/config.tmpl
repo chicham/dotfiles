@@ -1,4 +1,7 @@
 # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+# [[ if eq .chezmoi.os "darwin" ]] #
+Include /Users/hicham.randrianarivo/.colima/ssh_config
+# [[ end -]] #
 
 Host *
   # Connection stability settings
