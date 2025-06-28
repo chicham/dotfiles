@@ -1,3 +1,4 @@
 return {
-  'https://github.com/vim-utils/vim-vertical-move',
+  'vim-utils/vim-vertical-move',
+  keys = { ']v', '[v' },
 }
