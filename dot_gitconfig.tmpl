@@ -219,7 +219,6 @@
     current = rev-parse --abbrev-ref HEAD
     # Check out a pull request from GitHub using the gh cli
     pr = "!f() { gh pr checkout $1; }; f"
-
     # Amend the previous commit without changing the commit message
     amend = commit --amend --no-edit
     # Interactively rebase the last n commits
