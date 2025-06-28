@@ -1,14 +1,33 @@
 # Gemini Analysis Command
 
-Use Gemini CLI for large codebase analysis when context limits are exceeded. Claude should delegate analysis to Gemini, then implement based on the results.
+Use Gemini CLI for large codebase analysis when context limits are exceeded. Claude should delegate analysis to Gemini, then use tree-sitter for targeted follow-up analysis if needed.
+
+## Usage
+
+Pass custom instructions directly to Gemini:
+
+```
+/project:gemini [your custom instructions]
+```
+
+**Examples:**
+- `/project:gemini analyze the authentication system and find security vulnerabilities`
+- `/project:gemini review the database schema and suggest optimizations`
+- `/project:gemini find all TODO comments and prioritize them by importance`
 
 ## Usage for Claude
 
-When Claude encounters tasks requiring full codebase analysis:
-
+When user provides instructions:
 ```bash
-gemini --all_files -p "Analyze the project structure and identify [specific area]"
+gemini --all_files -p "$ARGUMENTS"
 ```
+
+When no arguments provided, use default analysis:
+```bash
+gemini --all_files -p "Analyze the project structure and identify key components and their relationships"
+```
+
+After Gemini analysis, use tree-sitter tools manually for targeted code structure analysis when needed.
 
 ## Key Options
 
