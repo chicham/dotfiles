@@ -1,4 +1,6 @@
-# CLAUDE.md - Coding Agent Guidelines
+# CLAUDE.md
+
+This document guides AI agents and human developers on project conventions and best practices.
 
 ## Repository Overview
 
@@ -72,28 +74,11 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 
 ## Development Workflow
 
-### Adding New Features
-
-1. **Create a feature branch**:
-   ```bash
-   git checkout -b feat/descriptive-name
-   ```
-
-2. **Make atomic commits**:
-   - Each commit should represent one logical change
-   - Use clear, descriptive commit messages following conventional commits format
-   - Example: `git commit -m "feat: Add GitHub Copilot CLI extension"`
-
-3. **Update documentation**:
-   - Add entries to README.md for user-facing features
-   - Changelog will be automatically updated using git-cliff based on commit messages
-
-4. **Create a pull request**:
-   - Summarize all changes in the PR description
-   - Explain the purpose and benefits of the changes
-   - List any testing performed
-
-This workflow must be followed for all new features added to the repository.
+### Git and GitHub Workflow
+- **Issue Creation**: Refer to `dot_claude/commands/create-issue.md` for detailed instructions.
+- **Branch Management**: Refer to `dot_claude/commands/fix-issue.md` for branch naming conventions, protection rules, and creation.
+- **Commit Guidelines**: Refer to `dot_claude/commands/commit.md` for detailed instructions on creating atomic commits and conventional commit format.
+- **Pull Request Workflow**: Refer to `dot_claude/commands/create-pr.md` for pushing, PR creation, requirements, history management, and code review process.
 
 ### Changelog Management
 
@@ -169,3 +154,15 @@ The repository uses [git-cliff](https://github.com/orhun/git-cliff) to automatic
 - This replaces the default `{{` and `}}` with more language-appropriate delimiters
 - Custom delimiters improve syntax highlighting and make templates easier to read
 - The custom delimiters are then used throughout the file for template logic and variable insertion
+
+## AI Agent Specific Directives
+
+- **File System Interaction**:
+    - **NEVER** attempt to add or commit `.git` or `.venv` directories.
+    - For manual tools (lint, typecheck, test runners), **ALWAYS** ask the user to run them rather than executing automatically.
+    - When proposing changes, always provide a clear explanation of *what* will be changed and *why*.
+    - When using `replace`, ensure `old_string` includes sufficient context (at least 3 lines before/after) to guarantee a unique match.
+    - When creating new files, ensure they adhere to existing project conventions (naming, structure, content).
+- **Commit Messages**: When asked to commit, always propose a draft commit message following the Conventional Commits format.
+- **Clarification**: If a request is ambiguous or requires significant deviation from established patterns, **ALWAYS** ask for clarification before proceeding.
+- **Self-Correction**: If a tool call fails or produces unexpected results, analyze the error and attempt to self-correct or ask the user for guidance.
