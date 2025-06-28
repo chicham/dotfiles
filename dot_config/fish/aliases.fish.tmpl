@@ -1,5 +1,4 @@
 # chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
-# Fish shell aliases
 # This file contains all aliases used in the fish shell configuration
 
 # Only load aliases in interactive shells
@@ -199,3 +198,11 @@ end
 function anaconda
     conda
 end
+
+###########################################
+# CHEZMOI ALIASES
+###########################################
+
+# Chezmoi aliases for editing and merging config files with auto-apply
+alias confedit="chezmoi edit --apply"
+alias confmerge="chezmoi merge --apply"
