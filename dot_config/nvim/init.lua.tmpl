@@ -1,8 +1,16 @@
 -- chezmoi:template:left-delimiter="-- [[" right-delimiter="]] --"
 -- Neovim Configuration
+-- This file serves as the main entry point for your Neovim setup.
+-- It bootstraps the plugin manager, sets fundamental editor options,
+-- defines global keybindings, and configures core plugins.
+--
 -- Fast, focused configuration for efficient editing
 
--- Bootstrap lazy.nvim for plugin management
+--------------------------------------------------------------------------------
+-- PLUGIN MANAGER BOOTSTRAP (lazy.nvim)
+--------------------------------------------------------------------------------
+-- lazy.nvim is a fast and powerful plugin manager for Neovim.
+-- This section ensures lazy.nvim is installed and available.
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -13,51 +21,57 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Set leader key before loading plugins
+--------------------------------------------------------------------------------
+-- GLOBAL SETTINGS
+--------------------------------------------------------------------------------
+-- Set leader key before loading plugins. The leader key is a prefix for custom keybindings.
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Set to true if you have a Nerd Font installed and selected in the terminal
+-- Set to true if you have a Nerd Font installed and selected in the terminal.
+-- Nerd Fonts provide additional icons and glyphs for various plugins (e.g., lualine, nvim-tree).
 vim.g.have_nerd_font = true
+
 
 --------------------------------------------------------------------------------
 -- BASIC SETTINGS
 --------------------------------------------------------------------------------
--- Make line numbers default
+-- Make line numbers default (absolute line numbers)
 vim.opt.number = true
+-- Show relative line numbers (useful for motions like 5j, 10k)
 vim.opt.relativenumber = true
 
--- Enable mouse mode
+-- Enable mouse mode for easier navigation and resizing
 vim.opt.mouse = "a"
 
--- Don't show the mode, since it's already in the status line
+-- Don't show the mode in the command line, as it's already in the status line (e.g., lualine)
 vim.opt.showmode = false
 
--- Sync clipboard between OS and Neovim
+-- Sync clipboard between OS and Neovim. This allows you to copy/paste to/from external applications.
 vim.schedule(function()
 	vim.opt.clipboard = "unnamedplus"
 end)
 
--- Enable break indent
+-- Enable break indent: preserves indentation when wrapping lines
 vim.opt.breakindent = true
 
--- Save undo history
+-- Save undo history to a file, allowing undo/redo even after closing Neovim
 vim.opt.undofile = true
 
--- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
+-- Case-insensitive searching UNLESS \C is used or one or more capital letters are in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
--- Keep signcolumn on by default
+-- Always show the signcolumn, preventing text from jumping when diagnostics or git signs appear
 vim.opt.signcolumn = "yes"
 
--- Decrease update time
+-- Decrease update time for plugins and UI, making Neovim feel more responsive
 vim.opt.updatetime = 250
 
--- Decrease mapped sequence wait time
+-- Decrease mapped sequence wait time, making keybindings feel snappier
 vim.opt.timeoutlen = 300
 
--- Configure how new splits should be opened
+-- Configure how new splits should be opened: vertical splits to the right, horizontal splits below
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
@@ -65,59 +79,60 @@ vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
--- Preview substitutions live, as you type!
+-- Preview substitutions live, as you type! (e.g., :s/old/new/gc)
 vim.opt.inccommand = "split"
 
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
--- Minimal number of screen lines to keep above and below the cursor.
+-- Minimal number of screen lines to keep above and below the cursor when scrolling
 vim.opt.scrolloff = 10
 
--- Set completeopt to have a better completion experience
+-- Set completeopt to have a better completion experience with nvim-cmp
 vim.opt.completeopt = "menu,menuone,noselect,noinsert"
 
--- Command Line
-vim.opt.cmdheight = 1
-vim.opt.wildmenu = true
+-- Command Line settings
+vim.opt.cmdheight = 1 -- Command line height
+vim.opt.wildmenu = true -- Enable wildmenu for command-line completion
 vim.opt.wildmode = "longest:full,full" -- Command line completion behavior
 
--- Use ripgrep as grepprg if available
+-- Use ripgrep as grepprg if available for faster and more powerful grep searches
 if vim.fn.executable("rg") == 1 then
 	vim.opt.grepprg = "rg --vimgrep --smart-case --follow --hidden --glob '!.git'"
 end
 
--- Wrap behavior
+-- Wrap behavior: wrap long lines and break them at word boundaries
 vim.opt.wrap = true
 vim.opt.linebreak = true
+-- Diff options for better visual diffs
 vim.opt.diffopt = "filler,internal,algorithm:histogram,indent-heuristic"
 
 -- File/Buffer Handling
-vim.opt.hidden = true
-vim.opt.swapfile = false
-vim.opt.backup = false
-vim.opt.spell = false
-vim.opt.spelllang = "en_us"
+vim.opt.hidden = true -- Hide buffers when not in use instead of closing them
+vim.opt.swapfile = false -- Disable swap files
+vim.opt.backup = false -- Disable backup files
+vim.opt.spell = false -- Disable spell checking by default
+vim.opt.spelllang = "en_us" -- Default spell language
 
 -- Appearance
-vim.opt.fillchars:append({ eob = " " }) -- Don't show ~ for empty lines
-vim.opt.termguicolors = true
+vim.opt.fillchars:append({ eob = " " }) -- Don't show ~ for empty lines at the end of the buffer
+vim.opt.termguicolors = true -- Enable true colors in the terminal
 
--- Indentation
-vim.opt.expandtab = true
-vim.opt.shiftwidth = 2
-vim.opt.tabstop = 2
-vim.opt.softtabstop = 2
-vim.opt.smartindent = true
+-- Indentation settings
+vim.opt.expandtab = true -- Use spaces instead of tabs
+vim.opt.shiftwidth = 2 -- Number of spaces to use for autoindent and shift commands
+vim.opt.tabstop = 2 -- Number of spaces a tab character represents
+vim.opt.softtabstop = 2 -- Number of spaces a tab character represents when editing
+vim.opt.smartindent = true -- Smart autoindenting
 
--- Session options
+-- Session options: control what is saved/restored when using sessions
 vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 -- Folding (using treesitter when available)
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-vim.opt.foldenable = false
-vim.opt.foldlevel = 99
+vim.opt.foldmethod = "expr" -- Use expression for folding
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()" -- Treesitter-based folding expression
+vim.opt.foldenable = false -- Disable folding by default
+vim.opt.foldlevel = 99 -- Default fold level (all folds open)
 
 --------------------------------------------------------------------------------
 -- KEY MAPPINGS
@@ -139,19 +154,6 @@ vim.keymap.set("n", "<leader>dt", toggle_diagnostics, {
 	desc = "Toggle diagnostics",
 	silent = true,
 	noremap = true,
-})
-
-vim.diagnostic.config({
-	signs = {
-		severity = {
-			min = vim.diagnostic.severity.HINT,
-		},
-	},
-	underline = {
-		severity = {
-			min = vim.diagnostic.severity.ERROR,
-		},
-	},
 })
 
 -- Exit terminal mode in the builtin terminal
@@ -250,11 +252,23 @@ vim.api.nvim_create_autocmd("VimResized", {
 	command = "tabdo wincmd =",
 })
 
+-- Ensure wrap is always on for all buffers
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+	pattern = "*",
+	callback = function()
+		vim.wo.wrap = true
+	end,
+})
+
 --------------------------------------------------------------------------------
 -- PLUGIN CONFIGURATION
 --------------------------------------------------------------------------------
+-- This section defines and configures all Neovim plugins using lazy.nvim.
+-- Plugins are organized by category for better readability and management.
 
 -- Plugin definitions
+-- lazy.nvim's setup function loads and configures all specified plugins.
+-- The `ui` table customizes the appearance of lazy.nvim's interface.
 require("lazy").setup({
 	-- Catppuccin Theme (main theme)
 	{
@@ -450,13 +464,9 @@ require("lazy").setup({
 							["ic"] = "@class.inner",
 							["aa"] = "@parameter.outer",
 							["ia"] = "@parameter.inner",
-							["ai"] = "@conditional.outer",
-							["ii"] = "@conditional.inner",
-							["al"] = "@loop.outer",
-							["il"] = "@loop.inner",
-							-- Removed ib/ab mappings to avoid conflict with vim-sandwich
-							-- ["ab"] = "@block.outer",
-							-- ["ib"] = "@block.inner",
+
+							["ai"] = "@indent.outer",
+							["ii"] = "@indent.inner",
 							-- Easy-to-remember mappings for code blocks
 							["a}"] = "@block.outer",
 							["i}"] = "@block.inner",
@@ -506,6 +516,15 @@ require("lazy").setup({
 						["<cr>"] = "textsubjects-smart",
 						["a;"] = "textsubjects-container-outer",
 						["i;"] = "textsubjects-container-inner",
+					},
+				},
+				incremental_selection = {
+					enable = true,
+					keymaps = {
+						init_selection = "<C-space>",
+						node_incremental = "<C-space>",
+						scope_incremental = false,
+						node_decremental = "<bs>",
 					},
 				},
 				matchup = {
@@ -611,6 +630,11 @@ require("lazy").setup({
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
 
+			-- Configure LuaSnip for visual selection
+			luasnip.config.setup({
+				store_selection_keys = "<Tab>",
+			})
+
 			-- Load friendly snippets
 			require("luasnip.loaders.from_vscode").lazy_load()
 			require("luasnip.loaders.from_lua").load({ paths = "~/.snippets/lua/luasnip_snippets/" })
@@ -686,11 +710,12 @@ require("lazy").setup({
 						name = "lazydev",
 						group_index = 0,
 					},
-					{ name = "copilot" },
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-					{ name = "buffer" },
-					{ name = "path" },
+					{ name = "nvim_lsp", priority = 1000 },
+					{ name = "vimtex", priority = 800 },
+					{ name = "luasnip", priority = 750 },
+					{ name = "copilot", priority = 700 },
+					{ name = "buffer", priority = 500, keyword_length = 3 },
+					{ name = "path", priority = 250 },
 				}),
 				window = {
 					documentation = cmp.config.window.bordered(),
@@ -736,10 +761,7 @@ require("lazy").setup({
 						vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
 					end
 
-					-- LSP keymaps
-					map("gd", vim.lsp.buf.definition, "[G]oto [D]efinition") -- codespell:ignore efinition
-					map("gr", vim.lsp.buf.references, "[G]oto [R]eferences") -- codespell:ignore eferences
-					map("gI", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
+					-- LSP keymaps (gd, gr, gI delegated to fzf-lua)
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
 					map("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 					map("<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
@@ -747,6 +769,23 @@ require("lazy").setup({
 					map("<space>f", function()
 						vim.lsp.buf.format({ async = true })
 					end, "Format")
+
+					-- Better diagnostic navigation
+					vim.keymap.set('n', '[d', function()
+						vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
+					end, { desc = 'Previous error' })
+
+					vim.keymap.set('n', ']d', function()
+						vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
+					end, { desc = 'Next error' })
+
+					vim.keymap.set('n', '[w', function()
+						vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.WARN })
+					end, { desc = 'Previous warning' })
+
+					vim.keymap.set('n', ']w', function()
+						vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.WARN })
+					end, { desc = 'Next warning' })
 
 					-- The following two autocommands are used to highlight references of the
 					-- word under your cursor when your cursor rests there for a little while.
@@ -808,10 +847,20 @@ require("lazy").setup({
 						},
 					},
 				},
-				basedpyright = {
-					settings = { basedpyright = { analysis = { typeCheckingMode = "off" } } },
-				},
 				rust_analyzer = {},
+				texlab = {
+					settings = {
+						texlab = {
+							build = {
+								onSave = false,
+							},
+							forwardSearch = {
+								executable = "skim",
+								args = { "-g", "%l", "%f" },
+							},
+						},
+					},
+				},
 			}
 
 			-- [[ if eq .chezmoi.os "darwin" ]] --
@@ -846,7 +895,7 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
-					"basedpyright",
+					"texlab",
 					-- [[ if eq .chezmoi.os "darwin" ]] --
 					-- Additional LSPs for macOS
 					"bashls",
