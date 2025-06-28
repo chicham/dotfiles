@@ -1,5 +1,6 @@
 return {
   'ggandor/flit.nvim',
+  keys = { 'f', 'F', 't', 'T' },
   config = function()
     require('flit').setup {
       keys = { f = 'f', F = 'F', t = 't', T = 'T' },

@@ -8,6 +8,7 @@ return {
   keys = function()
     local vt = require 'various-textobjs'
     return {
+      -- Line-wise text objects
       {
         'al',
         function()
@@ -22,20 +23,8 @@ return {
         end,
         mode = { 'o', 'x' },
       },
-      {
-        'ai',
-        function()
-          vt.indentation('outer', 'inner')
-        end,
-        mode = { 'o', 'x' },
-      },
-      {
-        'ii',
-        function()
-          vt.indentation('inner', 'inner')
-        end,
-        mode = { 'o', 'x' },
-      },
+
+      -- Subword text objects
       {
         'az',
         function()
@@ -50,6 +39,7 @@ return {
         end,
         mode = { 'o', 'x' },
       },
+      -- Chain member text objects
       {
         'am',
         function()
@@ -64,20 +54,37 @@ return {
         end,
         mode = { 'o', 'x' },
       },
+      -- Value text objects (for key-value pairs/assignments)
       {
-        'aq',
+        'av',
         function()
-          vt.pyTripleQuotes 'outer'
+          vt.value 'outer'
         end,
         mode = { 'o', 'x' },
       },
       {
-        'iq',
+        'iv',
         function()
-          vt.pyTripleQuotes 'inner'
+          vt.value 'inner'
         end,
         mode = { 'o', 'x' },
       },
+      -- Key text objects (for key-value pairs/assignments)
+      {
+        'ak',
+        function()
+          vt.key 'outer'
+        end,
+        mode = { 'o', 'x' },
+      },
+      {
+        'ik',
+        function()
+          vt.key 'inner'
+        end,
+        mode = { 'o', 'x' },
+      },
+
     }
   end,
 }
