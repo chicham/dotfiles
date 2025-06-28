@@ -139,7 +139,11 @@ local diagnostic_enabled = true
 -- Function to toggle diagnostics
 local function toggle_diagnostics()
 	diagnostic_enabled = not diagnostic_enabled
-	vim.diagnostic.enable(diagnostic_enabled)
+	if diagnostic_enabled then
+		vim.diagnostic.enable()
+	else
+		vim.diagnostic.enable(false)
+	end
 end
 
 vim.keymap.set("n", "<leader>dt", toggle_diagnostics, {
@@ -262,6 +266,8 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 -- lazy.nvim's setup function loads and configures all specified plugins.
 -- The `ui` table customizes the appearance of lazy.nvim's interface.
 require("lazy").setup({
+  -- Import plugins from custom directory
+  { import = "custom.plugins" },
 	-- Catppuccin Theme (main theme)
 	{
 		"catppuccin/nvim",
