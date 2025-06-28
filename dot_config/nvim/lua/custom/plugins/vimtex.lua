@@ -53,17 +53,9 @@ return {
         vim.keymap.set('n', 'ysie', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
         vim.keymap.set('n', 'ysac', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
         vim.keymap.set('n', 'ysic', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
-        vim.keymap.set('n', 'ysa
-  end,
-}
-, '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
-        vim.keymap.set('n', 'ysi
-  end,
-}
-, '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
+        vim.keymap.set('n', 'ysam', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
+        vim.keymap.set('n', 'ysim', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
       end,
     })
-  end,
-}
   end,
 }
