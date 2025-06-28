@@ -63,8 +63,11 @@ git checkout -b feature/123-brief-description
 
 #### 4. Code Quality Enforcement
 - **Pre-commit hooks**: NEVER skip or bypass pre-commit checks
-- The `.pre-commit-config.yaml` file defines project code quality standards
-- Common pre-commit checks include:
+- **ALWAYS examine the `.pre-commit-config.yaml` file** at the project root to understand the specific hooks and rules configured for that project
+- **Follow the exact rules** defined in the project's pre-commit configuration
+- **Ensure all code changes comply** with the configured linters, formatters, and validators
+- **Never commit code that would fail pre-commit hooks** - fix issues first
+- Common pre-commit checks may include:
   - Code formatting (prettier, black, gofmt)
   - Linting (eslint, pylint, golint)
   - Security scanning (bandit, semgrep)
