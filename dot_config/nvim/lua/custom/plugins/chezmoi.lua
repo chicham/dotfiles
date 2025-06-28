@@ -1,6 +1,6 @@
 return {
   'alker0/chezmoi.vim',
-  lazy = false,
+  event = { 'BufReadPre', 'BufNewFile' },
   init = function()
     -- This option is required.
     vim.g['chezmoi#use_tmp_buffer'] = true
