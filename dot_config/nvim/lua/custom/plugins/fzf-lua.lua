@@ -55,9 +55,9 @@ return {
 			fzf.grep_cword({ search = vim.fn.expand("<cword>") })
 		end, { desc = "Find word under cursor" })
 
-		-- LSP integration
-		vim.keymap.set("n", "<leader>fr", fzf.lsp_references, { desc = "Find references" })
-		vim.keymap.set("n", "<leader>fd", fzf.lsp_definitions, { desc = "Find definitions" })
+		-- LSP integration - override standard LSP keymaps
+		vim.keymap.set("n", "gd", fzf.lsp_definitions, { desc = "Go to definitions" })
+		vim.keymap.set("n", "gr", fzf.lsp_references, { desc = "Go to references" })
 		vim.keymap.set("n", "<leader>ft", fzf.lsp_typedefs, { desc = "Find type definitions" })
 		vim.keymap.set("n", "<leader>fi", fzf.lsp_implementations, { desc = "Find implementations" })
 
@@ -71,6 +71,10 @@ return {
 		vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Find keymaps" })
 		vim.keymap.set("n", "<leader>fc", fzf.command_history, { desc = "Find command history" })
 		vim.keymap.set("n", "<leader>f/", fzf.grep_curbuf, { desc = "Find in current buffer" })
+		vim.keymap.set("n", "<leader>fz", fzf.grep_curbuf, { desc = "Fuzzy search current buffer" })
+		vim.keymap.set("n", "<leader>fj", fzf.jumps, { desc = "Find jumps" })
+		vim.keymap.set("n", "<leader>fl", fzf.lines, { desc = "Find lines in loaded buffers" })
+		vim.keymap.set("n", "<leader>fM", fzf.manpages, { desc = "Find man pages" })
 
 		-- Git integration
 		vim.keymap.set("n", "<leader>fgc", fzf.git_commits, { desc = "Find git commits" })
