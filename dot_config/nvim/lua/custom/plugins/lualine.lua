@@ -2,8 +2,8 @@ return {
 
 	"nvim-lualine/lualine.nvim",
 
-	-- Use 'lazy = true' to load the plugin only when needed
-	-- lazy = true,
+	-- Load after UI is ready for better startup time
+	event = "VeryLazy",
 
 	dependencies = {},
 
