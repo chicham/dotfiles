@@ -238,10 +238,13 @@ This issue includes all the necessary details for implementing a secure authenti
         echo ""
     end | bat --language markdown --style plain --paging always
 
+    # Modify gh command to open in editor
+    set -l gh_command_with_editor (string replace "gh issue create" "gh issue create --editor" "$gh_command")
+
     # Copy the gh command to clipboard
-    printf '%s\n' "$gh_command" | pbcopy
-    echo "📋 GitHub issue command copied to clipboard:"
-    echo "   $gh_command"
+    printf '%s\n' "$gh_command_with_editor" | pbcopy
+    echo "📋 GitHub issue command copied to clipboard (with --editor flag):"
+    echo "   $gh_command_with_editor"
 
     # Clean up global variables
     set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help

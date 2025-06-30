@@ -252,8 +252,9 @@ This pull request includes all the authentication system components with proper 
     begin
         set -l IFS
         set pr_title (printf '%s\n' "$gh_command" | awk -F'--title "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
-        set -l raw_body (printf '%s\n' "$gh_command" | awk -F'--body "' '{if(NF>1){split($2,a,"\" --"); print a[1]}}')
-        set pr_body (printf "$raw_body")
+        set -l raw_body (printf '%s\n' "$gh_command" | awk -F'--body "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
+        # Convert \n sequences to actual newlines for display
+        set pr_body (printf "$raw_body" | sed 's/\\n/\n/g')
     end
 
     # Display the extracted PR information using bat for better readability
@@ -269,10 +270,13 @@ This pull request includes all the authentication system components with proper 
         echo ""
     end | bat --language markdown --style plain --paging never
 
+    # Modify gh command to open in editor
+    set -l gh_command_with_editor (string replace "gh pr create" "gh pr create --editor" "$gh_command")
+
     # Copy the gh command to clipboard
-    printf '%s\n' "$gh_command" | pbcopy
-    echo "📋 GitHub pull request command copied to clipboard:"
-    echo "   $gh_command"
+    printf '%s\n' "$gh_command_with_editor" | pbcopy
+    echo "📋 GitHub pull request command copied to clipboard (with --editor flag):"
+    echo "   $gh_command_with_editor"
 
     # Clean up global variables
     set -e _agentpr_args _agentpr_description _agentpr_all_files _agentpr_dry_run _agentpr_help _agentpr_debug
