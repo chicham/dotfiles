@@ -95,9 +95,9 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 
 **Process:**
 1. **Extract issue number** - From arguments or branch name pattern (e.g., \`123-feature\` → #123)
-2. **Verify status** - Check for uncommitted changes, ask user if found
-3. **Analyze commits** - Review commit history to generate comprehensive description
-4. **Push and create PR** - Push branch, create PR with proper title format
+2. **Analyze commits** - Review commit history to generate comprehensive description
+3. **Parse user instructions** - Extract any specific requirements from the description: \"$pr_description\"
+4. **Generate structured output** - Output specific fields for PR creation
 
 **Pull Request Requirements:**
 - **Mandatory title format**: \"Fixes #issue-number: Brief description\"
@@ -114,6 +114,13 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 3. Extract issue number from the branch name '$current_branch' (e.g., feature/123-description → #123) or use a placeholder if none found
 4. Create descriptive PR title: \"Fixes #issue-number: Detailed description of what was implemented\"
 5. Generate comprehensive PR description based on the commit messages (or description if no commits) using GitHub markdown
+6. **Parse user instructions**: Look for specific field requests in \"$pr_description\" such as:
+   - Assignee mentions (\"assign to @username\" or \"assignee: username\")
+   - Reviewer requests (\"review by @team\" or \"reviewer: username\")
+   - Label specifications (\"label: bug\" or \"labels: enhancement,feature\")
+   - Draft status (\"draft\" or \"WIP\")
+   - Milestone mentions (\"milestone: v1.0\")
+   - Base branch (\"base: develop\" or \"target: main\")
 
 **Required Sections:**
 - ## Summary (summarize what the commits in this branch accomplish)
@@ -121,16 +128,25 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 - ## Test Plan (only if manual testing is needed)
 - ## Breaking Changes (only if there are breaking changes)
 
-**Critical Output Rules:**
-- Respond with ONLY a gh command enclosed in <github> tags
-- Include complete PR details in the --body argument with proper escaping
-- Use proper GitHub markdown formatting with proper newlines between sections
-- Do NOT add any explanatory text before or after the tags
+**CRITICAL: FOLLOW OUTPUT FORMAT EXACTLY**
+- You MUST respond with ONLY the structured fields listed below
+- Do NOT include any explanatory text, introductions, or conclusions
+- Do NOT add phrases like \"Here's the pull request\" or \"Based on the analysis\"
+- Do NOT include any text before the first TITLE: line
+- Do NOT include any text after the last field
+- Your response must start immediately with \"TITLE:\" and end with the last field value
+- Use proper GitHub markdown formatting only within the BODY field content
+- Generate additional fields based on user instructions and commit analysis
 
-**REQUIRED FORMAT:**
-<github>
-gh pr create --title \\\"Fixes #issue-number: [complete PR title]\\\" --body \\\"[complete escaped body with all sections: Summary, Changes Made, Test Plan, Breaking Changes]\\\"
-</github>"
+**EXACT REQUIRED FORMAT (your entire response must match this structure):**
+TITLE: [complete PR title]
+BODY: [complete PR body with all sections using GitHub markdown]
+BASE: [target branch, typically 'main' or as specified by user]
+DRAFT: [true/false - true if incomplete, WIP, or user specified draft]
+ASSIGNEES: [comma-separated list of GitHub usernames from user instructions or empty]
+REVIEWERS: [comma-separated list of GitHub usernames/teams from user instructions or empty]
+LABELS: [comma-separated list of labels from user instructions or inferred from changes]
+MILESTONE: [milestone name from user instructions or empty]"
 
     # Add flags to agentask args if requested
     if $_agentpr_all_files
@@ -169,16 +185,36 @@ gh pr create --title \\\"Fixes #issue-number: [complete PR title]\\\" --body \\\
             set response (git log --pretty=format:"%h %s" --no-merges origin/main..HEAD | agentask $_agentpr_args "$pr_prompt")
         end
 
-        # Generate fake response for parsing demonstration (includes text outside tags to verify parsing)
-        set response 'I\'ll analyze your current branch and create a comprehensive GitHub pull request.
+        # Generate fake response for parsing demonstration
+        set response 'TITLE: Fixes #123: implement comprehensive user authentication system
+BODY: ## Summary
+Implemented a secure and robust user authentication system with registration, login, logout, and password management features. This PR adds all the necessary components for a complete authentication workflow following modern security best practices.
 
-After reviewing the commit history, here\'s what I recommend:
+## Changes Made
+- `src/auth/controller.js`: Added authentication endpoints (register, login, logout, password reset)
+- `src/auth/middleware.js`: Implemented JWT token validation and session management
+- `src/models/user.js`: Created user model with bcrypt password hashing
+- `src/routes/auth.js`: Added authentication routes with proper validation
+- `tests/auth/`: Added comprehensive test suite for all authentication flows
+- `docs/api/auth.md`: Updated API documentation
 
-<github>
-gh pr create --title "Fixes #123: implement comprehensive user authentication system" --body "## Summary\\nImplemented a secure and robust user authentication system with registration, login, logout, and password management features. This PR adds all the necessary components for a complete authentication workflow following modern security best practices.\\n\\n## Changes Made\\n- \`src/auth/controller.js\`: Added authentication endpoints (register, login, logout, password reset)\\n- \`src/auth/middleware.js\`: Implemented JWT token validation and session management\\n- \`src/models/user.js\`: Created user model with bcrypt password hashing\\n- \`src/routes/auth.js\`: Added authentication routes with proper validation\\n- \`tests/auth/\`: Added comprehensive test suite for all authentication flows\\n- \`docs/api/auth.md\`: Updated API documentation\\n\\n## Test Plan\\n- [ ] User registration with email validation\\n- [ ] Login with valid credentials\\n- [ ] Login with invalid credentials (should fail)\\n- [ ] Password reset workflow\\n- [ ] Session management and token expiration\\n- [ ] Rate limiting on authentication endpoints\\n- [ ] All existing tests continue to pass\\n\\n## Breaking Changes\\nNone. This is a new feature that doesn\'t affect existing functionality."
-</github>
+## Test Plan
+- [ ] User registration with email validation
+- [ ] Login with valid credentials
+- [ ] Login with invalid credentials (should fail)
+- [ ] Password reset workflow
+- [ ] Session management and token expiration
+- [ ] Rate limiting on authentication endpoints
+- [ ] All existing tests continue to pass
 
-This pull request includes all the authentication system components with proper security measures and comprehensive testing. The implementation follows best practices and maintains backward compatibility.'
+## Breaking Changes
+None. This is a new feature that doesn\'t affect existing functionality.
+BASE: main
+DRAFT: false
+ASSIGNEES: @me
+REVIEWERS: team-security,john-doe
+LABELS: enhancement,security
+MILESTONE: v2.0'
     else
         # Check if debug flag is in agentask_args to avoid suppressing stderr
         set -l suppress_stderr true
@@ -219,42 +255,64 @@ This pull request includes all the authentication system components with proper 
         echo "" >&2
     end
 
-    # Extract the gh command from within <github> tags
-    set -l gh_command
+    # Extract fields from the structured response
+    set -l pr_title
+    set -l pr_body
+    set -l pr_base
+    set -l pr_draft
+    set -l pr_assignees
+    set -l pr_reviewers
+    set -l pr_labels
+    set -l pr_milestone
+
     begin
         set -l IFS
-        # Extract content between <github> and </github> tags, handling multiline content
-        set gh_command (printf '%s\n' "$response" | sed -n '/<github>/,/<\/github>/p' | sed '1s/<github>//; $s/<\/github>//' | string join '\n' | string trim)
+        # Extract single-line fields
+        set pr_title (printf '%s\n' "$response" | grep '^TITLE:' | sed 's/^TITLE: *//')
+        set pr_base (printf '%s\n' "$response" | grep '^BASE:' | sed 's/^BASE: *//')
+        set pr_draft (printf '%s\n' "$response" | grep '^DRAFT:' | sed 's/^DRAFT: *//')
+        set pr_assignees (printf '%s\n' "$response" | grep '^ASSIGNEES:' | sed 's/^ASSIGNEES: *//')
+        set pr_reviewers (printf '%s\n' "$response" | grep '^REVIEWERS:' | sed 's/^REVIEWERS: *//')
+        set pr_labels (printf '%s\n' "$response" | grep '^LABELS:' | sed 's/^LABELS: *//')
+        set pr_milestone (printf '%s\n' "$response" | grep '^MILESTONE:' | sed 's/^MILESTONE: *//')
+
+        # Extract multiline BODY field - from BODY: line until next field or end
+        set pr_body (printf '%s\n' "$response" | awk '/^BODY: */ {
+            sub(/^BODY: */, "");
+            body = $0;
+            while ((getline line) > 0 && line !~ /^[A-Z]+: */) {
+                if (body) body = body "\n" line; else body = line;
+            }
+            print body;
+            exit
+        }')
     end
 
-    # Show debug information for the extracted command if requested
+    # Show debug information for the extracted fields if requested
     if $_agentpr_debug
         echo "" >&2
-        echo "🐛 DEBUG - Extracted gh command:" >&2
-        echo "================================" >&2
-        echo "$gh_command" >&2
-        echo "================================" >&2
+        echo "🐛 DEBUG - Extracted fields:" >&2
+        echo "============================" >&2
+        echo "TITLE: $pr_title" >&2
+        echo "BASE: $pr_base" >&2
+        echo "DRAFT: $pr_draft" >&2
+        echo "ASSIGNEES: $pr_assignees" >&2
+        echo "REVIEWERS: $pr_reviewers" >&2
+        echo "LABELS: $pr_labels" >&2
+        echo "MILESTONE: $pr_milestone" >&2
+        echo "BODY:" >&2
+        printf '%s\n' "$pr_body" >&2
+        echo "============================" >&2
         echo "" >&2
     end
 
-    if test -z "$gh_command"
+    if test -z "$pr_title"
         echo "" >&2
-        echo "Error: Could not find gh command within <github> tags." >&2
+        echo "Error: Could not extract TITLE field from response." >&2
         echo "The raw response has been copied to your clipboard for inspection." >&2
         echo "$response" | pbcopy
         set -e _agentpr_args _agentpr_description _agentpr_all_files _agentpr_dry_run _agentpr_help _agentpr_debug
         return 1
-    end
-
-    # Extract title and body from the gh command using awk and printf
-    set -l pr_title
-    set -l pr_body
-    begin
-        set -l IFS
-        set pr_title (printf '%s\n' "$gh_command" | awk -F'--title "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
-        set -l raw_body (printf '%s\n' "$gh_command" | awk -F'--body "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
-        # Convert \n sequences to actual newlines for display
-        set pr_body (printf "$raw_body" | sed 's/\\n/\n/g')
     end
 
     # Display the extracted PR information using bat for better readability
@@ -270,13 +328,63 @@ This pull request includes all the authentication system components with proper 
         echo ""
     end | bat --language markdown --style plain --paging never
 
-    # Modify gh command to open in editor
-    set -l gh_command_with_editor (string replace "gh pr create" "gh pr create --editor" "$gh_command")
+    # Build the gh command with all available fields
+    set -l gh_command "gh pr create"
+
+    # Add required fields
+    set gh_command "$gh_command --title \"$pr_title\""
+    set gh_command "$gh_command --body \"$pr_body\""
+
+    # Add optional fields if present
+    if test -n "$pr_base"
+        set gh_command "$gh_command --base \"$pr_base\""
+    end
+
+    if test "$pr_draft" = "true"
+        set gh_command "$gh_command --draft"
+    end
+
+    if test -n "$pr_assignees"
+        # Split comma-separated assignees and add each one
+        for assignee in (string split ',' "$pr_assignees")
+            set assignee (string trim "$assignee")
+            if test -n "$assignee"
+                set gh_command "$gh_command --assignee \"$assignee\""
+            end
+        end
+    end
+
+    if test -n "$pr_reviewers"
+        # Split comma-separated reviewers and add each one
+        for reviewer in (string split ',' "$pr_reviewers")
+            set reviewer (string trim "$reviewer")
+            if test -n "$reviewer"
+                set gh_command "$gh_command --reviewer \"$reviewer\""
+            end
+        end
+    end
+
+    if test -n "$pr_labels"
+        # Split comma-separated labels and add each one
+        for label in (string split ',' "$pr_labels")
+            set label (string trim "$label")
+            if test -n "$label"
+                set gh_command "$gh_command --label \"$label\""
+            end
+        end
+    end
+
+    if test -n "$pr_milestone"
+        set gh_command "$gh_command --milestone \"$pr_milestone\""
+    end
+
+    # Add editor flag
+    set gh_command "$gh_command --editor"
 
     # Copy the gh command to clipboard
-    printf '%s\n' "$gh_command_with_editor" | pbcopy
+    printf '%s\n' "$gh_command" | pbcopy
     echo "📋 GitHub pull request command copied to clipboard (with --editor flag):"
-    echo "   $gh_command_with_editor"
+    echo "   $gh_command"
 
     # Clean up global variables
     set -e _agentpr_args _agentpr_description _agentpr_all_files _agentpr_dry_run _agentpr_help _agentpr_debug
