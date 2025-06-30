@@ -223,8 +223,8 @@ This pull request includes all the authentication system components with proper 
     set -l gh_command
     begin
         set -l IFS
-        # Use sed to extract content between <github> and </github> tags
-        set gh_command (printf '%s\n' "$response" | sed -n 's/.*<github>\s*\(.*\)<\/github>.*/\1/p' | string trim)
+        # Extract content between <github> and </github> tags, handling multiline content
+        set gh_command (printf '%s\n' "$response" | sed -n '/<github>/,/<\/github>/p' | sed '1s/<github>//; $s/<\/github>//' | string join '\n' | string trim)
     end
 
     # Show debug information for the extracted command if requested
