@@ -1,47 +1,56 @@
 # =============================================================================
 # agentcommit
 #
-# Author: Gemini
-# Last Updated: 2025-06-29
+# Author: Refactored for maintainability
+# Last Updated: 2025-06-30
 #
 # Generates a conventional commit message from staged git changes by calling
 # the `agentask` command. This script is separate from `agentask`.
 # =============================================================================
 
-# Generates a conventional commit message from staged git changes.
-function agentcommit -d "Generate atomic commit messages using AI agent"
-    # This function depends on the `agentask` command being available in the shell environment.
-
-    # --- Argument Parsing (Manual Passthrough) ---
-    # Manually parse arguments to separate agentcommit's options from agentask's options.
-    set -l agentask_args
-    set -l is_dry_run false
-    set -l show_help false
+# Parse command line arguments and set flags
+function _agentcommit_parse_args
+    set -g _agentcommit_args
+    set -g _agentcommit_dry_run false
+    set -g _agentcommit_help false
 
     for arg in $argv
         switch $arg
             case '-d' '--dry-run'
-                set is_dry_run true
+                set _agentcommit_dry_run true
             case '-h' '--help'
-                set show_help true
+                set _agentcommit_help true
             case '*'
-                # Collect all other arguments to pass to agentask.
-                set -a agentask_args $arg
+                set -a _agentcommit_args $arg
         end
     end
+end
 
-    if $show_help
-        echo "Usage: agentcommit [OPTIONS] [<agentask_options>]" >&2
-        echo "" >&2
-        echo "Analyzes staged git changes and generates a conventional commit message." >&2
-        echo "All unknown options are passed directly to the 'agentask' command." >&2
-        echo "" >&2
-        echo "Options:" >&2
-        echo "  -d, --dry-run     Skip the AI call and use a generic commit message for testing." >&2
-        echo "  -h, --help        Show this help message." >&2
-        echo "" >&2
-        echo "Example:" >&2
-        echo "  agentcommit --agent claude --model claude-3-5-haiku@20241022" >&2
+# Display help message
+function _agentcommit_show_help
+    echo "Usage: agentcommit [OPTIONS] [<agentask_options>]" >&2
+    echo "" >&2
+    echo "Analyzes staged git changes and generates a conventional commit message." >&2
+    echo "All unknown options are passed directly to the 'agentask' command." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  -d, --dry-run     Skip the AI call and use a generic commit message for testing." >&2
+    echo "  -h, --help        Show this help message." >&2
+    echo "" >&2
+    echo "Example:" >&2
+    echo "  agentcommit --agent claude --model claude-3-5-haiku@20241022" >&2
+end
+
+# Generates a conventional commit message from staged git changes.
+function agentcommit -d "Generate atomic commit messages using AI agent"
+    # This function depends on the `agentask` command being available in the shell environment.
+
+    # Parse arguments
+    _agentcommit_parse_args $argv
+
+    if $_agentcommit_help
+        _agentcommit_show_help
+        set -e _agentcommit_args _agentcommit_dry_run _agentcommit_help
         return 0
     end
 
@@ -59,7 +68,7 @@ function agentcommit -d "Generate atomic commit messages using AI agent"
 
 **Requirements:**
 - Follow conventional commit format: type(scope): description
-- Types: feat, fix, docs, style, refactor, test, chore
+- Types: feat, fix, docs, style, refactor, test, chore, ci
 - Keep subject line under 50 characters, imperative mood, capitalize, no period
 - If multiple atomic changes in files, use generic summary title with detailed body
 - Include body for complex changes explaining what and why
@@ -104,16 +113,16 @@ git commit -m "feat(scope): subject line here Body text all on one line"
 ```'
 
     # Add --dry-run flag to agentask args if in dry run mode
-    if $is_dry_run
-        set -a agentask_args --dry-run
+    if $_agentcommit_dry_run
+        set -a _agentcommit_args --dry-run
     else
         echo "🤖 Analyzing staged changes with AI..." >&2
     end
 
     # Call agentask, piping the git diff and passing through all arguments
-    if $is_dry_run
+    if $_agentcommit_dry_run
         # In dry run mode, let agentask show its output to stderr, then use fake response
-        git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt"
+        git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt"
 
         # Generate fake response for parsing demonstration
         set response 'Here is a commit message for the staged changes:
@@ -127,7 +136,7 @@ commit generation with proper markdown block output formatting."
     else
         # Check if debug flag is in agentask_args to avoid suppressing stderr
         set -l suppress_stderr true
-        for arg in $agentask_args
+        for arg in $_agentcommit_args
             if test "$arg" = "--debug"
                 set suppress_stderr false
                 break
@@ -137,12 +146,12 @@ commit generation with proper markdown block output formatting."
         if $suppress_stderr
             begin
                 set -l IFS
-                set response (git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt" 2>/dev/null)
+                set response (git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt" 2>/dev/null)
             end
         else
             begin
                 set -l IFS
-                set response (git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt")
+                set response (git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt")
             end
         end
 
