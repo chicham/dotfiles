@@ -90,7 +90,8 @@ function agentissue -d "Generate comprehensive GitHub issue using AI agent"
 **Process:**
 1. **Clarify requirements** - Infer missing details from context and provide comprehensive information
 2. **Research context** - Consider existing codebase patterns and implementation details
-3. **Create comprehensive issue** - Include all necessary information for implementation
+3. **Parse user instructions** - Extract any specific requirements from the description: \"$issue_description\"
+4. **Generate structured output** - Output specific fields for issue creation
 
 **Required information:**
 - Clear problem statement and expected outcome
@@ -98,16 +99,34 @@ function agentissue -d "Generate comprehensive GitHub issue using AI agent"
 - Technical requirements and constraints
 - Appropriate labels (bug/feature/enhancement)
 
-**Critical Output Rules:**
-- Respond with ONLY a gh command enclosed in <github> tags
-- Include complete issue details in the --body argument with proper escaping
-- Structure the body with: Description, Acceptance Criteria, Technical Requirements, Implementation Notes
-- Do NOT add any explanatory text before or after the tags
+**Instructions:**
+1. Analyze the issue description: \"$issue_description\"
+2. **Parse user instructions**: Look for specific field requests in \"$issue_description\" such as:
+   - Assignee mentions (\"assign to @username\" or \"assignee: username\")
+   - Label specifications (\"label: bug\" or \"labels: enhancement,feature\")
+   - Milestone mentions (\"milestone: v1.0\")
+   - Project assignments (\"project: Roadmap\")
+   - Template usage (\"template: Bug Report\")
+3. Create comprehensive issue with proper GitHub markdown formatting
+4. Structure the body with: Description, Acceptance Criteria, Technical Requirements, Implementation Notes
 
-**REQUIRED FORMAT:**
-<github>
-gh issue create --title \"[complete issue title]\" --body \"[complete escaped body with all sections: Description, Acceptance Criteria, Technical Requirements, Implementation Notes]\" --label \"[labels]\"
-</github>"
+**CRITICAL: FOLLOW OUTPUT FORMAT EXACTLY**
+- You MUST respond with ONLY the structured fields listed below
+- Do NOT include any explanatory text, introductions, or conclusions
+- Do NOT add phrases like \"Here's the issue\" or \"Based on the analysis\"
+- Do NOT include any text before the first TITLE: line
+- Do NOT include any text after the last field
+- Your response must start immediately with \"TITLE:\" and end with the last field value
+- Use proper GitHub markdown formatting only within the BODY field content
+- Generate additional fields based on user instructions and issue analysis
+
+**EXACT REQUIRED FORMAT (your entire response must match this structure):**
+TITLE: [complete issue title]
+BODY: [complete issue body with all sections using GitHub markdown]
+ASSIGNEES: [comma-separated list of GitHub usernames from user instructions or empty]
+LABELS: [comma-separated list of labels from user instructions or inferred from issue type]
+MILESTONE: [milestone name from user instructions or empty]
+PROJECT: [project name from user instructions or empty]"
 
     # Add --all_files flag to agentask args if requested
     if $_agentissue_all_files
@@ -143,15 +162,40 @@ gh issue create --title \"[complete issue title]\" --body \"[complete escaped bo
         agentask $_agentissue_args "$issue_prompt"
 
         # Generate fake response for parsing demonstration
-        set response 'I\'ll analyze your request and create a comprehensive GitHub issue for implementing a user authentication system.
+        set response 'TITLE: feat: implement comprehensive user authentication system
+BODY: ## Description
+Implement a secure and robust user authentication system that supports user registration, login, logout, and password management. This system should follow modern security best practices and integrate seamlessly with the existing application architecture.
 
-After reviewing the codebase, here\'s what I recommend:
+## Acceptance Criteria
+- [ ] Users can register with email and password
+- [ ] Email validation during registration process
+- [ ] Secure login with proper session management
+- [ ] Logout functionality that properly clears sessions
+- [ ] Password reset via email workflow
+- [ ] Input validation and sanitization
+- [ ] Rate limiting for authentication endpoints
+- [ ] Proper error handling and user feedback
 
-<github>
-gh issue create --title "feat: implement comprehensive user authentication system" --body "## Description\nImplement a secure and robust user authentication system that supports user registration, login, logout, and password management. This system should follow modern security best practices and integrate seamlessly with the existing application architecture.\n\n## Acceptance Criteria\n- [ ] Users can register with email and password\n- [ ] Email validation during registration process\n- [ ] Secure login with proper session management\n- [ ] Logout functionality that properly clears sessions\n- [ ] Password reset via email workflow\n- [ ] Input validation and sanitization\n- [ ] Rate limiting for authentication endpoints\n- [ ] Proper error handling and user feedback\n\n## Technical Requirements\n- Use bcrypt for password hashing with minimum 12 rounds\n- Implement JWT tokens for session management\n- Add CSRF protection for authentication forms\n- Follow existing database schema conventions\n- Include comprehensive error logging\n- Ensure compatibility with current middleware stack\n- Add proper database migrations for user tables\n\n## Implementation Notes\n- Review existing user model structure in models/user.js\n- Follow the authentication patterns used in the admin module\n- Update the existing middleware/auth.js for new token handling\n- Consider integration with the current email service\n- Add unit tests following the patterns in tests/auth/\n- Update API documentation in docs/api/" --label "feature,enhancement,security,backend"
-</github>
+## Technical Requirements
+- Use bcrypt for password hashing with minimum 12 rounds
+- Implement JWT tokens for session management
+- Add CSRF protection for authentication forms
+- Follow existing database schema conventions
+- Include comprehensive error logging
+- Ensure compatibility with current middleware stack
+- Add proper database migrations for user tables
 
-This issue includes all the necessary details for implementing a secure authentication system that follows your project\'s existing patterns and best practices. The implementation should enhance security while maintaining a smooth user experience.'
+## Implementation Notes
+- Review existing user model structure in models/user.js
+- Follow the authentication patterns used in the admin module
+- Update the existing middleware/auth.js for new token handling
+- Consider integration with the current email service
+- Add unit tests following the patterns in tests/auth/
+- Update API documentation in docs/api/
+ASSIGNEES: @me
+LABELS: feature,enhancement,security,backend
+MILESTONE: v2.0
+PROJECT: Authentication'
     else
         # Don't suppress stderr if debug mode is enabled
         if not $_agentissue_debug
@@ -184,42 +228,58 @@ This issue includes all the necessary details for implementing a secure authenti
         echo "" >&2
     end
 
-    # Extract the gh command from within <github> tags using ripgrep
-    set -l gh_command
+    # Extract fields from the structured response
+    set -l issue_title
+    set -l issue_body
+    set -l issue_assignees
+    set -l issue_labels
+    set -l issue_milestone
+    set -l issue_project
+
     begin
         set -l IFS
-        set gh_command (printf '%s\n' "$response" | rg -oP '<github>\K.*?(?=</github>)' | string trim)
+        # Extract single-line fields
+        set issue_title (printf '%s\n' "$response" | grep '^TITLE:' | sed 's/^TITLE: *//')
+        set issue_assignees (printf '%s\n' "$response" | grep '^ASSIGNEES:' | sed 's/^ASSIGNEES: *//')
+        set issue_labels (printf '%s\n' "$response" | grep '^LABELS:' | sed 's/^LABELS: *//')
+        set issue_milestone (printf '%s\n' "$response" | grep '^MILESTONE:' | sed 's/^MILESTONE: *//')
+        set issue_project (printf '%s\n' "$response" | grep '^PROJECT:' | sed 's/^PROJECT: *//')
+
+        # Extract multiline BODY field - from BODY: line until next field or end
+        set issue_body (printf '%s\n' "$response" | awk '/^BODY: */ {
+            sub(/^BODY: */, "");
+            body = $0;
+            while ((getline line) > 0 && line !~ /^[A-Z]+: */) {
+                if (body) body = body "\n" line; else body = line;
+            }
+            print body;
+            exit
+        }')
     end
 
-    # Show debug information for the extracted command if requested
+    # Show debug information for the extracted fields if requested
     if $_agentissue_debug
         echo "" >&2
-        echo "🐛 DEBUG - Extracted gh command:" >&2
-        echo "================================" >&2
-        echo "$gh_command" >&2
-        echo "================================" >&2
+        echo "🐛 DEBUG - Extracted fields:" >&2
+        echo "============================" >&2
+        echo "TITLE: $issue_title" >&2
+        echo "ASSIGNEES: $issue_assignees" >&2
+        echo "LABELS: $issue_labels" >&2
+        echo "MILESTONE: $issue_milestone" >&2
+        echo "PROJECT: $issue_project" >&2
+        echo "BODY:" >&2
+        printf '%s\n' "$issue_body" >&2
+        echo "============================" >&2
         echo "" >&2
     end
 
-    if test -z "$gh_command"
+    if test -z "$issue_title"
         echo "" >&2
-        echo "Error: Could not find gh command within <github> tags." >&2
+        echo "Error: Could not extract TITLE field from response." >&2
         echo "The raw response has been copied to your clipboard for inspection." >&2
         echo "$response" | pbcopy
         set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help _agentissue_debug
         return 1
-    end
-
-    # Extract title and body from the gh command using awk and printf
-    set -l issue_title
-    set -l issue_body
-    set -l issue_labels
-    begin
-        set -l IFS
-        set issue_title (printf '%s\n' "$gh_command" | awk -F'--title "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
-        set -l raw_body (printf '%s\n' "$gh_command" | awk -F'--body "' '{if(NF>1){split($2,a,"\" --"); print a[1]}}')
-        set issue_body (printf "$raw_body")
-        set issue_labels (printf '%s\n' "$gh_command" | awk -F'--label "' '{if(NF>1){split($2,a,"\""); print a[1]}}')
     end
 
     # Display the extracted issue information using bat for better readability
@@ -236,15 +296,51 @@ This issue includes all the necessary details for implementing a secure authenti
             printf '%s\n' "$issue_body"
         end
         echo ""
-    end | bat --language markdown --style plain --paging always
+    end | bat --language markdown --style plain --paging never
 
-    # Modify gh command to open in editor
-    set -l gh_command_with_editor (string replace "gh issue create" "gh issue create --editor" "$gh_command")
+    # Build the gh command with all available fields
+    set -l gh_command "gh issue create"
+
+    # Add required fields
+    set gh_command "$gh_command --title \"$issue_title\""
+    set gh_command "$gh_command --body \"$issue_body\""
+
+    # Add optional fields if present
+    if test -n "$issue_assignees"
+        # Split comma-separated assignees and add each one
+        for assignee in (string split ',' "$issue_assignees")
+            set assignee (string trim "$assignee")
+            if test -n "$assignee"
+                set gh_command "$gh_command --assignee \"$assignee\""
+            end
+        end
+    end
+
+    if test -n "$issue_labels"
+        # Split comma-separated labels and add each one
+        for label in (string split ',' "$issue_labels")
+            set label (string trim "$label")
+            if test -n "$label"
+                set gh_command "$gh_command --label \"$label\""
+            end
+        end
+    end
+
+    if test -n "$issue_milestone"
+        set gh_command "$gh_command --milestone \"$issue_milestone\""
+    end
+
+    if test -n "$issue_project"
+        set gh_command "$gh_command --project \"$issue_project\""
+    end
+
+    # Add editor flag
+    set gh_command "$gh_command --editor"
 
     # Copy the gh command to clipboard
-    printf '%s\n' "$gh_command_with_editor" | pbcopy
+    printf '%s\n' "$gh_command" | pbcopy
     echo "📋 GitHub issue command copied to clipboard (with --editor flag):"
-    echo "   $gh_command_with_editor"
+    echo "   $gh_command"
 
     # Clean up global variables
     set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help
