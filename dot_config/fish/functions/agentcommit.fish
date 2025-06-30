@@ -199,6 +199,11 @@ commit generation with proper markdown block output formatting."
     echo ""
     printf '%s\n' "$commit_message"
     echo ""
-    printf '%s\n' $git_command_lines | pbcopy
-    echo "📋 Commit command copied to clipboard."
+
+    # Modify git command to open in editor
+    set -l git_command_with_editor (string replace "git commit -m" "git commit --edit -m" "$git_command_lines")
+
+    printf '%s\n' "$git_command_with_editor" | pbcopy
+    echo "📋 Commit command copied to clipboard (with --edit flag):"
+    echo "   $git_command_with_editor"
 end
