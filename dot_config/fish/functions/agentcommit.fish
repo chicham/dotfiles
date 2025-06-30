@@ -83,34 +83,22 @@ function agentcommit -d "Generate atomic commit messages using AI agent"
 - Do NOT use section headers or groupings like "- agentask:" or "- file:"
 - Each bullet point should be a complete, standalone description
 
-**CRITICAL MULTILINE FORMATTING REQUIREMENTS:**
-- The commit message MUST be formatted across multiple lines within the quoted string
-- NEVER put the entire commit message on a single line
-- ALWAYS include line breaks in the git commit command between subject and body
-- The subject line goes on the first line after the opening quote
-- Insert a blank line after the subject
-- Body text goes on subsequent lines before the closing quote
-
 **Critical Output Rules:**
-- Respond with ONLY a markdown code block containing the COMPLETE git commit command
-- Do NOT add any explanatory text before or after the code block
-- Include the full git command with -m flag and quoted message
-- MANDATORY: Use proper line breaks within the quoted commit message
+- Respond with ONLY the commit message text
+- Do NOT include git commands or markdown code blocks
+- Do NOT add any explanatory text before or after the message
+- Format with proper line breaks between subject and body
+- The subject line goes on the first line
+- Insert a blank line after the subject
+- Body text goes on subsequent lines
 
 **REQUIRED FORMAT EXAMPLE:**
-```
-git commit -m "feat(scope): subject line here
+feat(scope): subject line here
 
 - Describe what was changed in this logical unit with proper
   line wrapping at 72 characters
 - Explain another distinct change or improvement made
-- Add details about configuration or setup changes"
-```
-
-**DO NOT FORMAT LIKE THIS (WRONG - single line):**
-```
-git commit -m "feat(scope): subject line here Body text all on one line"
-```'
+- Add details about configuration or setup changes'
 
     # Add --dry-run flag to agentask args if in dry run mode
     if $_agentcommit_dry_run
@@ -125,14 +113,12 @@ git commit -m "feat(scope): subject line here Body text all on one line"
         git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt"
 
         # Generate fake response for parsing demonstration
-        set response 'Here is a commit message for the staged changes:
+        set response 'feat(fish): update agentcommit with improved commit instructions
 
-```
-git commit -m "feat(fish): update agentcommit with improved commit instructions
-
-Add conventional commit format requirements and enforce single atomic
-commit generation with proper markdown block output formatting."
-```'
+- Add conventional commit format requirements and enforce single atomic
+  commit generation with proper markdown block output formatting
+- Simplify prompt to output only commit message text
+- Remove complex extraction process for git commands'
     else
         # Check if debug flag is in agentask_args to avoid suppressing stderr
         set -l suppress_stderr true
@@ -163,47 +149,27 @@ commit generation with proper markdown block output formatting."
 
 
     # --- PARSING AND DISPLAY BLOCK ---
-    set -l git_command_lines
+    # The response is now just the commit message, no need for complex extraction
+    set -l commit_message
     begin
         set -l IFS
-        set git_command_lines (printf '%s\n' "$response" | awk 'BEGIN{RS="```"} NR==2 {print}' | string trim)
+        set commit_message (string trim -- "$response")
     end
 
-    if test (count $git_command_lines) -eq 0
-        set -l temp_response (string trim -- "$response")
-        set git_command_lines "git commit -m \"$temp_response\""
-        set -l temp_lines $git_command_lines
-        set git_command_lines
-        printf '%s\n' "$temp_lines" | while read --line line
-            set -a git_command_lines $line
-        end
-    end
-
-    if test (count $git_command_lines) -eq 0
+    if test -z "$commit_message"
         echo "" >&2
-        echo "Error: Could not find or construct a 'git commit' command from the agent's response." >&2
+        echo "Error: Received an empty commit message from the AI agent." >&2
         echo "The raw response has been copied to your clipboard for inspection." >&2
         echo "$response" | pbcopy
         return 1
     end
 
-    # Extract just the commit message content (remove git commit -m "..." wrapper)
-    # Since git_command_lines is now a single multiline string, handle it directly
-    set -l commit_message
-    begin
-        set -l IFS
-        set commit_message (string replace 'git commit -m "' '' -- "$git_command_lines")
-        set commit_message (string replace --regex '"$' '' -- "$commit_message")
-    end
+    # Display the commit message using bat for better readability
+    printf '%s\n' "$commit_message" | bat --language markdown --style plain --paging never
 
-    echo ""
-    printf '%s\n' "$commit_message"
-    echo ""
-
-    # Modify git command to open in editor
-    set -l git_command_with_editor (string replace "git commit -m" "git commit --edit -m" "$git_command_lines")
+    # Create git command with --edit flag and copy to clipboard
+    set -l git_command_with_editor "git commit --edit -m \"$commit_message\""
 
     printf '%s\n' "$git_command_with_editor" | pbcopy
-    echo "📋 Commit command copied to clipboard (with --edit flag):"
-    echo "   $git_command_with_editor"
+    echo "📋 Commit command copied to clipboard"
 end
