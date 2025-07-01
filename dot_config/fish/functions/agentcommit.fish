@@ -8,49 +8,24 @@
 # the `agentask` command. This script is separate from `agentask`.
 # =============================================================================
 
-# Parse command line arguments and set flags
-function _agentcommit_parse_args
-    set -g _agentcommit_args
-    set -g _agentcommit_dry_run false
-    set -g _agentcommit_help false
-
-    for arg in $argv
-        switch $arg
-            case '-d' '--dry-run'
-                set _agentcommit_dry_run true
-            case '-h' '--help'
-                set _agentcommit_help true
-            case '*'
-                set -a _agentcommit_args $arg
-        end
-    end
-end
-
-# Display help message
-function _agentcommit_show_help
-    echo "Usage: agentcommit [OPTIONS] [<agentask_options>]" >&2
-    echo "" >&2
-    echo "Analyzes staged git changes and generates a conventional commit message." >&2
-    echo "All unknown options are passed directly to the 'agentask' command." >&2
-    echo "" >&2
-    echo "Options:" >&2
-    echo "  -d, --dry-run     Skip the AI call and use a generic commit message for testing." >&2
-    echo "  -h, --help        Show this help message." >&2
-    echo "" >&2
-    echo "Example:" >&2
-    echo "  agentcommit --agent claude --model claude-3-5-haiku@20241022" >&2
-end
-
 # Generates a conventional commit message from staged git changes.
 function agentcommit -d "Generate atomic commit messages using AI agent"
-    # This function depends on the `agentask` command being available in the shell environment.
+    # Parse arguments using argparse - ignore unknown options to pass through to agentask
+    argparse --ignore-unknown 'h/help' 'd/dry-run' -- $argv
+    or return 2
 
-    # Parse arguments
-    _agentcommit_parse_args $argv
-
-    if $_agentcommit_help
-        _agentcommit_show_help
-        set -e _agentcommit_args _agentcommit_dry_run _agentcommit_help
+    if set -ql _flag_help
+        echo "Usage: agentcommit [OPTIONS] [<agentask_options>]" >&2
+        echo "" >&2
+        echo "Analyzes staged git changes and generates a conventional commit message." >&2
+        echo "All unknown options are passed directly to the 'agentask' command." >&2
+        echo "" >&2
+        echo "Options:" >&2
+        echo "  -d, --dry-run     Skip the AI call and use a generic commit message for testing." >&2
+        echo "  -h, --help        Show this help message." >&2
+        echo "" >&2
+        echo "Example:" >&2
+        echo "  agentcommit --agent claude --model claude-3-5-haiku@20241022" >&2
         return 0
     end
 
@@ -58,13 +33,16 @@ function agentcommit -d "Generate atomic commit messages using AI agent"
 
     # Check for staged changes before proceeding
     if git diff --staged --quiet
-        echo "No staged changes to commit. Use 'git add' to stage files." >&2
+        _agent_error "No staged changes to commit" "Use 'git add' to stage files first"
         return 1
     end
 
+    # Get current branch name for potential issue detection
+    set -l current_branch (git branch --show-current)
+
     # --- Commit Prompt Based on commit.md Instructions ---
     # Define the specific prompt for generating a commit message.
-    set -l commit_prompt 'Analyze the diff context above and generate a conventional commit message.
+    set -l commit_prompt "Analyze the diff context above and generate a conventional commit message.
 
 **Requirements:**
 - Follow conventional commit format: type(scope): description
@@ -74,13 +52,19 @@ function agentcommit -d "Generate atomic commit messages using AI agent"
 - Include body for complex changes explaining what and why
 - Separate subject and body with blank line, wrap body at 72 characters
 
+**Issue Linking (when applicable):**
+- Current branch: $current_branch
+- If the changes fix a bug or resolve an issue AND you can extract an issue number from the branch name (e.g., fix/123-description → #123, feature/456-name → #456), include Fixes #issue-number in the commit body
+- Only include issue linking if the changes actually resolve/fix something, not for regular feature additions unless they specifically address an open issue
+- Issue linking syntax: Fixes #123, Closes #456, or Resolves #789
+
 **Body Content Requirements:**
 - Use bullet points to describe each logical change or feature modification
 - Each bullet point should represent a distinct change in the diff
-- Start each bullet with "- " followed by a concise description
+- Start each bullet with - followed by a concise description
 - Focus on WHAT was changed and WHY it was necessary
 - Wrap each line at 72 characters maximum
-- Do NOT use section headers or groupings like "- agentask:" or "- file:"
+- Do NOT use section headers or groupings like agentask or file prefixes
 - Each bullet point should be a complete, standalone description
 
 **Critical Output Rules:**
@@ -98,19 +82,30 @@ feat(scope): subject line here
 - Describe what was changed in this logical unit with proper
   line wrapping at 72 characters
 - Explain another distinct change or improvement made
-- Add details about configuration or setup changes'
+- Add details about configuration or setup changes
 
-    # Add --dry-run flag to agentask args if in dry run mode
-    if $_agentcommit_dry_run
-        set -a _agentcommit_args --dry-run
+**EXAMPLE WITH ISSUE LINKING (only when changes fix an issue):**
+fix(auth): resolve login validation error
+
+- Fix null pointer exception in user validation logic
+- Add proper error handling for malformed email addresses
+- Update tests to cover edge cases
+
+Fixes #123"
+
+    # Build agentask arguments from remaining argv (unknown options)
+    set -l agentask_args $argv
+    if set -ql _flag_dry_run
+        set -a agentask_args --dry-run
     else
-        echo "🤖 Analyzing staged changes with AI..." >&2
+        _agent_info "Generating commit message with AI..."
     end
 
     # Call agentask, piping the git diff and passing through all arguments
-    if $_agentcommit_dry_run
+    set -l response
+    if set -ql _flag_dry_run
         # In dry run mode, let agentask show its output to stderr, then use fake response
-        git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt"
+        git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt"
 
         # Generate fake response for parsing demonstration
         set response 'feat(fish): update agentcommit with improved commit instructions
@@ -118,32 +113,22 @@ feat(scope): subject line here
 - Add conventional commit format requirements and enforce single atomic
   commit generation with proper markdown block output formatting
 - Simplify prompt to output only commit message text
-- Remove complex extraction process for git commands'
-    else
-        # Check if debug flag is in agentask_args to avoid suppressing stderr
-        set -l suppress_stderr true
-        for arg in $_agentcommit_args
-            if test "$arg" = "--debug"
-                set suppress_stderr false
-                break
-            end
-        end
+- Remove complex extraction process for git commands
+- Add issue linking support for bug fixes and issue resolution
 
-        if $suppress_stderr
+Fixes #456'
+    else
+        # Use utility function to determine stderr suppression
+        if _agent_should_suppress_stderr $agentask_args
             begin
                 set -l IFS
-                set response (git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt" 2>/dev/null)
+                set response (git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt" 2>/dev/null)
             end
         else
             begin
                 set -l IFS
-                set response (git -c color.ui=false --no-pager diff --staged | agentask $_agentcommit_args "$commit_prompt")
+                set response (git -c color.ui=false --no-pager diff --staged | agentask $agentask_args "$commit_prompt")
             end
-        end
-
-        if test -z "$response"
-            echo "Error: Received an empty response from the AI agent." >&2
-            return 1
         end
     end
 
@@ -156,20 +141,16 @@ feat(scope): subject line here
         set commit_message (string trim -- "$response")
     end
 
-    if test -z "$commit_message"
-        echo "" >&2
-        echo "Error: Received an empty commit message from the AI agent." >&2
-        echo "The raw response has been copied to your clipboard for inspection." >&2
-        echo "$response" | pbcopy
+    if not _agent_validate_response "$commit_message"
         return 1
     end
 
     # Display the commit message using bat for better readability
-    printf '%s\n' "$commit_message" | bat --language markdown --style plain --paging never
+    printf '%s\n' "$commit_message" | _agent_display_with_bat
 
     # Create git command with --edit flag and copy to clipboard
     set -l git_command_with_editor "git commit --edit -m \"$commit_message\""
 
     printf '%s\n' "$git_command_with_editor" | pbcopy
-    echo "📋 Commit command copied to clipboard"
+    _agent_clipboard "Git commit command copied to clipboard"
 end

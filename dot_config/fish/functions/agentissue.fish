@@ -8,80 +8,37 @@
 # This script is separate from `agentask`.
 # =============================================================================
 
-# Parse command line arguments and set flags
-function _agentissue_parse_args
-    set -g _agentissue_args
-    set -g _agentissue_description
-    set -g _agentissue_all_files false
-    set -g _agentissue_dry_run false
-    set -g _agentissue_help false
-    set -g _agentissue_debug false
-
-    set -l parsing_flags true
-    for arg in $argv
-        if test "$parsing_flags" = "true"
-            switch $arg
-                case '-a' '--all_files'
-                    set _agentissue_all_files true
-                case '-d' '--dry-run'
-                    set _agentissue_dry_run true
-                case '-h' '--help'
-                    set _agentissue_help true
-                case '--debug'
-                    set _agentissue_debug true
-                case '-*'
-                    set -a _agentissue_args $arg
-                case '*'
-                    set parsing_flags false
-                    set -a _agentissue_description $arg
-            end
-        else
-            set -a _agentissue_description $arg
-        end
-    end
-end
-
-# Display help message
-function _agentissue_show_help
-    echo "Usage: agentissue [OPTIONS] <issue_description> [<agentask_options>]" >&2
-    echo "" >&2
-    echo "Creates a comprehensive GitHub issue description using AI analysis." >&2
-    echo "All unknown options are passed directly to the 'agentask' command." >&2
-    echo "" >&2
-    echo "Options:" >&2
-    echo "  -a, --all_files   Browse entire repository for context" >&2
-    echo "  -d, --dry-run     Skip the AI call and use a generic issue template for testing" >&2
-    echo "  --debug           Show detailed input/output information during execution" >&2
-    echo "  -h, --help        Show this help message" >&2
-    echo "" >&2
-    echo "Examples:" >&2
-    echo "  agentissue implement user authentication system" >&2
-    echo "  agentissue -a fix login validation bug" >&2
-    echo "  agentissue add search functionality --agent claude --model claude-3-5-haiku@20241022" >&2
-end
-
 # Generates a comprehensive GitHub issue description
 function agentissue -d "Generate comprehensive GitHub issue using AI agent"
-    # This function depends on the `agentask` command being available in the shell environment.
+    # Parse arguments using argparse - ignore unknown options to pass through to agentask
+    argparse --ignore-unknown 'h/help' 'd/dry-run' 'a/all_files' 'debug' -- $argv
+    or return 2
 
-    # Parse arguments
-    _agentissue_parse_args $argv
-
-    if $_agentissue_help
-        _agentissue_show_help
-        set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help _agentissue_debug
+    if set -ql _flag_help
+        echo "Usage: agentissue [OPTIONS] <issue_description> [<agentask_options>]" >&2
+        echo "" >&2
+        echo "Creates a comprehensive GitHub issue description using AI analysis." >&2
+        echo "All unknown options are passed directly to the 'agentask' command." >&2
+        echo "" >&2
+        echo "Options:" >&2
+        echo "  -a, --all_files   Browse entire repository for context" >&2
+        echo "  -d, --dry-run     Skip the AI call and use a generic issue template for testing" >&2
+        echo "  --debug           Show detailed input/output information during execution" >&2
+        echo "  -h, --help        Show this help message" >&2
+        echo "" >&2
+        echo "Examples:" >&2
+        echo "  agentissue implement user authentication system" >&2
+        echo "  agentissue -a fix login validation bug" >&2
+        echo "  agentissue add search functionality --agent claude --model claude-3-5-haiku@20241022" >&2
         return 0
     end
 
-    if test (count $_agentissue_description) -eq 0
-        echo "Usage: agentissue [flags] <issue description>" >&2
-        echo "Use -h or --help for more information." >&2
-        set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help _agentissue_debug
+    if test (count $argv) -eq 0
+        _agent_error "Missing issue description" "Use -h or --help for more information"
         return 1
     end
 
-    set -l response ""
-    set -l issue_description (string join " " $_agentissue_description)
+    set -l issue_description (string join " " $argv)
 
     # --- Issue Prompt Based on create-issue.md Instructions ---
     # Define the specific prompt for generating a GitHub issue.
@@ -128,38 +85,32 @@ LABELS: [comma-separated list of labels from user instructions or inferred from 
 MILESTONE: [milestone name from user instructions or empty]
 PROJECT: [project name from user instructions or empty]"
 
-    # Add --all_files flag to agentask args if requested
-    if $_agentissue_all_files
-        set -a _agentissue_args --all_files
+    # Build agentask arguments from remaining argv (unknown options)
+    set -l agentask_args
+    if set -ql _flag_all_files
+        set -a agentask_args --all_files
     end
-
-    # Add flags to agentask args
-    if $_agentissue_dry_run
-        set -a _agentissue_args --dry-run
+    if set -ql _flag_dry_run
+        set -a agentask_args --dry-run
     end
-
-    if $_agentissue_debug
-        set -a _agentissue_args --debug
+    if set -ql _flag_debug
+        set -a agentask_args --debug
     end
 
     # Show debug information for the prompt if requested
-    if $_agentissue_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Issue Prompt:" >&2
-        echo "========================" >&2
-        echo -e "$issue_prompt" >&2
-        echo "========================" >&2
-        echo "" >&2
+    if set -ql _flag_debug
+        _agent_debug "Issue Prompt" "$issue_prompt"
     end
 
-    if not $_agentissue_dry_run
-        echo "🤖 Generating comprehensive GitHub issue with AI..." >&2
+    if not set -ql _flag_dry_run
+        _agent_info "Generating comprehensive GitHub issue with AI..."
     end
 
     # Call agentask with the issue prompt
-    if $_agentissue_dry_run
+    set -l response
+    if set -ql _flag_dry_run
         # In dry run mode, let agentask show its output to stderr, then use fake response
-        agentask $_agentissue_args "$issue_prompt"
+        agentask $agentask_args "$issue_prompt"
 
         # Generate fake response for parsing demonstration
         set response 'TITLE: feat: implement comprehensive user authentication system
@@ -197,35 +148,24 @@ LABELS: feature,enhancement,security,backend
 MILESTONE: v2.0
 PROJECT: Authentication'
     else
-        # Don't suppress stderr if debug mode is enabled
-        if not $_agentissue_debug
+        # Use utility function to determine stderr suppression
+        if _agent_should_suppress_stderr $agentask_args
             begin
                 set -l IFS
-                set response (agentask $_agentissue_args "$issue_prompt" 2>/dev/null)
+                set response (agentask $agentask_args "$issue_prompt" 2>/dev/null)
             end
         else
             begin
                 set -l IFS
-                set response (agentask $_agentissue_args "$issue_prompt")
+                set response (agentask $agentask_args "$issue_prompt")
             end
-        end
-
-        if test -z "$response"
-            echo "Error: Received an empty response from the AI agent." >&2
-            set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help _agentissue_debug
-            return 1
         end
     end
 
     # --- PARSING AND DISPLAY BLOCK ---
     # Show debug information for the raw response if requested
-    if $_agentissue_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Raw AI Response:" >&2
-        echo "============================" >&2
-        echo "$response" >&2
-        echo "============================" >&2
-        echo "" >&2
+    if set -ql _flag_debug
+        _agent_debug "Raw AI Response" "$response"
     end
 
     # Extract fields from the structured response
@@ -238,47 +178,30 @@ PROJECT: Authentication'
 
     begin
         set -l IFS
-        # Extract single-line fields
-        set issue_title (printf '%s\n' "$response" | grep '^TITLE:' | sed 's/^TITLE: *//')
-        set issue_assignees (printf '%s\n' "$response" | grep '^ASSIGNEES:' | sed 's/^ASSIGNEES: *//')
-        set issue_labels (printf '%s\n' "$response" | grep '^LABELS:' | sed 's/^LABELS: *//')
-        set issue_milestone (printf '%s\n' "$response" | grep '^MILESTONE:' | sed 's/^MILESTONE: *//')
-        set issue_project (printf '%s\n' "$response" | grep '^PROJECT:' | sed 's/^PROJECT: *//')
+        # Extract single-line fields using utility functions
+        set issue_title (_agent_extract_field "$response" "TITLE")
+        set issue_assignees (_agent_extract_field "$response" "ASSIGNEES")
+        set issue_labels (_agent_extract_field "$response" "LABELS")
+        set issue_milestone (_agent_extract_field "$response" "MILESTONE")
+        set issue_project (_agent_extract_field "$response" "PROJECT")
 
-        # Extract multiline BODY field - from BODY: line until next field or end
-        set issue_body (printf '%s\n' "$response" | awk '/^BODY: */ {
-            sub(/^BODY: */, "");
-            body = $0;
-            while ((getline line) > 0 && line !~ /^[A-Z]+: */) {
-                if (body) body = body "\n" line; else body = line;
-            }
-            print body;
-            exit
-        }')
+        # Extract multiline BODY field using utility function
+        set issue_body (_agent_extract_body_field "$response")
     end
 
     # Show debug information for the extracted fields if requested
-    if $_agentissue_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Extracted fields:" >&2
-        echo "============================" >&2
-        echo "TITLE: $issue_title" >&2
-        echo "ASSIGNEES: $issue_assignees" >&2
-        echo "LABELS: $issue_labels" >&2
-        echo "MILESTONE: $issue_milestone" >&2
-        echo "PROJECT: $issue_project" >&2
-        echo "BODY:" >&2
-        printf '%s\n' "$issue_body" >&2
-        echo "============================" >&2
-        echo "" >&2
+    if set -ql _flag_debug
+        set -l fields_debug "TITLE: $issue_title
+ASSIGNEES: $issue_assignees
+LABELS: $issue_labels
+MILESTONE: $issue_milestone
+PROJECT: $issue_project
+BODY:
+$issue_body"
+        _agent_debug "Extracted fields" "$fields_debug"
     end
 
-    if test -z "$issue_title"
-        echo "" >&2
-        echo "Error: Could not extract TITLE field from response." >&2
-        echo "The raw response has been copied to your clipboard for inspection." >&2
-        echo "$response" | pbcopy
-        set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help _agentissue_debug
+    if not _agent_validate_response "$issue_title"
         return 1
     end
 
@@ -296,7 +219,7 @@ PROJECT: Authentication'
             printf '%s\n' "$issue_body"
         end
         echo ""
-    end | bat --language markdown --style plain --paging never
+    end | _agent_display_with_bat
 
     # Build the gh command with all available fields
     set -l gh_command "gh issue create"
@@ -339,9 +262,7 @@ PROJECT: Authentication'
 
     # Copy the gh command to clipboard
     printf '%s\n' "$gh_command" | pbcopy
-    echo "📋 GitHub issue command copied to clipboard (with --editor flag):"
+    _agent_clipboard "GitHub issue command copied to clipboard (with --editor flag):"
     echo "   $gh_command"
 
-    # Clean up global variables
-    set -e _agentissue_args _agentissue_description _agentissue_all_files _agentissue_dry_run _agentissue_help
 end
