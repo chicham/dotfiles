@@ -89,6 +89,9 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
     # Get current branch name
     set -l current_branch (git branch --show-current)
 
+    # Get available labels for the repository
+    set -l available_labels (gh label list --json name --jq '.[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+
     # --- Pull Request Prompt Based on create-pr.md Instructions ---
     # Define the specific prompt for generating a GitHub pull request.
     set -l pr_prompt "Create pull request for branch '$current_branch': $pr_description
@@ -118,7 +121,7 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 7. **Parse user instructions**: Look for specific field requests in \"$pr_description\" such as:
    - Assignee mentions (\"assign to @username\" or \"assignee: username\")
    - Reviewer requests (\"review by @team\" or \"reviewer: username\")
-   - Label specifications (\"label: bug\" or \"labels: enhancement,feature\")
+   - Label specifications (\"label: bug\" or \"labels: enhancement,feature\") - ONLY use labels from this list: $available_labels
    - Draft status (\"draft\" or \"WIP\")
    - Milestone mentions (\"milestone: v1.0\")
    - Base branch (\"base: develop\" or \"target: main\")
@@ -151,7 +154,7 @@ BASE: [target branch, typically 'main' or as specified by user]
 DRAFT: [true/false - true if incomplete, WIP, or user specified draft]
 ASSIGNEES: [comma-separated list of GitHub usernames from user instructions or empty]
 REVIEWERS: [comma-separated list of GitHub usernames/teams from user instructions or empty]
-LABELS: [comma-separated list of labels from user instructions or inferred from changes]
+LABELS: [comma-separated list of labels from user instructions or inferred from changes - ONLY use from: $available_labels]
 MILESTONE: [milestone name from user instructions or empty]"
 
     # Add flags to agentask args if requested
@@ -352,7 +355,7 @@ $pr_body"
     end
 
     if test -n "$pr_labels"
-        # Split comma-separated labels and add each one
+        # Split comma-separated labels and add each one with --label flag
         for label in (string split ',' "$pr_labels")
             set label (string trim "$label")
             if test -n "$label"
