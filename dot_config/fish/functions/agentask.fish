@@ -125,23 +125,13 @@ function agentask -d "A flexible AI agent wrapper with support for piped context
 
     # Show debug information if requested
     if set -ql _flag_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Input Prompt:" >&2
-        echo "========================" >&2
-        echo -e "$final_prompt" >&2
-        echo "========================" >&2
-        echo "" >&2
+        _agent_debug "Input Prompt" "$final_prompt"
     end
 
     # Handle dry-run mode or execute the AI call.
     set -l agent_response
     if set -ql _flag_dry_run
-        echo "--- 🤖 DRY RUN MODE ---" >&2
-        echo "Agent: $agent, Model: $model" >&2
-        echo "--- FINAL PROMPT ---" >&2
-        echo -e "$final_prompt" >&2
-        echo "--- END DRY RUN ---" >&2
-        echo "" >&2
+        _agent_debug "🤖 DRY RUN MODE" "Agent: $agent, Model: $model\n--- FINAL PROMPT ---\n$final_prompt\n--- END DRY RUN ---"
 
         # Generate fake multiline response with EXACT SAME IFS processing as real response
         begin
@@ -162,7 +152,7 @@ follow project conventions.\"
 This commit follows the conventional format with a clear type (feat), scope (fish), and descriptive message under 50 characters for the subject line.")
         end
     else
-        echo "🤖 Asking $agent (model: $model)..." >&2
+        _agent_info "Asking $agent (model: $model)..."
         set -l agent_cmd_args
         if set -ql _flag_all_files
             set -a agent_cmd_args --all_files
@@ -177,18 +167,13 @@ This commit follows the conventional format with a clear type (feat), scope (fis
     if test -n "$agent_response"
         # Show debug information for response if requested
         if set -ql _flag_debug
-            echo "" >&2
-            echo "🐛 DEBUG - Raw AI Response:" >&2
-            echo "===========================" >&2
-            echo "$agent_response" >&2
-            echo "===========================" >&2
-            echo "" >&2
+            _agent_debug "Raw AI Response" "$agent_response"
         end
 
         printf '%s\n' "$agent_response"
         printf '%s\n' "$agent_response" | pbcopy
     else
-        echo "Error: Received an empty response from the agent." >&2
+        _agent_error "Received empty response from AI agent"
         return 1
     end
 end

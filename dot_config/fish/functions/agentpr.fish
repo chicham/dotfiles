@@ -100,8 +100,8 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 4. **Generate structured output** - Output specific fields for PR creation
 
 **Pull Request Requirements:**
-- **Mandatory title format**: \"Fixes #issue-number: Brief description\"
-- **Must link to an issue**: Every PR must reference an existing issue
+- **Title format**: \"Brief description\" (clean title without issue linking syntax)
+- **Issue linking**: Reference issues via commit messages OR PR body, but avoid duplication
 - **Description requirements**:
   - Summary of changes
   - Testing performed
@@ -111,10 +111,11 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 **Instructions:**
 1. Analyze the commit history provided above to understand what changes will be included in this PR from branch '$current_branch'
 2. If no commit history is provided, create a generic PR based on the description: \"$pr_description\"
-3. Extract issue number from the branch name '$current_branch' (e.g., feature/123-description → #123) or use a placeholder if none found
-4. Create descriptive PR title: \"Fixes #issue-number: Detailed description of what was implemented\"
-5. Generate comprehensive PR description based on the commit messages (or description if no commits) using GitHub markdown
-6. **Parse user instructions**: Look for specific field requests in \"$pr_description\" such as:
+3. **Check commit messages for existing issue linking**: Look for 'Fixes #', 'Closes #', 'Resolves #' keywords in commit messages
+4. Extract issue number from the branch name '$current_branch' (e.g., feature/123-description → #123) or use a placeholder if none found
+5. Create descriptive PR title: \"Detailed description of what was implemented\"
+6. Generate comprehensive PR description based on the commit messages (or description if no commits) using GitHub markdown
+7. **Parse user instructions**: Look for specific field requests in \"$pr_description\" such as:
    - Assignee mentions (\"assign to @username\" or \"assignee: username\")
    - Reviewer requests (\"review by @team\" or \"reviewer: username\")
    - Label specifications (\"label: bug\" or \"labels: enhancement,feature\")
@@ -127,6 +128,11 @@ function agentpr -d "Generate comprehensive GitHub pull request using AI agent"
 - ## Changes Made (summarize the key changes based on commit messages)
 - ## Test Plan (only if manual testing is needed)
 - ## Breaking Changes (only if there are breaking changes)
+
+**Issue Linking Rules:**
+- **If any commit message already contains issue linking keywords** (Fixes #, Closes #, Resolves #), DO NOT add additional \"Fixes #issue-number\" to the PR body
+- **Only add \"Fixes #issue-number\" to the PR body if NO commits contain issue linking keywords** and an issue number can be extracted from the branch name
+- This prevents duplicate issue linking which can cause confusion
 
 **CRITICAL: FOLLOW OUTPUT FORMAT EXACTLY**
 - You MUST respond with ONLY the structured fields listed below
@@ -163,18 +169,12 @@ MILESTONE: [milestone name from user instructions or empty]"
 
     # Show debug information for the prompt if requested
     if $_agentpr_debug
-        echo "" >&2
-        echo "🐛 DEBUG - PR Prompt:" >&2
-        echo "====================" >&2
-        echo -e "$pr_prompt" >&2
-        echo "====================" >&2
-        echo "" >&2
-        echo "🐛 DEBUG - agentask args: $_agentpr_args" >&2
-        echo "" >&2
+        _agent_debug "PR Prompt" "$pr_prompt"
+        _agent_debug "agentask args: $_agentpr_args"
     end
 
     if not $_agentpr_dry_run
-        echo "🤖 Generating comprehensive GitHub pull request with AI..." >&2
+        _agent_info "Generating comprehensive GitHub pull request with AI..."
     end
 
     # Call agentask with the PR prompt and git log context
@@ -186,7 +186,7 @@ MILESTONE: [milestone name from user instructions or empty]"
         end
 
         # Generate fake response for parsing demonstration
-        set response 'TITLE: Fixes #123: implement comprehensive user authentication system
+        set response 'TITLE: Implement comprehensive user authentication system
 BODY: ## Summary
 Implemented a secure and robust user authentication system with registration, login, logout, and password management features. This PR adds all the necessary components for a complete authentication workflow following modern security best practices.
 
@@ -247,12 +247,7 @@ MILESTONE: v2.0'
     # --- PARSING AND DISPLAY BLOCK ---
     # Show debug information for the raw response if requested
     if $_agentpr_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Raw AI Response:" >&2
-        echo "============================" >&2
-        echo "$response" >&2
-        echo "============================" >&2
-        echo "" >&2
+        _agent_debug "Raw AI Response" "$response"
     end
 
     # Extract fields from the structured response
@@ -290,27 +285,19 @@ MILESTONE: v2.0'
 
     # Show debug information for the extracted fields if requested
     if $_agentpr_debug
-        echo "" >&2
-        echo "🐛 DEBUG - Extracted fields:" >&2
-        echo "============================" >&2
-        echo "TITLE: $pr_title" >&2
-        echo "BASE: $pr_base" >&2
-        echo "DRAFT: $pr_draft" >&2
-        echo "ASSIGNEES: $pr_assignees" >&2
-        echo "REVIEWERS: $pr_reviewers" >&2
-        echo "LABELS: $pr_labels" >&2
-        echo "MILESTONE: $pr_milestone" >&2
-        echo "BODY:" >&2
-        printf '%s\n' "$pr_body" >&2
-        echo "============================" >&2
-        echo "" >&2
+        set -l fields_debug "TITLE: $pr_title
+BASE: $pr_base
+DRAFT: $pr_draft
+ASSIGNEES: $pr_assignees
+REVIEWERS: $pr_reviewers
+LABELS: $pr_labels
+MILESTONE: $pr_milestone
+BODY:
+$pr_body"
+        _agent_debug "Extracted fields" "$fields_debug"
     end
 
-    if test -z "$pr_title"
-        echo "" >&2
-        echo "Error: Could not extract TITLE field from response." >&2
-        echo "The raw response has been copied to your clipboard for inspection." >&2
-        echo "$response" | pbcopy
+    if not _agent_validate_response "$pr_title"
         set -e _agentpr_args _agentpr_description _agentpr_all_files _agentpr_dry_run _agentpr_help _agentpr_debug
         return 1
     end
@@ -326,7 +313,7 @@ MILESTONE: v2.0'
             printf '%s\n' "$pr_body"
         end
         echo ""
-    end | bat --language markdown --style plain --paging never
+    end | _agent_display_with_bat
 
     # Build the gh command with all available fields
     set -l gh_command "gh pr create"
@@ -383,7 +370,7 @@ MILESTONE: v2.0'
 
     # Copy the gh command to clipboard
     printf '%s\n' "$gh_command" | pbcopy
-    echo "📋 GitHub pull request command copied to clipboard (with --editor flag):"
+    _agent_clipboard "GitHub pull request command copied to clipboard (with --editor flag):"
     echo "   $gh_command"
 
     # Clean up global variables
