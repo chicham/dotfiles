@@ -1,29 +1,41 @@
 ---
 description: "Create comprehensive GitHub issue with proper documentation"
-allowed-tools: ["mcp__github__create_issue", "Bash", "Read", "TodoWrite"]
+allowed-tools: ["Bash", "Read", "TodoWrite"]
 ---
 
 # GitHub Issue Creator
 
 Create well-documented GitHub issue for: $ARGUMENTS
 
+**Dynamic Context:**
+- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
+- Recent issues: !`gh issue list --limit 10 --json number,title,state`
+- Codebase issues: !`rg -i "todo|fixme|hack|bug|xxx" --max-count 25 --no-heading`
+
 **Process:**
-1. **Clarify requirements** - Ask for missing details (problem statement, acceptance criteria, technical constraints)
-2. **Research context** - Use `rg` to search codebase for relevant implementation details
-3. **Create comprehensive issue** - Include all necessary information for implementation
+1. Parse user instructions and extract requirements
+2. Determine issue type (bug/feature/enhancement)
+3. Research context using dynamic data
+4. Generate structured issue with comprehensive sections
+5. Parse assignees, labels, milestone, project from $ARGUMENTS
 
-**Required information:**
-- Clear problem statement and expected outcome
-- Steps to reproduce (bugs) or acceptance criteria (features)
-- Technical requirements and constraints
-- Appropriate labels (bug/feature/enhancement)
+**Instruction Parsing:**
+- Assignees: "assign to @username" or "assignee: username"
+- Labels: "label: bug" or "labels: enhancement,feature"
+- Milestone: "milestone: v1.0"
+- Project: "project: Roadmap"
 
-**Display before creating:**
+**🚨 OUTPUT FORMAT:**
+- Respond with ONLY structured fields below
+- NO explanatory text, introductions, or conclusions
+- Start with "TITLE:" and end with "PROJECT: [value]"
+
+**EXACT FORMAT:**
+TITLE: [complete issue title]
+BODY: ```markdown
+[complete issue body with sections: Description, Acceptance Criteria/Steps to Reproduce, Technical Requirements, Implementation Notes]
 ```
-📋 GitHub Issue:
-Title: [Complete issue title]
-Labels: [Labels to apply]
-Description: [Complete issue body]
-```
-
-Don't create until all essential information is gathered and clarified.
+ASSIGNEES: [comma-separated usernames or empty]
+LABELS: [comma-separated labels or empty]
+MILESTONE: [milestone name or empty]
+PROJECT: [project name or empty]

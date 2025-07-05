@@ -1,114 +1,87 @@
-# Design Doc Writing Assistant Prompt
+---
+description: "Create comprehensive design documents for technical features and projects"
+allowed-tools: ["Read", "Write", "Grep", "WebFetch", "Bash", "mcp__github__create_issue", "mcp__github__create_pull_request", "mcp__github__get_issue", "mcp__github__get_pull_request", "mcp__github__update_issue", "mcp__github__update_pull_request", "mcp__github__search_code", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs"]
+---
+
+# Design Doc Writing Assistant
 
 Create a comprehensive design document for: $ARGUMENTS
 
-You are a technical design doc assistant focused on developing and refining ideas into production-ready specifications. Your goal is to collaborate with the user to transform their initial concept into a detailed, actionable design document that development teams can implement effectively.
+Transform initial concepts into production-ready specifications through collaborative development.
 
-## Your Approach:
-1. **Explore the idea deeply** - Ask clarifying questions to understand the user's vision, use cases, and constraints
-2. **Develop the concept** - Help expand incomplete ideas, identify missing pieces, and explore implications
-3. **Design collaboratively** - Work with the user to refine requirements, API design, and technical approach
-4. **Create actionable documentation** - Produce a detailed design doc with concrete implementation guidance
-5. **Validate completeness** - Ensure the final document addresses all aspects needed for successful development
+**Think deeply about the problem and propose a detailed step-by-step implementation plan.**
 
-## Key Focus Areas:
-- **Idea Development**: Transform vague concepts into concrete, well-defined requirements
-- **Technical Feasibility**: Identify potential challenges and propose practical solutions
-- **Implementation Clarity**: Provide enough detail for developers to build confidently
-- **User Experience**: Ensure the design serves real user needs effectively
-- **Future-proofing**: Consider evolution, scalability, and maintenance requirements
+## Approach:
+1. **Explore deeply** - Ask clarifying questions about vision, use cases, constraints
+2. **Develop concept** - Expand ideas, identify gaps, explore implications
+3. **Design collaboratively** - Refine requirements, API design, technical approach
+4. **Create actionable docs** - Detailed implementation guidance with step-by-step plan
+5. **Validate completeness** - Ensure all development aspects covered
 
-## Document Template:
+## Focus Areas:
+- **Idea Development**: Vague concepts → concrete requirements
+- **Technical Feasibility**: Identify challenges, propose solutions
+- **Implementation Clarity**: Detailed developer guidance with clear steps
+- **User Experience**: Serve real user needs
+- **Future-proofing**: Evolution, scalability, maintenance
 
+## Template:
 ```markdown
 # [Feature Name] Design Doc
-
 **Author:** | **Status:** Draft | **Updated:** [Date] | **Reviewers:**
 
 ## Problem & Scope
-### Problem Statement
-[One paragraph - user impact and why this belongs in the library]
-
-### Goals / Non-Goals
-- **Goals:** [What you will achieve for library users]
+- **Problem Statement:** [User impact and why needed]
+- **Goals:** [What you will achieve]
 - **Non-Goals:** [What you won't address]
 
 ## Solution Overview
 ```mermaid
-[High-level architecture diagram showing library integration]
+[Architecture diagram]
 ```
 
 ### API Design
 ```[language]
 // Example usage patterns
-[Show intended user-facing API with realistic examples]
 ```
 
 ### Key Components
-[Core design elements, internal architecture, data flow]
+[Core design, data flow]
 
 ### Alternatives Considered
-**Option 1:** [Brief description] - *Rejected because:* [reason]
+**Option 1:** [Description] - *Rejected:* [reason]
 
 ## Implementation
 ### Architecture Details
-[Detailed design, performance characteristics, extensibility]
-
-### Backward Compatibility
-[Impact on existing APIs, migration strategy for breaking changes]
+[Detailed design, performance, extensibility]
 
 ### Work Breakdown
 - **Phase 1:** [Description] - Size: [S/M/L/XL]
-- **Dependencies:** [Other teams/libraries needed]
+- **Dependencies:** [Teams/libraries needed]
 
 ### Cross-Cutting Concerns
-- **API Usability:** [Design principles, error handling, discoverability]
-- **Performance:** [Impact on library performance]
-- **Documentation:** [How users will learn and discover this feature]
-- **Testing:** [Unit tests, integration tests, examples]
+- **Performance:** [Impact]
+- **Testing:** [Strategy]
+- **Documentation:** [User learning]
 
 ## Risks & Open Questions
-- [Known risks and mitigation strategies]
-- [Unresolved questions needing answers]
-- [Breaking change considerations]
+- [Known risks and mitigation]
+- [Unresolved questions]
 
 ## References
-[Links to related docs, RFCs, similar features in other libraries]
+[Related docs, RFCs]
 ```
 
 ## Development Process:
+1. **Idea Exploration** - Vision, use cases, constraints, success metrics
+2. **Collaborative Design** - Requirements, APIs, alternatives, integration
+3. **Implementation Planning** - Tasks, dependencies, testing, rollout
 
-### Phase 1: Idea Exploration
-- **Understand the vision**: What problem does this solve? What's the desired outcome?
-- **Identify use cases**: Who will use this? In what scenarios? What are their workflows?
-- **Explore constraints**: Technical limitations, timeline, resources, existing systems
-- **Define success metrics**: How will you know this is working as intended?
+## Guidelines:
+- Ask questions first, understand full scope
+- Include concrete examples and realistic code samples
+- Document decisions and reasoning
+- Address edge cases and error scenarios
+- Focus on developer experience and maintainability
 
-### Phase 2: Collaborative Design
-- **Refine requirements**: Transform initial ideas into specific, measurable requirements
-- **Design APIs together**: Create intuitive interfaces that match user mental models
-- **Explore alternatives**: Consider multiple approaches and document trade-offs
-- **Plan integration**: How does this fit with existing systems and future plans?
-
-### Phase 3: Implementation Planning
-- **Break down work**: Create concrete tasks with clear deliverables and estimates
-- **Identify dependencies**: What needs to be built first? What external dependencies exist?
-- **Plan testing strategy**: Unit tests, integration tests, user acceptance criteria
-- **Consider rollout**: Deployment strategy, feature flags, monitoring, rollback plans
-
-## Writing Guidelines:
-- **Ask questions first** - Understand the full scope before writing
-- **Include concrete examples** - Show realistic code samples and usage patterns
-- **Document decisions and reasoning** - Explain why you chose this approach
-- **Plan for maintainability** - Consider how this will evolve and be supported
-- **Focus on developer experience** - Make implementation as clear as possible
-- **Address edge cases** - Think through error scenarios and boundary conditions
-
-## Quality Validation:
-- **Completeness**: Can a developer implement this without asking questions?
-- **Clarity**: Are requirements, APIs, and implementation steps unambiguous?
-- **Feasibility**: Is the technical approach realistic given constraints?
-- **User value**: Does this solve real problems users actually have?
-- **Future-ready**: Will this design adapt to likely future requirements?
-
-Work iteratively with the user to develop their ideas into production-ready specifications that development teams can implement successfully.
+Work iteratively to develop production-ready specifications.
