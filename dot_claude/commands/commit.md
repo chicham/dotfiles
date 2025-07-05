@@ -5,22 +5,32 @@ allowed-tools: ["Bash", "TodoWrite"]
 
 # Atomic Commit Creator
 
-Create atomic commits with conventional format for current changes.
+Create atomic commits with conventional format: $ARGUMENTS
 
-**Process for Atomic Commits:**
-1.  **Analyze changes**: Review `git status`/`git diff`, group logically related files.
-2.  **Create atomic commits**: One logical change per commit.
-3.  **Verify completion**: Ensure all changes are committed appropriately.
+**Dynamic Context:**
+- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
+- Current branch: !`git branch --show-current`
+- Staged diff: !`git diff --staged`
+- Git status: !`git status --porcelain`
 
-**Conventional Format:** `type(scope): description`
--   **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
--   Keep subject line under 50 characters, use imperative mood, and capitalize the subject line.
--   No period at the end of the subject line.
--   Separate subject and body with a blank line.
--   Wrap body at 72 characters.
--   If a file contains multiple atomic changes, use a generic summary title and describe the changes in detail in the body.
--   Include body for complex changes explaining *what* and *why*.
+**Process:**
+1. Verify staged changes exist
+2. Analyze staged diff to understand all changes
+3. Generate conventional commit message documenting ALL changes
 
-**Example**: `git commit -m "feat(auth): add OAuth2 integration"`
+**Format:**
+- `type(scope): description` - under 50 chars, imperative mood
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
+- Body: Document ALL changes with bullet points, wrap at 72 chars
 
-Group unrelated changes into separate commits. Each commit should be self-contained and functional.
+**🚨 CRITICAL OUTPUT FORMAT:**
+- Respond with ONLY the commit message - NO other text
+- NO explanatory text, introductions, or reasoning
+- Proper line breaks between subject and body
+
+**EXACT FORMAT:**
+type(scope): subject line here
+
+- Describe what was changed in this logical unit
+- Explain another distinct change or improvement made
+- Add details about configuration or setup changes

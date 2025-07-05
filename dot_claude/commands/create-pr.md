@@ -7,77 +7,34 @@ allowed-tools: ["mcp__github__create_pull_request", "Bash"]
 
 Create pull request for current branch: $ARGUMENTS
 
+**Dynamic Context:**
+- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
+- Current branch: !`git branch --show-current`
+- Git status: !`git status --porcelain`
+- Commit history: !`git log --pretty=format:"%h %s" --no-merges origin/main..HEAD`
+- Files changed: !`git diff --name-only origin/main..HEAD`
+- Available labels: !`gh label list --json name --jq '.[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//'`
+- Open PRs: !`gh pr list --json number,title,headRefName`
+
 **Process:**
-1. **Extract issue number** - From $ARGUMENTS or branch name pattern (e.g., `123-feature` → #123)
-2. **Verify status** - Check for uncommitted changes, ask user if found
-3. **Analyze commits** - Review commit history to generate comprehensive description
-4. **Push and create PR** - Push branch, create PR with proper title format
+1. Extract issue number from $ARGUMENTS or branch name pattern
+2. Analyze commit history to generate comprehensive description
+3. Parse user instructions for specific requirements
+4. Generate structured output with all PR fields
 
-## Pushing and Pull Request Creation
-```bash
-# Push feature branch
-git push origin feature/123-brief-description
+**🚨 OUTPUT FORMAT:**
+- Respond with ONLY structured fields below
+- NO explanatory text, introductions, or conclusions
+- Start with "TITLE:" and end with "MILESTONE: [value]"
 
-# Create PR with mandatory format
-# PR title MUST start with: "Fixes #issue-number: Brief description of changes"
+**EXACT FORMAT:**
+TITLE: [complete PR title]
+BODY: ```markdown
+[complete PR body with sections: Summary, Testing, Breaking Changes, Screenshots/demos if UI]
 ```
-
-## Pull Request Requirements
-- **Mandatory title format**: "Fixes #issue-number: Brief description"
-- **Must link to an issue**: Every PR must reference an existing issue
-- **Template compliance**: Fill out PR template completely
-- **Description requirements**:
-  - Summary of changes
-  - Testing performed
-  - Breaking changes (if any)
-  - Screenshots/demos for UI changes
-- **Review requirements**:
-  - At least one approving review
-  - All CI checks passing
-  - No merge conflicts
-
-## Git Operations Best Practices
-
-### Keeping History Linear
-```bash
-# When pulling changes, always rebase
-git pull origin main --rebase
-
-# Interactive rebase to clean up commits before PR
-git rebase -i main
-
-# Squash commits if needed to maintain clean history
-```
-
-### Handling Merge Conflicts
-1. Fetch latest changes: `git fetch origin`
-2. Rebase onto main: `git rebase origin/main`
-3. Resolve conflicts in IDE
-4. Stage resolved files: `git add .`
-5. Continue rebase: `git rebase --continue`
-6. Force push (safely): `git push origin feature-branch --force-with-lease`
-
-## Code Review Process
-
-### Before Requesting Review
-- [ ] All tests pass locally
-- [ ] Pre-commit hooks pass
-- [ ] Code is self-documented with clear variable/function names
-- [ ] Complex logic has comments explaining the "why"
-- [ ] No debugging code or console.log statements
-- [ ] Documentation updated if needed
-
-### Responding to Review Feedback
-- Address all feedback before requesting re-review
-- Use "Request changes" resolution to track fixes
-- Add comments explaining your approach when needed
-- Thank reviewers for their time and feedback
-
-**Display before creating:**
-```
-🚀 Pull Request:
-Title: [Complete PR title]
-Description: [Complete PR body]
-```
-
-Ensure all tests pass and code quality checks before creation.
+BASE: [target branch - typically 'main']
+DRAFT: [true/false - true if incomplete/WIP]
+ASSIGNEES: [comma-separated usernames or empty]
+REVIEWERS: [comma-separated usernames/teams or empty]
+LABELS: [comma-separated labels or empty]
+MILESTONE: [milestone name or empty]

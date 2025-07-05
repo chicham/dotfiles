@@ -1,99 +1,59 @@
+---
+description: "Delegate large codebase analysis to Gemini CLI when context limits are exceeded"
+allowed-tools: ["Bash", "mcp__github__search_code", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "mcp__hf-mcp-server__hf_doc_search", "mcp__hf-mcp-server__hf_doc_fetch", "mcp__hf-mcp-server__model_search", "mcp__hf-mcp-server__dataset_search", "mcp__hf-mcp-server__paper_search"]
+---
+
 # Gemini Analysis Command
 
-Use Gemini CLI for large codebase analysis when context limits are exceeded. Claude should delegate analysis to Gemini, then use tree-sitter for targeted follow-up analysis if needed.
-
-## Usage
-
-Pass custom instructions directly to Gemini:
-
-```
-/project:gemini [your custom instructions]
-```
-
-**Examples:**
-- `/project:gemini analyze the authentication system and find security vulnerabilities`
-- `/project:gemini review the database schema and suggest optimizations`
-- `/project:gemini find all TODO comments and prioritize them by importance`
+Use Gemini CLI for large codebase analysis when context limits are exceeded.
 
 ## Usage for Claude
 
-When user provides instructions:
+With user instructions:
 ```bash
 gemini --all_files -p "$ARGUMENTS"
 ```
 
-When no arguments provided, use default analysis:
+Default analysis:
 ```bash
 gemini --all_files -p "Analyze the project structure and identify key components and their relationships"
 ```
 
-After Gemini analysis, use tree-sitter tools manually for targeted code structure analysis when needed.
-
 ## Key Options
-
-- `--all_files` - Include ALL project files (recommended default)
+- `--all_files` - Include ALL project files (recommended)
 - `-p, --prompt` - Analysis prompt
 - `-m, --model` - Model selection (default: gemini-2.5-pro)
 - `-s, --sandbox` - Run in sandbox mode
 - `-c, --checkpointing` - Enable file edit checkpointing
 
-## Common Analysis Commands
-
-### Architecture Review
-```bash
-gemini --all_files -p "Analyze the project architecture and structure. Identify main modules and their relationships."
-```
-
-### Security Audit
-```bash
-gemini --all_files -p "Perform comprehensive security audit. List vulnerabilities, security measures, and recommendations."
-```
-
-### Feature Implementation Check
-```bash
-gemini --all_files -p "Check if [feature] has been implemented. Show all related files, functions, and components."
-```
-
-### Test Coverage Analysis
-```bash
-gemini --all_files -p "Analyze test coverage across the project. Which components lack proper tests?"
-```
-
-### Performance Analysis
-```bash
-gemini --all_files -p "Identify performance bottlenecks and optimization opportunities throughout the codebase."
-```
-
-### Research with Web Search
-```bash
-gemini --all_files -p "Analyze this codebase and search the web for current best practices for [technology/pattern]. Compare implementation with latest standards."
-```
-
-## Delegation Workflow
-
-1. **Analysis Phase**: Claude runs Gemini command for exploration
-2. **Implementation Phase**: Claude uses Gemini's analysis to implement changes
-3. **Separation of Concerns**: Gemini explores, Claude implements
+## Common Analysis Types
+- **Architecture Review**: "Analyze project architecture and module relationships"
+- **Security Audit**: "Perform security audit, list vulnerabilities and recommendations"
+- **Feature Check**: "Check if [feature] implemented, show related files/functions"
+- **Test Coverage**: "Analyze test coverage, identify untested components"
+- **Performance**: "Identify performance bottlenecks and optimization opportunities"
+- **Research**: "Analyze codebase and search web for [technology] best practices"
 
 ## File-Specific Analysis
-
-When full project context isn't needed:
-
 ```bash
-# Specific files/directories
+# Specific paths
 gemini -p "@src/ @tests/ Analyze test coverage for source code"
 
 # Single file
 gemini -p "@package.json Analyze dependencies and suggest updates"
 ```
 
-## When Claude Should Use Gemini
+## Workflow
+1. **Analysis**: Claude runs Gemini for exploration
+2. **Implementation**: Claude implements recommended changes
+3. **Separation**: Gemini explores, Claude implements
 
-- Large codebase analysis exceeding Claude's context limits
+## When to Use Gemini
+- Large codebase analysis exceeding context limits
 - Project-wide architecture reviews
 - Comprehensive security audits
 - Feature verification across multiple files
 - Performance analysis requiring full project understanding
-- Research requiring both codebase analysis and web search
+- Research needing codebase analysis + web search
 
-**Note**: Claude should use Gemini for analysis and exploration, then implement the recommended changes using standard tools. Include "search the web" in prompts when current best practices or documentation lookup is needed.
+Include "search the web" in prompts when current best practices lookup is needed.
