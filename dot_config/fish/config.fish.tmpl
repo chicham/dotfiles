@@ -245,8 +245,8 @@ if test -f $HOME/.config/fish/aliases.fish
 end
 
 # Load local machine-specific config (not managed by chezmoi)
-if test -f $HOME/.config/fish/local.config.fish
-    source $HOME/.config/fish/local.config.fish
+if test -f $HOME/.config.local.fish
+    source $HOME/.config.local.fish
 end
 
 # Initialize 1Password plugins if installed
