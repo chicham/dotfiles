@@ -1,38 +1,47 @@
 ---
-description: "Create atomic commits following conventional commit format"
+description: "Create concise, conventional commits. Body is optional."
 allowed-tools: ["Bash", "TodoWrite"]
 ---
 
 # Atomic Commit Creator
 
-Create atomic commits with conventional format: $ARGUMENTS
+## Context
 
-**Dynamic Context:**
 - Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
+- Current git status: !`git status --porcelain`
+- Current git diff (staged changes): !`git diff --staged`
 - Current branch: !`git branch --show-current`
-- Staged diff: !`git diff --staged`
-- Git status: !`git status --porcelain`
+
+## Your task
+
+Based on the staged changes, create a single, concise git commit for: $ARGUMENTS
 
 **Process:**
-1. Verify staged changes exist
-2. Analyze staged diff to understand all changes
-3. Generate conventional commit message documenting ALL changes
+1.  Analyze the staged diff.
+2.  Generate a conventional commit message.
+3.  **The body is optional.** Only add a body if the subject line is not sufficient to explain the change. Keep it brief and focused on the "what" and "why".
 
 **Format:**
 - `type(scope): description`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
-- Body: Document ALL changes with bullet points, wrap at 72 chars
+- Body (Optional): If needed, explain the change. Wrap at 72 chars.
 
 **🚨 CRITICAL OUTPUT FORMAT:**
-- Respond with ONLY the commit message - NO other text
-- NO explanatory text, introductions, or reasoning
-- Proper line breaks between subject and body
-- The whole commit title MUST be under 50 chars
-- Use imperative mood
+- Respond with ONLY the commit message.
+- NO explanatory text, introductions, or reasoning.
+- The commit title MUST be under 50 chars and use the imperative mood.
 
-**EXACT FORMAT:**
-type(scope): subject line here
+---
+### Example (Subject only)
+```
+fix(api): correct authentication error on /login
+```
+---
+### Example (With Body)
+```
+feat(parser): add support for parsing TOML files
 
-- Describe what was changed in this logical unit
-- Explain another distinct change or improvement made
-- Add details about configuration or setup changes
+- Implement a new `TomlParser` class.
+- Add `toml` as a project dependency.
+- This is required for the new configuration system.
+```
