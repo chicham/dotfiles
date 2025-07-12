@@ -5,6 +5,14 @@ allowed-tools: ["Read", "Write", "Grep", "WebFetch", "Bash", "mcp__github__creat
 
 # Design Doc Writing Assistant
 
+## Context
+
+- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
+- File tree: !`eza -T --level=2`
+- Existing issues: !`gh issue list --limit 10 --sort updated`
+
+## Your task
+
 Create a comprehensive design document for: $ARGUMENTS
 
 Transform initial concepts into production-ready specifications through collaborative development.

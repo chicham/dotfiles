@@ -5,9 +5,8 @@ allowed-tools: ["mcp__github__create_pull_request", "Bash"]
 
 # Pull Request Creator
 
-Create pull request for current branch: $ARGUMENTS
+## Context
 
-**Dynamic Context:**
 - Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
 - Current branch: !`git branch --show-current`
 - Git status: !`git status --porcelain`
@@ -15,6 +14,10 @@ Create pull request for current branch: $ARGUMENTS
 - Files changed: !`git diff --name-only origin/main..HEAD`
 - Available labels: !`gh label list --json name --jq '.[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//'`
 - Open PRs: !`gh pr list --json number,title,headRefName`
+
+## Your task
+
+Create a pull request for the current branch: $ARGUMENTS
 
 **Process:**
 1. Extract issue number from $ARGUMENTS or branch name pattern

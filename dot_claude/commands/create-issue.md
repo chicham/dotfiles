@@ -5,12 +5,15 @@ allowed-tools: ["Bash", "Read", "TodoWrite"]
 
 # GitHub Issue Creator
 
-Create well-documented GitHub issue for: $ARGUMENTS
+## Context
 
-**Dynamic Context:**
 - Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
 - Recent issues: !`gh issue list --limit 10 --json number,title,state`
 - Codebase issues: !`rg -i "todo|fixme|hack|bug|xxx" --max-count 25 --no-heading`
+
+## Your task
+
+Create a well-documented GitHub issue for: $ARGUMENTS
 
 **Process:**
 1. Parse user instructions and extract requirements

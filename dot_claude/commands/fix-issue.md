@@ -1,54 +1,76 @@
 ---
-description: "Prepare repository for implementing GitHub issue"
-allowed-tools: ["mcp__github__get_issue", "mcp__github__get_issue_comments", "mcp__github__search_code", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "mcp__hf-mcp-server__model_search", "mcp__hf-mcp-server__paper_search", "Bash", "Write", "Read", "Grep"]
+description: "Generate a detailed, PR-ready Markdown implementation plan for a GitHub issue"
+allowed-tools: ["mcp__github__get_issue", "mcp__github__get_issue_comments", "mcp__github__search_code", "Bash", "Read", "Grep"]
 ---
 
-# Issue Implementation Starter
+# Issue Implementation Plan Generator
 
-Prepare repository for implementing issue: $ARGUMENTS
+## Your Task
+Act as a senior engineer. Your only output is a single, comprehensive Markdown implementation plan for the given issue ($ARGUMENTS). The plan must be structured into one or more actionable Pull Requests.
 
-**Dynamic Context:**
-- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
-- Current branch: !`git branch --show-current`
-- Git status: !`git status --porcelain`
-- Related code patterns: !`rg -i "todo|fixme|hack|bug|xxx" --max-count 20 --no-heading`
+## Process
+1.  **Analyze:** Investigate the issue, comments, and codebase to determine the root cause.
+2.  **Design:** Formulate a complete solution.
+3.  **Deconstruct for PRs:** Logically group the work into one or more sequential Pull Requests. A simple issue might only need one PR.
+4.  **Plan:** For each proposed PR, create a detailed, step-by-step implementation guide with code-level detail.
+5.  **Report:** Generate the final Markdown report using the exact format below.
 
-**Process:**
-1. Check for `--print` flag (display only, don't execute)
-2. Check branch (if main/master, call `/create-pr` instead)
-3. Extract issue number from $ARGUMENTS or branch name
-4. Fetch comprehensive issue details and comments
-5. Research codebase context and existing implementations
-6. Create detailed implementation plan with:
-   - Analysis: Problem, root cause, requirements
-   - Design: Solution approach, affected components
-   - Implementation: Specific steps with file paths
-   - Testing: Unit/integration tests, verification
-   - Documentation: Updates needed
-   - Quality: Validation checklist
-7. Display formatted plan before changes
+## 🚨 Critical: Output Format
+- Your entire response MUST be a single Markdown block.
+- Do NOT write any code, modify files, or add any text outside the report.
 
-**Output Format:**
+## Markdown Report Template
+```markdown
+# Implementation Plan: Issue #[issue_number] - [issue_title]
+
+**Report Generated:** `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+
+## 1. Executive Summary
+
+*   **Problem:** [Briefly describe the core problem and its user-facing impact.]
+*   **Proposed Solution:** [Provide a high-level summary of the technical solution and how it will be broken down into Pull Requests.]
+
+## 2. In-Depth Analysis
+
+*   **Root Cause:** [Detailed explanation of the technical root cause.]
+*   **Affected Components:** [List all files, classes, or modules affected.]
+*   **Requirements & Constraints:** [List all requirements for the fix.]
+
+## 3. Pull Request Implementation Plan
+
+### Pull Request 1: [Title of the first PR, e.g., "Refactor Core Logic and Add Interfaces"]
+
+*   **Objective:** [What is the specific goal of this Pull Request?]
+*   **Step 1.1:** [Descriptive Title for Step 1]
+    *   **File(s):** `path/to/file_to_modify.ext`
+    *   **Function/Method:** `functionOrMethodToChange`
+    *   **Details:** [Describe the change, e.g., "Add a null check."]
+    *   **Code Guidance:**
+        ```[language]
+        // Provide a pseudo-code or an actual code snippet demonstrating the change.
+        if (input == null) {
+          throw new IllegalArgumentException("Input cannot be null.");
+        }
+        ```
+    *   **Reasoning:** [Explain why this change is necessary.]
+*   **Step 1.2:** [Descriptive Title for Step 2]
+    *   ... (repeat structure)
+*   **Testing for this PR:**
+    *   [Outline the specific tests that must pass before this PR can be merged.]
+
+### Pull Request 2: [Title of the second PR, e.g., "Update UI Components to Use New Interfaces"]
+
+*   **Objective:** [What is the specific goal of this Pull Request?]
+*   **Step 2.1:** ...
+*   **(Repeat the structure for all subsequent Pull Requests. For simple issues, there will only be one PR section.)**
+
+## 4. Overall Validation Strategy
+
+*   **End-to-End Testing:** [Describe how to manually verify the complete solution after all PRs are merged.]
+*   **Documentation:** [List any user-facing or internal documentation that needs to be updated.]
+
+## 5. Risks and Mitigation
+
+*   **Potential Risks:** [Identify any potential risks for the overall solution.]
+*   **Mitigation Strategy:** [For each risk, describe the steps to mitigate it.]
 ```
-🛠️ Issue Implementation Plan:
-Issue: #[number] - [title]
-Type: [bug/feature/enhancement]
-
-Analysis:
-- [Problem description and root cause]
-
-Implementation Steps:
-1. [Specific step with file paths and changes]
-2. [Next step with details]
-
-Testing Strategy:
-- [Test plan and verification steps]
-
-Quality Checklist:
-- [ ] Tests pass
-- [ ] Documentation updated
-```
-
-**After plan:**
-- If `--print`: Display commands only
-- Otherwise: Create branch and implement step by step
