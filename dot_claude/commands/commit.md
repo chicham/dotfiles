@@ -19,7 +19,7 @@ Create atomic commits with conventional format: $ARGUMENTS
 3. Generate conventional commit message documenting ALL changes
 
 **Format:**
-- `type(scope): description` - under 50 chars, imperative mood
+- `type(scope): description`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
 - Body: Document ALL changes with bullet points, wrap at 72 chars
 
@@ -27,6 +27,8 @@ Create atomic commits with conventional format: $ARGUMENTS
 - Respond with ONLY the commit message - NO other text
 - NO explanatory text, introductions, or reasoning
 - Proper line breaks between subject and body
+- The whole commit title MUST be under 50 chars
+- Use imperative mood
 
 **EXACT FORMAT:**
 type(scope): subject line here

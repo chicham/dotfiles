@@ -19,12 +19,11 @@
 - **Before any tool**: Display the message/description/title being sent to verify intent
 
 ### Tool Priority by Use Case
-- **Semantic code search**: Tree-sitter MCP (classes, variables, AST properties)
-- **Text pattern search**: ripgrep `rg` (strings, comments, file contents)
+- **Text pattern search**: Use the `Search` tool when its possible. Never use `grep`, fallback to `rg`
 - **File operations**: eza (aliased to `ls`)
 - **Library docs**: Context7 MCP
 - **ML/AI resources**: Hugging Face MCP
-- **GitHub interactions**: GitHub MCP
+- **GitHub interactions**: GitHub MCP ( ALWAYS use this tool to interact with github)
 - **File find operations**: Use `fd` instead of `find` for faster and more user-friendly searching
 
 ### Essential Commands
