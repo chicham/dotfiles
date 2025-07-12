@@ -1,59 +1,33 @@
 ---
 description: "Delegate large codebase analysis to Gemini CLI when context limits are exceeded"
-allowed-tools: ["Bash", "mcp__github__search_code", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "mcp__hf-mcp-server__hf_doc_search", "mcp__hf-mcp-server__hf_doc_fetch", "mcp__hf-mcp-server__model_search", "mcp__hf-mcp-server__dataset_search", "mcp__hf-mcp-server__paper_search"]
+allowed-tools: []
 ---
 
-# Gemini Analysis Command
+!`gemini --all_files --prompt "Perform a comprehensive analysis of this repository. Extract and identify: 1) Overall project purpose and goals, 2) Core architecture and key components, 3) Main entry points and critical files, 4) Dependencies and technology stack, 5) Directory structure and organization patterns, 6) Key algorithms or business logic, 7) Configuration files and their purposes, 8) Testing approach and coverage, 9) Build/deployment processes, 10) Any notable patterns or architectural decisions. Provide a detailed technical summary that would help another developer quickly understand this codebase."`
 
-Use Gemini CLI for large codebase analysis when context limits are exceeded.
+# Repository Analysis and Summary
 
-## Usage for Claude
+Based on the comprehensive codebase analysis above, provide detailed insights about the repository structure, critical components, and architectural decisions. Use this contextual information to answer questions about:
 
-With user instructions:
-```bash
-gemini --all_files -p "$ARGUMENTS"
-```
+- **Project Overview**: Main purpose, goals, and scope
+- **Architecture**: Core design patterns, module relationships, and data flow
+- **Key Components**: Critical files, entry points, and core functionality
+- **Technology Stack**: Programming languages, frameworks, libraries, and tools
+- **Configuration**: Environment setup, build processes, and deployment
+- **Testing Strategy**: Test coverage, testing frameworks, and quality assurance
+- **Development Workflow**: Build processes, CI/CD, and development practices
 
-Default analysis:
-```bash
-gemini --all_files -p "Analyze the project structure and identify key components and their relationships"
-```
+## Usage Instructions
 
-## Key Options
-- `--all_files` - Include ALL project files (recommended)
-- `-p, --prompt` - Analysis prompt
-- `-m, --model` - Model selection (default: gemini-2.5-pro)
-- `-s, --sandbox` - Run in sandbox mode
-- `-c, --checkpointing` - Enable file edit checkpointing
+This command first analyzes the entire repository structure and content, then uses that analysis to provide informed responses about the codebase. The initial analysis provides comprehensive context about the project's architecture, components, and implementation details.
 
-## Common Analysis Types
-- **Architecture Review**: "Analyze project architecture and module relationships"
-- **Security Audit**: "Perform security audit, list vulnerabilities and recommendations"
-- **Feature Check**: "Check if [feature] implemented, show related files/functions"
-- **Test Coverage**: "Analyze test coverage, identify untested components"
-- **Performance**: "Identify performance bottlenecks and optimization opportunities"
-- **Research**: "Analyze codebase and search web for [technology] best practices"
+## When to Use
 
-## File-Specific Analysis
-```bash
-# Specific paths
-gemini -p "@src/ @tests/ Analyze test coverage for source code"
+- Understanding unfamiliar codebases
+- Architectural reviews and documentation
+- Onboarding new team members
+- Planning major refactoring efforts
+- Security audits requiring full project context
+- Performance analysis across the entire application
 
-# Single file
-gemini -p "@package.json Analyze dependencies and suggest updates"
-```
-
-## Workflow
-1. **Analysis**: Claude runs Gemini for exploration
-2. **Implementation**: Claude implements recommended changes
-3. **Separation**: Gemini explores, Claude implements
-
-## When to Use Gemini
-- Large codebase analysis exceeding context limits
-- Project-wide architecture reviews
-- Comprehensive security audits
-- Feature verification across multiple files
-- Performance analysis requiring full project understanding
-- Research needing codebase analysis + web search
-
-Include "search the web" in prompts when current best practices lookup is needed.
+The analysis focuses on extracting actionable insights and technical understanding rather than surface-level descriptions.
