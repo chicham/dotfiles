@@ -22,8 +22,9 @@ packages:
       - 'pixi'
       - 'colima'
     casks:
-      - '1password-cli'
       - 'wezterm'
       - 'google-chrome'
       - 'google-cloud-sdk'
       - 'nikitabobko/tap/aerospace'
+      - '1password'
+      - '1password-cli'
