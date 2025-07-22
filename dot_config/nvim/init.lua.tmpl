@@ -858,14 +858,15 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
-					"texlab",
-					-- [[ if eq .chezmoi.os "darwin" ]] --
-					-- Additional LSPs for macOS
+					"basedpyright",
 					"bashls",
 					"clangd",
 					"cssls",
 					"html",
 					"jsonls",
+					-- [[ if eq .chezmoi.os "darwin" ]] --
+					-- Additional LSPs for macOS
+					"texlab",
 					-- [[ end ]] --
 				},
 				automatic_installation = true,
