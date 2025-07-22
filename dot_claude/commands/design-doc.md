@@ -1,6 +1,6 @@
 ---
 description: "Create comprehensive design documents for technical features and projects"
-allowed-tools: ["Read", "Write", "Grep", "WebFetch", "Bash", "mcp__github__create_issue", "mcp__github__create_pull_request", "mcp__github__get_issue", "mcp__github__get_pull_request", "mcp__github__update_issue", "mcp__github__update_pull_request", "mcp__github__search_code", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs"]
+allowed-tools: [Read, Write, Bash(gh repo view:*), Bash(eza:*)]
 ---
 
 # Design Doc Writing Assistant

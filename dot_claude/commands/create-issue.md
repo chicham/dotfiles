@@ -1,15 +1,13 @@
 ---
+allowed-tools: [Bash(gh issue list:*), Bash(gh label list:*), Bash(rg:*), Read, TodoWrite, mcp__github__create_issue]
 description: "Create comprehensive GitHub issue with proper documentation"
-allowed-tools: ["Bash", "Read", "TodoWrite"]
 ---
 
 # GitHub Issue Creator
 
 ## Context
 
-- Repository info: !`gh repo view --json name,owner -q '{"owner": .owner.login, "name": .name}'`
-- Recent issues: !`gh issue list --limit 10 --json number,title,state`
-- Codebase issues: !`rg -i "todo|fixme|hack|bug|xxx" --max-count 25 --no-heading`
+- Codebase issues: !`rg -i todo\|fixme\|hack\|bug\|xxx --max-count 25 --no-heading`
 
 ## Your task
 

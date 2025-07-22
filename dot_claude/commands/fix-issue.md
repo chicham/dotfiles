@@ -1,6 +1,6 @@
 ---
 description: "Generate a detailed, PR-ready Markdown implementation plan for a GitHub issue"
-allowed-tools: ["mcp__github__get_issue", "mcp__github__get_issue_comments", "mcp__github__search_code", "Bash", "Read", "Grep"]
+allowed-tools: [mcp__github__get_issue, mcp__github__get_issue_comments, mcp__github__search_code, Bash(gh repo view:*), Read, Grep]
 ---
 
 # Issue Implementation Plan Generator

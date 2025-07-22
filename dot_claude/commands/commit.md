@@ -1,6 +1,6 @@
 ---
+allowed-tools: [Bash(git status:*), Bash(git diff:*), Bash(git branch:*), Bash(git commit:*), Bash(gh repo view:*), TodoWrite]
 description: "Create concise, conventional commits. Body is optional."
-allowed-tools: ["Bash", "TodoWrite"]
 ---
 
 # Atomic Commit Creator
@@ -17,14 +17,15 @@ allowed-tools: ["Bash", "TodoWrite"]
 Based on the staged changes, create a single, concise git commit for: $ARGUMENTS
 
 **Process:**
-1.  Analyze the staged diff.
-2.  Generate a conventional commit message.
-3.  **The body is optional.** Only add a body if the subject line is not sufficient to explain the change. Keep it brief and focused on the "what" and "why".
+1. Analyze the staged diff.
+2. Generate a conventional commit message.
+3. Add a body if the subject line is not sufficient to explain all the changes.
+4. Keep it brief and focused on the "what" and "why".
 
 **Format:**
 - `type(scope): description`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
-- Body (Optional): If needed, explain the change. Wrap at 72 chars.
+- Body: If needed, explain the change. Wrap at 72 chars.
 
 **🚨 CRITICAL OUTPUT FORMAT:**
 - Respond with ONLY the commit message.

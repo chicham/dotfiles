@@ -1,6 +1,6 @@
 ---
 description: "Python test writer using unittest/absl with hypothesis property testing"
-allowed-tools: ["Bash", "Read", "Write", "TodoWrite", "Grep", "mcp__github__search_code"]
+allowed-tools: [Bash(gh repo view:*), Bash(fd:*), Bash(rg:*), Read, Write, TodoWrite, Grep, mcp__github__search_code]
 ---
 
 # Python Test Writer (unittest + absl + hypothesis)

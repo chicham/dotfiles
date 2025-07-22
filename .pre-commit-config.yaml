@@ -36,7 +36,7 @@ repos:
 
   # Validate YAML files
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.37.0
+    rev: v1.37.1
     hooks:
       - id: yamllint
         args: ["-d", "relaxed"]
@@ -49,13 +49,13 @@ repos:
 
   # Check for secrets
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.3
+    rev: v8.28.0
     hooks:
       - id: gitleaks
 
   # Conventional commit messages
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v4.0.0
+    rev: v4.2.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]

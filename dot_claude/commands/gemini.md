@@ -1,6 +1,6 @@
 ---
 description: "Delegate large codebase analysis to Gemini CLI when context limits are exceeded"
-allowed-tools: []
+allowed-tools: [Bash(gemini:*)]
 ---
 
 !`gemini --all_files --prompt "Perform a comprehensive analysis of this repository. Extract and identify: 1) Overall project purpose and goals, 2) Core architecture and key components, 3) Main entry points and critical files, 4) Dependencies and technology stack, 5) Directory structure and organization patterns, 6) Key algorithms or business logic, 7) Configuration files and their purposes, 8) Testing approach and coverage, 9) Build/deployment processes, 10) Any notable patterns or architectural decisions. Provide a detailed technical summary that would help another developer quickly understand this codebase."`
