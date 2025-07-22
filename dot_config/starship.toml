@@ -19,6 +19,9 @@ style = "blue"
 [docker_context]
 style = "blue"
 
+[gcloud]
+disabled = true
+
 [git_branch]
 style = "mauve"
 
@@ -180,10 +183,11 @@ base = "#282828" # Background
 mantle = "#282828" # Background variation
 crust = "#1d2021" # Background variation
 
+[pixi]
+disabled = true
+
 [python]
 style = "green"
 
 [rust]
 style = "peach"
-
-# All other modules use their default settings and formats
