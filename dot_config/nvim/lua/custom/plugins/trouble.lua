@@ -1,3 +1,7 @@
+-- COMMENTED OUT: Trouble.nvim configuration (replaced by fzf-lua)
+-- To revert, uncomment the configuration below and remove the fzf-lua alternatives
+
+--[[
 return {
   'folke/trouble.nvim',
   opts = {},
@@ -25,3 +29,7 @@ return {
     },
   },
 }
+--]]
+
+-- Disabled: use fzf-lua for diagnostics and TODO searching instead
+return {}

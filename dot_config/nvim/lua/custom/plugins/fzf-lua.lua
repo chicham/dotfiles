@@ -8,16 +8,15 @@ return {
 	config = function()
 		local fzf = require("fzf-lua")
 
-		-- Setup fzf-lua with telescope-like UI
+		-- Setup fzf-lua with fullscreen layout
 		fzf.setup({
-			-- Base configuration using the 'telescope' preset
-			"telescope",
+			-- Base configuration using the 'ivy' preset for bottom layout
+			"ivy",
 			winopts = {
-				height = 0.85,
-				width = 0.80,
+				fullscreen = true,        -- Start fullscreen
 				preview = {
-					layout = "vertical",
-					vertical = "down:60%", -- Preview window below
+					layout = "vertical",  -- Stack preview above suggestions
+					vertical = "up:75%",  -- Preview takes 75% of the window height
 				},
 			},
 			keymap = {
@@ -27,8 +26,9 @@ return {
 				},
 			},
 			fzf_opts = {
-				-- Additional FZF options
-				["--layout"] = "reverse",
+				-- Additional FZF options for bottom layout
+				["--layout"] = "reverse-list",
+				["--info"] = "inline",
 			},
 		})
 
@@ -80,6 +80,27 @@ return {
 		vim.keymap.set("n", "<leader>fgc", fzf.git_commits, { desc = "Find git commits" })
 		vim.keymap.set("n", "<leader>fgb", fzf.git_branches, { desc = "Find git branches" })
 		vim.keymap.set("n", "<leader>fgs", fzf.git_status, { desc = "Find git status" })
+
+		-- TODO/XXX/FIXME/BUG search functionality (replacing trouble.nvim)
+		vim.keymap.set("n", "<leader>tt", function()
+			fzf.grep({
+				search = "TODO|XXX|FIXME|BUG",
+				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
+				fzf_opts = { ["--delimiter"] = ":", ["--preview-window"] = "up:60%" },
+			})
+		end, { desc = "Find TODOs/FIXMEs in current buffer" })
+
+		vim.keymap.set("n", "<leader>tT", function()
+			fzf.live_grep({
+				search = "TODO|XXX|FIXME|BUG",
+				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
+				fzf_opts = { ["--delimiter"] = ":", ["--preview-window"] = "up:60%" },
+			})
+		end, { desc = "Find TODOs/FIXMEs in project" })
+
+		-- Trouble.nvim replacement keybindings
+		vim.keymap.set("n", "<leader>tD", fzf.diagnostics_workspace, { desc = "Workspace Diagnostics (fzf)" })
+		vim.keymap.set("n", "<leader>td", fzf.diagnostics_document, { desc = "Buffer Diagnostics (fzf)" })
 
 		-- Register bindings with which-key
 		-- local wk = require("which-key")
