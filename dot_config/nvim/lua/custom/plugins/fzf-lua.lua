@@ -13,10 +13,10 @@ return {
 			-- Base configuration using the 'ivy' preset for bottom layout
 			"ivy",
 			winopts = {
-				fullscreen = true,        -- Start fullscreen
+				fullscreen = true, -- Start fullscreen
 				preview = {
-					layout = "vertical",  -- Stack preview above suggestions
-					vertical = "up:75%",  -- Preview takes 75% of the window height
+					layout = "vertical", -- Stack preview above suggestions
+					vertical = "up:75%", -- Preview takes 75% of the window height
 				},
 			},
 			keymap = {
@@ -32,8 +32,19 @@ return {
 			},
 		})
 
-		-- File navigation
-		vim.keymap.set("n", "<leader>fe", function()
+		-- g-mappings: Replace nvim goto commands with fzf (lowercase=document, uppercase=workspace)
+		vim.keymap.set("n", "gd", fzf.lsp_definitions, { desc = "Go to definitions" })
+		vim.keymap.set("n", "gr", fzf.lsp_references, { desc = "Go to references" })
+		vim.keymap.set("n", "gD", fzf.lsp_declarations, { desc = "Go to declarations" })
+		vim.keymap.set("n", "gi", fzf.lsp_implementations, { desc = "Go to implementations" })
+		vim.keymap.set("n", "gt", fzf.lsp_typedefs, { desc = "Go to type definitions" })
+		vim.keymap.set("n", "gb", fzf.buffers, { desc = "Go to buffer" })
+		vim.keymap.set("n", "gq", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
+		vim.keymap.set("n", "gQ", fzf.lsp_workspace_symbols, { desc = "Go to symbol (workspace)" })
+
+		-- <leader>f: All fzf operations
+		-- Files & navigation
+		vim.keymap.set("n", "<leader>ff", function()
 			-- Use git_files with fallback to regular files if not in git repo
 			fzf.git_files({
 				cwd = vim.fn.getcwd(),
@@ -43,64 +54,39 @@ return {
 				end,
 			})
 		end, { desc = "Find files (git with fallback)" })
-
-		-- Buffer, oldfiles and marks navigation
-		vim.keymap.set("n", "<leader>fb", fzf.buffers, { desc = "Find buffers" })
-		vim.keymap.set("n", "<leader>fh", fzf.oldfiles, { desc = "Find history/oldfiles" })
 		vim.keymap.set("n", "<leader>fm", fzf.marks, { desc = "Find marks" })
 
-		-- Search functionality
-		vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Find by grep" })
-		vim.keymap.set("n", "<leader>fw", function()
-			fzf.grep_cword({ search = vim.fn.expand("<cword>") })
-		end, { desc = "Find word under cursor" })
-
-		-- LSP integration - override standard LSP keymaps
-		vim.keymap.set("n", "gd", fzf.lsp_definitions, { desc = "Go to definitions" })
-		vim.keymap.set("n", "gr", fzf.lsp_references, { desc = "Go to references" })
-		vim.keymap.set("n", "<leader>ft", fzf.lsp_typedefs, { desc = "Find type definitions" })
-		vim.keymap.set("n", "<leader>fi", fzf.lsp_implementations, { desc = "Find implementations" })
-
-		-- Document symbols and diagnostics
-		vim.keymap.set("n", "<leader>ff", fzf.lsp_document_symbols, { desc = "Find document symbols" })
-		vim.keymap.set("n", "<leader>fS", fzf.lsp_workspace_symbols, { desc = "Find workspace symbols" })
-		vim.keymap.set("n", "<leader>fx", fzf.diagnostics_document, { desc = "Find document diagnostics" })
-		vim.keymap.set("n", "<leader>fX", fzf.diagnostics_workspace, { desc = "Find workspace diagnostics" })
-
-		-- Additional useful commands
-		vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Find keymaps" })
-		vim.keymap.set("n", "<leader>fc", fzf.command_history, { desc = "Find command history" })
+		-- Search operations
+		vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Find by grep (live)" })
+		vim.keymap.set("n", "<leader>fw", fzf.grep_cword, { desc = "Find word under cursor" })
+		vim.keymap.set("n", "<leader>fv", fzf.grep_visual, { desc = "Find visual selection" })
 		vim.keymap.set("n", "<leader>f/", fzf.grep_curbuf, { desc = "Find in current buffer" })
-		vim.keymap.set("n", "<leader>fz", fzf.grep_curbuf, { desc = "Fuzzy search current buffer" })
-		vim.keymap.set("n", "<leader>fj", fzf.jumps, { desc = "Find jumps" })
-		vim.keymap.set("n", "<leader>fl", fzf.lines, { desc = "Find lines in loaded buffers" })
-		vim.keymap.set("n", "<leader>fM", fzf.manpages, { desc = "Find man pages" })
-
-		-- Git integration
-		vim.keymap.set("n", "<leader>fgc", fzf.git_commits, { desc = "Find git commits" })
-		vim.keymap.set("n", "<leader>fgb", fzf.git_branches, { desc = "Find git branches" })
-		vim.keymap.set("n", "<leader>fgs", fzf.git_status, { desc = "Find git status" })
-
-		-- TODO/XXX/FIXME/BUG search functionality (replacing trouble.nvim)
-		vim.keymap.set("n", "<leader>tt", function()
-			fzf.grep({
+		vim.keymap.set("n", "<leader>ft", function()
+			fzf.grep_curbuf({
 				search = "TODO|XXX|FIXME|BUG",
 				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
-				fzf_opts = { ["--delimiter"] = ":", ["--preview-window"] = "up:60%" },
 			})
-		end, { desc = "Find TODOs/FIXMEs in current buffer" })
-
-		vim.keymap.set("n", "<leader>tT", function()
+		end, { desc = "Find TODOs/FIXMEs (current buffer)" })
+		vim.keymap.set("n", "<leader>fT", function()
 			fzf.live_grep({
 				search = "TODO|XXX|FIXME|BUG",
 				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
-				fzf_opts = { ["--delimiter"] = ":", ["--preview-window"] = "up:60%" },
 			})
-		end, { desc = "Find TODOs/FIXMEs in project" })
+		end, { desc = "Find TODOs/FIXMEs (workspace)" })
 
-		-- Trouble.nvim replacement keybindings
-		vim.keymap.set("n", "<leader>tD", fzf.diagnostics_workspace, { desc = "Workspace Diagnostics (fzf)" })
-		vim.keymap.set("n", "<leader>td", fzf.diagnostics_document, { desc = "Buffer Diagnostics (fzf)" })
+		-- LSP & diagnostics (lowercase=document, uppercase=workspace)
+		vim.keymap.set("n", "<leader>fa", fzf.lsp_code_actions, { desc = "Find code actions" })
+		vim.keymap.set("n", "<leader>fd", fzf.diagnostics_document, { desc = "Find diagnostics (document)" })
+		vim.keymap.set("n", "<leader>fD", fzf.diagnostics_workspace, { desc = "Find diagnostics (workspace)" })
+
+		-- Git integration
+		vim.keymap.set("n", "<leader>fc", fzf.git_commits, { desc = "Find git commits" })
+		vim.keymap.set("n", "<leader>fB", fzf.git_branches, { desc = "Find git branches" })
+		vim.keymap.set("n", "<leader>fG", fzf.git_status, { desc = "Find git status" })
+
+		-- Utility
+		vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Find help tags" })
+		vim.keymap.set("n", "<leader>fC", fzf.command_history, { desc = "Find command history" })
 
 		-- Register bindings with which-key
 		-- local wk = require("which-key")

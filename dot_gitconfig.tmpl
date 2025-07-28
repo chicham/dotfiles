@@ -16,11 +16,11 @@
     email = # [[ .email ]] #
 # [[ end ]] #
 # [[ end ]] #
-# [[ if .signingKey -]] #
+# [[ if and (hasKey . "signingKey") (ne .signingKey "") -]] #
     signingkey = # [[ .signingKey ]] #
 # [[ end -]] #
 
-# [[ if .signingKey -]] #
+# [[ if and (hasKey . "signingKey") (ne .signingKey "") -]] #
 [commit]
     # Sign commits by default
     gpgsign = true
