@@ -3,15 +3,15 @@ sourceDir = # [[ .chezmoi.sourceDir | quote ]] #
 
 [data]
 name = # [[ output "gh" "api" "user" "--jq" ".login" | trim | quote ]] #
-# [[ $ghEmail := output "gh" "api" "user" "--jq" ".email" | trim ]] #
-# [[ if .chezmoi.stdin -]] #
-email = # [[ promptString "email" "Enter your email address" $ghEmail | quote ]] #
-# [[ else -]] #
-email = # [[ $ghEmail | quote ]] #
-# [[ end -]] #
+# [[ $ghEmail := output "gh" "api" "user" "--jq" ".email // empty" | trim ]] #
+email = # [[ promptStringOnce . "email" (printf "Email (default: %s, press enter to accept)" $ghEmail) $ghEmail | quote ]] #
 # Set the desired credential helper.
 # Examples: "!gh auth git-credential", "osxkeychain", "cache --timeout=3600"
 credentialHelper = "!gh auth git-credential"
+# Your public SSH key for signing commits, retrieved from 1Password if available.
+# [[ if lookPath "op" ]] #
+signingKey = # [[ output "op" "read" "op://Private/Github Signing/public key" | trim | quote ]] #
+# [[ end ]] #
 
 [merge]
   command = 'nvim'
