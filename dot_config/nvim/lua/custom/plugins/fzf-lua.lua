@@ -62,15 +62,42 @@ return {
 		vim.keymap.set("n", "<leader>fv", fzf.grep_visual, { desc = "Find visual selection" })
 		vim.keymap.set("n", "<leader>f/", fzf.grep_curbuf, { desc = "Find in current buffer" })
 		vim.keymap.set("n", "<leader>ft", function()
+			-- Get comment string from vim.bo.commentstring (e.g., "-- %s" for Lua, "# %s" for Python)
+			local commentstring = vim.bo.commentstring
+			if commentstring == "" then
+				-- Fallback for filetypes without commentstring
+				fzf.grep_curbuf({
+					search = "(TODO|XXX|FIXME|BUG)(:|\\(.*\\):|\\s|$)",
+					no_esc = true,
+					rg_opts = "--no-heading --color=always --smart-case",
+				})
+				return
+			end
+
+			-- Extract comment symbol (everything before %s)
+			local comment_symbol = commentstring:match("(.-)%%s") or commentstring
+			comment_symbol = vim.trim(comment_symbol)
+
+			-- Escape special regex characters for ripgrep
+			comment_symbol = comment_symbol:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?\\])", "\\%1")
+
+			-- Build pattern: comment + space + TODO variants (TODO, TODO:, TODO(scope):)
+			local pattern = "^\\s*" .. comment_symbol .. "\\s*(TODO|XXX|FIXME|BUG)(:|\\(.*\\):|\\s|$)"
+
 			fzf.grep_curbuf({
-				search = "TODO|XXX|FIXME|BUG",
-				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
+				search = pattern,
+				no_esc = true,
+				rg_opts = "--no-heading --color=always --smart-case",
 			})
-		end, { desc = "Find TODOs/FIXMEs (current buffer)" })
+		end, { desc = "Find TODOs/FIXMEs in comments (current buffer)" })
 		vim.keymap.set("n", "<leader>fT", function()
-			fzf.live_grep({
-				search = "TODO|XXX|FIXME|BUG",
-				rg_opts = "--type-not=binary --no-heading --color=always --smart-case --regexp",
+			-- Pattern to match TODO variants: TODO, TODO:, TODO(scope):
+			local pattern = "(TODO|XXX|FIXME|BUG)(:|\\(.*\\):|\\s|$)"
+
+			fzf.grep({
+				search = pattern,
+				no_esc = true,
+				rg_opts = "--no-heading --color=always --smart-case",
 			})
 		end, { desc = "Find TODOs/FIXMEs (workspace)" })
 
@@ -87,6 +114,9 @@ return {
 		-- Utility
 		vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Find help tags" })
 		vim.keymap.set("n", "<leader>fC", fzf.command_history, { desc = "Find command history" })
+		vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Find keymaps" })
+		vim.keymap.set("n", "<leader>fo", fzf.oldfiles, { desc = "Find recent files" }) -- codespell:ignore fo
+		vim.keymap.set("n", "<leader>fr", fzf.resume, { desc = "Resume last search" })
 
 		-- Register bindings with which-key
 		-- local wk = require("which-key")
