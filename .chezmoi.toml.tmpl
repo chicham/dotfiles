@@ -8,10 +8,6 @@ email = # [[ promptStringOnce . "email" (printf "Email (default: %s, press enter
 # Set the desired credential helper.
 # Examples: "!gh auth git-credential", "osxkeychain", "cache --timeout=3600"
 credentialHelper = "!gh auth git-credential"
-# Your public SSH key for signing commits, retrieved from 1Password if available.
-# [[ if lookPath "op" ]] #
-signingKey = # [[ output "op" "read" "op://Private/Github Signing/public key" | trim | quote ]] #
-# [[ end ]] #
 
 [merge]
   command = 'nvim'

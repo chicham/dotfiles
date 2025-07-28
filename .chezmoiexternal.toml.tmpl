@@ -46,11 +46,36 @@
   url = # [[ gitHubLatestReleaseAssetURL "direnv/direnv" (printf "direnv.linux-%s" .chezmoi.arch) | quote ]] #
   executable = true
 
-# WezTerm AppImage
+# WezTerm - Terminal emulator and multiplexer (Ubuntu 22.04 default for all Linux)
 [".local/bin/wezterm"]
-  type = "file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "WezTerm-*-Ubuntu20.04.AppImage" | quote ]] #
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
   executable = true
+  path = "wezterm/usr/bin/wezterm"
+
+[".local/bin/wezterm-mux-server"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
+  executable = true
+  path = "wezterm/usr/bin/wezterm-mux-server"
+
+[".local/bin/wezterm-gui"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
+  executable = true
+  path = "wezterm/usr/bin/wezterm-gui"
+
+[".local/bin/strip-ansi-escapes"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
+  executable = true
+  path = "wezterm/usr/bin/strip-ansi-escapes"
+
+[".local/bin/open-wezterm-here"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
+  executable = true
+  path = "wezterm/usr/bin/open-wezterm-here"
 
 # Git LFS - Git extension for versioning large files
 [".local/bin/git-lfs"]

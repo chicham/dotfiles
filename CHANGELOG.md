@@ -109,6 +109,10 @@ All notable changes to this project will be documented in this file.
 
 - Better image ([fd240b1](fd240b1835aa8a1c9b4af0209c776f293d28de7c))
 
+- Better image ([034abcc](034abcc87b6bc0bcca51422bc26e6a4e44b9a922))
+
+- Update template configuration for dynamic GitHub data ([6cec36d](6cec36d3c411d0de3c95e2bfebc51c00791754e0))
+
 
 ### Chores
 
