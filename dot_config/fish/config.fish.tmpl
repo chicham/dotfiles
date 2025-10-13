@@ -22,8 +22,11 @@ else if test -d "/usr/local/bin"
 end
 
 # Set all Homebrew environment variables (PATH, MANPATH, INFOPATH)
+# Only run once per session to avoid repeated expensive calls
 if type -q brew
-    eval "$(brew shellenv)"
+    if not set -q HOMEBREW_PREFIX
+        eval "$(brew shellenv)"
+    end
 end
 # [[ end ]] #
 
@@ -43,13 +46,19 @@ end
 
 # Google Cloud SDK configuration
 # [[ if eq .chezmoi.os "darwin" -]] #
-if type -q brew
-    set -l brew_prefix (brew --prefix)
-    if test -d "$brew_prefix/Caskroom/google-cloud-sdk"
-        fish_add_path "$brew_prefix/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
 
-        if test -f "$brew_prefix/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
-            source "$brew_prefix/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
+if type -q brew; and set -q HOMEBREW_PREFIX
+    if test -d "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk"
+        fish_add_path "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
+
+        # Defer sourcing the expensive path.fish.inc until gcloud is actually used
+        function __init_gcloud --on-event fish_preexec
+            if string match -q "gcloud*" (commandline)
+                if test -f "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
+                    source "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
+                end
+                functions --erase __init_gcloud
+            end
         end
     end
 end
@@ -100,53 +109,84 @@ set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
 
 # Starship prompt - https://starship.rs
 if type -q starship
-    starship init fish | source
+    function __init_starship --on-event fish_prompt
+        starship init fish | source
+        functions --erase __init_starship
+    end
 end
 
 # Zoxide smarter cd - https://github.com/ajeetdsouza/zoxide
 if type -q zoxide
-    zoxide init fish --cmd cd | source
+    function __init_zoxide --on-event fish_prompt
+        zoxide init fish --cmd cd | source
+        functions --erase __init_zoxide
+    end
 end
 
 # Direnv for directory-specific environments - https://direnv.net
 if type -q direnv
-    direnv hook fish | source
+    function __init_direnv --on-event fish_prompt
+        direnv hook fish | source
+        functions --erase __init_direnv
+    end
 end
 
 # Chezmoi dotfile manager - https://chezmoi.io
 if type -q chezmoi
-    chezmoi completion fish | source
+    function __init_chezmoi_completions --on-event fish_preexec
+        if string match -q "chezmoi*" (commandline)
+            chezmoi completion fish | source
+            functions --erase __init_chezmoi_completions
+        end
+    end
 end
 
 # FZF configuration with custom key bindings
-# Avoiding conflict with atuin on Ctrl+R
 if type -q fzf
     set -x FZF_DISABLE_KEYBINDINGS 1
     fzf --fish | source
-
-    # Custom key bindings for FZF
-    bind \ct __fzf_search_current_dir      # Ctrl+T: search files
-    bind \ec __fzf_search_history          # Alt+C: search history
-    bind \eC '__fzf_cd --hidden'           # Alt+Shift+C: cd with hidden files
+    # Unbind FZF's ctrl-r to prevent conflict with Atuin
+    bind -e \cr 2>/dev/null
+    bind -M insert -e \cr 2>/dev/null
+    bind \ct __fzf_search_current_dir
+    bind \ec __fzf_search_history
+    bind \eC '__fzf_cd --hidden'
 end
 
 # Atuin shell history with search - https://atuin.sh
 if type -q atuin
-    # Enable shell completions
-    atuin gen-completions --shell fish | source
-
-    set -gx ATUIN_NOBIND true
+    # Initialize atuin - this creates functions and bindings
     atuin init fish | source
+    atuin gen-completions --shell fish | source
+end
 
-    # Bind Ctrl+R to search shell history with atuin
-    bind \cr _atuin_search
-    # Bind Up arrow key to Atuin's history navigation
-    bind up _atuin_bind_up
+# Atuin key bindings - use Ctrl-f since Ctrl-r preset cannot be overridden
+if status is-interactive
+    if type -q atuin
+        bind \cf _atuin_search
+    end
 end
 
 # Docker - https://www.docker.com
+# Lazy load completions on first use to improve startup time
 if type -q docker
-    docker completion fish | source
+    function __init_docker_completions --on-event fish_preexec
+        if string match -q "docker*" (commandline)
+            docker completion fish | source
+            functions --erase __init_docker_completions
+        end
+    end
+end
+
+# Rip (alternative rm) completions
+# Lazy load completions on first use
+if type -q rip
+    function __init_rip_completions --on-event fish_preexec
+        if string match -q "rip*" (commandline)
+            rip completions fish | source
+            functions --erase __init_rip_completions
+        end
+    end
 end
 
 
@@ -253,3 +293,7 @@ end
 if type -q op
     source $HOME/.config/op/plugins.sh
 end
+
+# bun
+set --export BUN_INSTALL "$HOME/.bun"
+set --export PATH $BUN_INSTALL/bin $PATH

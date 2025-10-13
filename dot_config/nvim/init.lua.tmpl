@@ -655,9 +655,7 @@ require("lazy").setup({
 						group_index = 0,
 					},
 					{ name = "nvim_lsp", priority = 1000 },
-					{ name = "vimtex", priority = 800 },
 					{ name = "luasnip", priority = 750 },
-					{ name = "copilot", priority = 700 },
 					{ name = "buffer", priority = 500, keyword_length = 3 },
 					{ name = "path", priority = 250 },
 				}),
@@ -799,18 +797,19 @@ require("lazy").setup({
 					},
 				},
 				rust_analyzer = {},
-				basedpyright = {
-					settings = {
-						basedpyright = {
-							disableOrganizeImports = true,
-							analysis = {
-								ignore = { "*" },
-								diagnosticMode = "openFilesOnly",
-								typeCheckingMode = "strict",
-							},
-						},
-					},
-				},
+				-- basedpyright = {
+				-- 	settings = {
+				-- 		basedpyright = {
+				-- 			disableOrganizeImports = true,
+				-- 			analysis = {
+				-- 				ignore = { "*" },
+				-- 				diagnosticMode = "openFilesOnly",
+				-- 				typeCheckingMode = "strict",
+				-- 			},
+				-- 		},
+				-- 	},
+				-- },
+				ty = {},
 				texlab = {
 					settings = {
 						texlab = {
@@ -824,6 +823,7 @@ require("lazy").setup({
 						},
 					},
 				},
+				-- copilot_language_server = {},
 			}
 
 			-- [[ if eq .chezmoi.os "darwin" ]] --
@@ -858,7 +858,6 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
-					"basedpyright",
 					"bashls",
 					"clangd",
 					"cssls",

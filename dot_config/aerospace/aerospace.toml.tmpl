@@ -6,7 +6,17 @@
 # You can also enable this manually in AeroSpace preferences
 start-at-login = true
 
+# Possible values: tiles|accordion
+default-root-container-layout = 'tiles'
+
+# Possible values: horizontal|vertical|auto
+# 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
+#               tall monitor (anything higher than wide) gets vertical orientation
 default-root-container-orientation = 'auto'
+
+# The 'accordion-padding' specifies the size of accordion padding
+# You can set 0 to disable the padding feature
+accordion-padding = 10
 
 # i3 doesn't have "normalizations" feature that why we disable them here.
 # But the feature is very helpful.
@@ -35,103 +45,46 @@ outer.top = 1
 outer.right = 3
 
 [workspace-to-monitor-force-assignment]
-1 = 'main'
+1 = '^built-in retina display$'
+2 = '^built-in retina display$'
+3 = '^built-in retina display$'
+4 = 'secondary'
 5 = 'secondary'
 6 = 'secondary'
 
 [mode.main.binding]
-# Changed to ctrl-enter to avoid blocking alt-enter special characters
-# See: https://nikitabobko.github.io/AeroSpace/goodies#open-a-new-window-with-applescript
+# Monitor Operations (Ctrl)
+ctrl-up = 'focus-monitor --wrap-around prev'
+ctrl-down = 'focus-monitor --wrap-around next'
+ctrl-shift-up = 'move-node-to-monitor --wrap-around --focus-follows-window prev'
+ctrl-shift-down = 'move-node-to-monitor --wrap-around --focus-follows-window next'
+
+# Window Focus Operations (Alt + Left/Right)
+alt-left = 'focus --boundaries-action wrap-around-the-workspace dfs-prev'
+alt-right = 'focus --boundaries-action wrap-around-the-workspace dfs-next'
+
+# Workspace Operations (Alt + Up/Down)
+alt-up = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --wrap-around prev"
+alt-down = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --wrap-around next"
+alt-shift-left = 'move left'
+alt-shift-right = 'move right'
+alt-shift-up = 'move-node-to-workspace --focus-follows-window --wrap-around prev'
+alt-shift-down = 'move-node-to-workspace --focus-follows-window --wrap-around next'
+
+# Back-and-forth Operations (Tab)
+ctrl-tab = 'focus-back-and-forth'
+alt-tab = 'workspace-back-and-forth'
+
+# Window Layout Operations (Alt + hjkl)
+alt-j = 'join-with down'
+alt-k = 'join-with up'
+alt-l = 'join-with right'
+alt-h = 'join-with left'
+
+# System Operations
 ctrl-enter = 'exec-and-forget open -na wezterm'
+ctrl-r = 'reload-config'
+ctrl-w = 'close'
+ctrl-shift-w = 'close-all-windows-but-current'
 
-# Focus node ctrl
-ctrl-tab = 'focus-monitor --wrap-around next'
-ctrl-shift-tab = 'focus --boundaries-action wrap-around-the-workspace right'
-alt-tab = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --wrap-around next"
-
-# Move node ctrl + shift
-ctrl-shift-left = 'move left'
-ctrl-shift-right = 'move right'
-ctrl-shift-up = 'move-node-to-monitor --wrap-around --focus-follows-window next'
-ctrl-shift-down = 'move-node-to-monitor --wrap-around --focus-follows-window prev'
-
-# Move workspace alt + shift
-alt-shift-left = 'move-node-to-workspace --focus-follows-window --wrap-around prev'
-alt-shift-right = 'move-node-to-workspace --focus-follows-window --wrap-around next'
-alt-shift-down = 'exec-and-forget aerospace list-workspaces --monitor all --empty no | aerospace move-node-to-workspace --focus-follows-window --wrap-around prev'
-alt-shift-up = 'exec-and-forget aerospace list-workspaces --monitor all --empty no | aerospace move-node-to-workspace --focus-follows-window --wrap-around next'
-
-# Using join-with instead of split for better normalization compatibility
-# Removed alt-h and alt-v split bindings
-
-# Fullscreen commands
-f11 = 'fullscreen'
-ctrl-t = 'macos-native-fullscreen'
-
-# Layout commands removed
-ctrl-shift-space = 'layout floating tiling'
-
-ctrl-shift-r = 'reload-config'
-
-# Using only ctrl-alt combinations for mode switching
-ctrl-alt-r = 'mode resize'
-ctrl-alt-n = 'mode move'
-ctrl-alt-f = 'mode focus'
-ctrl-alt-j = 'mode join'
-
-[mode.join.binding]
-down = 'join-with down'
-right = 'join-with right'
-left = 'join-with left'
-up = 'join-with up'
-enter = 'mode main'
-esc = 'mode main'
-
-[mode.focus.binding]
-left = 'focus --boundaries-action wrap-around-the-workspace left'
-right = 'focus --boundaries-action wrap-around-the-workspace right'
-
-shift-right = "focus-monitor --wrap-around next"
-shift-left = "focus-monitor --wrap-around prev"
-
-# `focus parent`/`focus child` are not yet supported, and it's not clear whether they
-# should be supported at all https://github.com/nikitabobko/AeroSpace/issues/5
-# ctrl-a = 'focus parent'
-
-tab = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace next"
-
-enter = 'mode main'
-esc = 'mode main'
-
-[mode.move.binding]
-1 = 'move-node-to-workspace 1'
-2 = 'move-node-to-workspace 2'
-3 = 'move-node-to-workspace 3'
-4 = 'move-node-to-workspace 4'
-5 = 'move-node-to-workspace 5'
-6 = 'move-node-to-workspace 6'
-n = 'move-node-to-workspace --wrap-around --focus-follows-window next'
-p = 'move-node-to-workspace --wrap-around --focus-follows-window prev'
-
-tab = 'move-workspace-to-monitor --wrap-around next'
-shift-tab = 'move-workspace-to-monitor --wrap-around prev'
-
-enter = 'mode main'
-esc = 'mode main'
-
-[mode.resize.binding]
-# Commented out hjkl keys to avoid conflicts with alt+key combinations
-# h = 'resize width -50'
-# j = 'resize height +50'
-# k = 'resize height -50'
-# l = 'resize width +50'
-
-# Using arrow keys for resize which is more intuitive
-right = 'resize width +50'
-left = 'resize width -50'
-up = 'resize height -50'
-down = 'resize height +50'
-
-enter = 'mode main'
-esc = 'mode main'
 # [[ end ]] #

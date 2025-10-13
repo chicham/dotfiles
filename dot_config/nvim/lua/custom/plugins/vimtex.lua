@@ -57,5 +57,16 @@ return {
         vim.keymap.set('n', 'ysim', '<Nop>', { buffer = true, desc = "Disabled: use vimtex commands instead" })
       end,
     })
+
+    -- Add vimtex source to cmp
+    local cmp = require("cmp")
+    cmp.setup({
+      sources = cmp.config.sources(
+        vim.list_extend(
+          cmp.get_config().sources or {},
+          {{ name = "vimtex", priority = 800 }}
+        )
+      )
+    })
   end,
 }

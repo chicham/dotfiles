@@ -39,8 +39,8 @@ return {
 		vim.keymap.set("n", "gi", fzf.lsp_implementations, { desc = "Go to implementations" })
 		vim.keymap.set("n", "gt", fzf.lsp_typedefs, { desc = "Go to type definitions" })
 		vim.keymap.set("n", "gb", fzf.buffers, { desc = "Go to buffer" })
-		vim.keymap.set("n", "gq", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
-		vim.keymap.set("n", "gQ", fzf.lsp_workspace_symbols, { desc = "Go to symbol (workspace)" })
+		vim.keymap.set("n", "gs", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
+		vim.keymap.set("n", "gS", fzf.lsp_live_workspace_symbols, { desc = "Go to symbol (workspace)" })
 
 		-- <leader>f: All fzf operations
 		-- Files & navigation
