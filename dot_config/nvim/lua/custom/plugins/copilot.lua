@@ -7,7 +7,7 @@ return {
       require("copilot").setup({
         suggestion = { enabled = false },
         panel = { enabled = false },
-        copilot_model = "gpt-4o-copilot",
+        copilot_node_command = "node",
       })
     end,
   },
@@ -17,17 +17,6 @@ return {
     event = "InsertEnter",
     config = function()
       require("copilot_cmp").setup()
-
-      -- Extend existing cmp sources elegantly
-      local cmp = require("cmp")
-      cmp.setup({
-        sources = cmp.config.sources(
-          vim.list_extend(
-            cmp.get_config().sources or {},
-            {{ name = "copilot", priority = 900 }}
-          )
-        )
-      })
     end,
   },
 }

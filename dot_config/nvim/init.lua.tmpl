@@ -655,6 +655,7 @@ require("lazy").setup({
 						group_index = 0,
 					},
 					{ name = "nvim_lsp", priority = 1000 },
+					{ name = "copilot", priority = 900 },
 					{ name = "luasnip", priority = 750 },
 					{ name = "buffer", priority = 500, keyword_length = 3 },
 					{ name = "path", priority = 250 },
@@ -704,17 +705,14 @@ require("lazy").setup({
 					end
 
 					-- LSP keymaps
-					map("gD", vim.lsp.buf.declaration, "Go to Declaration")
-					map("gd", vim.lsp.buf.definition, "Go to Definition")
+					-- Note: gd, gD, gi, gr, gt, gs are handled by fzf-lua for fuzzy finding
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
-					map("gi", vim.lsp.buf.implementation, "Go to Implementation")
 					map("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 					map("<space>D", vim.lsp.buf.type_definition, "Type Definition")
 					map("<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
 					map("<space>rn", vim.lsp.buf.rename, "Rename")
 					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
 					map("<space>ca", vim.lsp.buf.code_action, "Code Action")
-					map("gr", vim.lsp.buf.references, "Go to References")
 					map("<space>f", function()
 						vim.lsp.buf.format({ async = true })
 					end, "Format")
