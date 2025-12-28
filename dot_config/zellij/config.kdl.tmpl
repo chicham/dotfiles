@@ -76,6 +76,24 @@ keybinds clear-defaults=true {
 
         // ----- Tab Operations -----
         bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "o" {
+          Run "nvim" "/Users/hicham.randrianarivo/.orgfiles/gtd/inbox.org" {
+            floating true
+            x "25%"
+            y "5%"
+            width "50%"
+            height "90%"
+            close_on_exit true
+          }
+          SwitchToMode "normal";
+        }
+        bind "g" {
+          Run "claude" {
+            direction "Right"
+            close_on_exit true
+          }
+          SwitchToMode "normal";
+        }
         bind "&" { CloseTab; SwitchToMode "normal"; }
         bind "," { SwitchToMode "RenameTab"; TabNameInput 0; }
         bind "." {

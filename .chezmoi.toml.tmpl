@@ -16,7 +16,7 @@ signingKey = # [[ output "op" "read" "op://Private/Github Signing/public key" | 
 
 [merge]
   command = "mergiraf"
-  args = ["merge", "--git", "{{ .Source }}", "{{ .Destination }}", "{{ .Target }}"]
+  args = ["merge", "--output", "{{ .Target }}", "{{ .Source }}", "{{ .Destination }}", "{{ .Destination }}"]
 
 [diff]
   command = "difft"

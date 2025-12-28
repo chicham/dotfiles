@@ -10,6 +10,7 @@ return {
       function()
         require('treesj').toggle()
       end,
+      desc = 'Split/Join Block',
     },
   },
 }

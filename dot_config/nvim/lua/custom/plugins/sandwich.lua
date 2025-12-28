@@ -1,31 +1,28 @@
 return {
   'machakann/vim-sandwich',
-  opts = {
-    rtp = 'macros',
+  lazy = false,
+  keys = {
+    { 'sa', desc = 'Add Surround', mode = { 'n', 'x' } },
+    { 'sd', desc = 'Delete Surround' },
+    { 'sr', desc = 'Replace Surround' },
   },
   config = function()
-    -- Load surround keymapping
+    -- Load surround keymapping (provides ys, ds, cs)
     vim.cmd [[ runtime macros/sandwich/keymap/surround.vim ]]
 
     -- Enable textobj-sandwich functionality
     vim.cmd [[ runtime autoload/textobj/sandwich.vim ]]
 
-    -- Ensure text objects are properly loaded
-    vim.g.textobj_sandwich_no_default_key_mappings = 0
+    -- Define 'ib' and 'ab' for 'auto' detection (any bracket/quote)
+    vim.keymap.set('o', 'ib', '<Plug>(textobj-sandwich-auto-i)', { desc = 'Sandwich: Inner auto-detected block' })
+    vim.keymap.set('x', 'ib', '<Plug>(textobj-sandwich-auto-i)', { desc = 'Sandwich: Inner auto-detected block' })
+    vim.keymap.set('o', 'ab', '<Plug>(textobj-sandwich-auto-a)', { desc = 'Sandwich: Around auto-detected block' })
+    vim.keymap.set('x', 'ab', '<Plug>(textobj-sandwich-auto-a)', { desc = 'Sandwich: Around auto-detected block' })
 
-    -- Load the textobj mappings
-    vim.cmd [[
-      " Load text objects
-      omap ib <Plug>(textobj-sandwich-auto-i)
-      xmap ib <Plug>(textobj-sandwich-auto-i)
-      omap ab <Plug>(textobj-sandwich-auto-a)
-      xmap ab <Plug>(textobj-sandwich-auto-a)
-
-      " Query-based text objects
-      omap is <Plug>(textobj-sandwich-query-i)
-      xmap is <Plug>(textobj-sandwich-query-i)
-      omap as <Plug>(textobj-sandwich-query-a)
-      xmap as <Plug>(textobj-sandwich-query-a)
-    ]]
+    -- Define 'is' and 'as' for query-based detection
+    vim.keymap.set('o', 'is', '<Plug>(textobj-sandwich-query-i)', { desc = 'Sandwich: Inner query block' })
+    vim.keymap.set('x', 'is', '<Plug>(textobj-sandwich-query-i)', { desc = 'Sandwich: Inner query block' })
+    vim.keymap.set('o', 'as', '<Plug>(textobj-sandwich-query-a)', { desc = 'Sandwich: Around query block' })
+    vim.keymap.set('x', 'as', '<Plug>(textobj-sandwich-query-a)', { desc = 'Sandwich: Around query block' })
   end,
 }

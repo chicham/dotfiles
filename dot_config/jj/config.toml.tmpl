@@ -39,3 +39,8 @@ default-command = "log"
 pager = "bat --style=plain"
 # Use 'diff' style which provides context similar to git's diff3, required for mergiraf
 conflict-marker-style = "diff"
+
+[fix.tools.ruff]
+command = ["uvx", "ruff", "check", "--fix", "--stdin-filename=$path", "-"]
+patterns = ["glob:'**/*.py'"]
+

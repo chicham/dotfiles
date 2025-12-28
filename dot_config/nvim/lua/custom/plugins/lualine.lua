@@ -13,6 +13,6 @@ return {
 		theme = "catppuccin",
 		component_separators = "|",
 		section_separators = "",
-		extensions = { "quickfix", "fugitive", "lazy", "mason", "nvim-dap-ui", "oil", "trouble" },
+		extensions = { "quickfix", "lazy", "mason", "nvim-dap-ui", "oil", "trouble" },
 	},
 }

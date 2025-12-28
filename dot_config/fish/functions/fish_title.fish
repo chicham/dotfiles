@@ -1,3 +1,3 @@
 function fish_title
-    echo (status current-command)" "(basename $PWD)
+    echo (status current-command)
 end

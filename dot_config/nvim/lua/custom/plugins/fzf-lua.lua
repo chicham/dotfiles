@@ -2,11 +2,16 @@
 -- Fast and powerful fuzzy finder using FZF
 return {
 	"ibhagwan/fzf-lua",
+	lazy = false, -- Disable lazy loading so register_ui_select works immediately
+	priority = 1000, -- Load early to hijack vim.ui.select
 	dependencies = {
 		"nvim-tree/nvim-web-devicons", -- Optional for file icons
 	},
 	config = function()
 		local fzf = require("fzf-lua")
+
+		-- Register fzf-lua as the UI select handler
+		fzf.register_ui_select()
 
 		-- Setup fzf-lua with fullscreen layout
 		fzf.setup({
@@ -55,6 +60,22 @@ return {
 			})
 		end, { desc = "Find files (git with fallback)" })
 		vim.keymap.set("n", "<leader>fm", fzf.marks, { desc = "Find marks" })
+		vim.keymap.set("n", "<leader>fo", function()
+			fzf.files({
+				cwd = "~/.orgfiles",
+				prompt = "OrgFiles> ",
+			})
+		end, { desc = "Find any org files" })
+
+		vim.keymap.set("n", "<leader>fh", function()
+			fzf.grep({
+				search = "^\\*+\\s",
+				cwd = "~/.orgfiles",
+				prompt = "OrgHeadlines> ",
+				no_esc = true,
+				rg_opts = "--column --line-number --no-heading --color=always --smart-case",
+			})
+		end, { desc = "Find Org headlines" })
 
 		-- Search operations
 		vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Find by grep (live)" })
@@ -106,17 +127,18 @@ return {
 		vim.keymap.set("n", "<leader>fd", fzf.diagnostics_document, { desc = "Find diagnostics (document)" })
 		vim.keymap.set("n", "<leader>fD", fzf.diagnostics_workspace, { desc = "Find diagnostics (workspace)" })
 
-		-- Git integration
-		vim.keymap.set("n", "<leader>fc", fzf.git_commits, { desc = "Find git commits" })
-		vim.keymap.set("n", "<leader>fB", fzf.git_branches, { desc = "Find git branches" })
-		vim.keymap.set("n", "<leader>fG", fzf.git_status, { desc = "Find git status" })
-
 		-- Utility
 		vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Find help tags" })
 		vim.keymap.set("n", "<leader>fC", fzf.command_history, { desc = "Find command history" })
 		vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Find keymaps" })
-		vim.keymap.set("n", "<leader>fo", fzf.oldfiles, { desc = "Find recent files" }) -- codespell:ignore fo
-		vim.keymap.set("n", "<leader>fr", fzf.resume, { desc = "Resume last search" })
+		vim.keymap.set("n", "<leader>fr", fzf.oldfiles, { desc = "Find recent files" })
+		vim.keymap.set("n", "<leader>fR", fzf.resume, { desc = "Resume last search" })
+
+		-- Replace standard spell suggest
+		vim.keymap.set("n", "z=", fzf.spell_suggest, { desc = "Spell suggest" })
+
+		-- Command palette
+		vim.keymap.set("n", "<leader>:", fzf.commands, { desc = "Command Palette" })
 
 		-- Register bindings with which-key
 		-- local wk = require("which-key")
