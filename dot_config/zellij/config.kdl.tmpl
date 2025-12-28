@@ -63,7 +63,7 @@ keybinds clear-defaults=true {
     normal {
         // Leader key: Ctrl+a enters "tmux" mode for sub-commands
         bind "Ctrl a" { SwitchToMode "tmux"; }
-        
+
     }
 
     // -------------------------------------------------------------------------
@@ -73,7 +73,7 @@ keybinds clear-defaults=true {
         // Return to normal mode after command or on Esc
         bind "Esc" { SwitchToMode "normal"; }
         bind "Ctrl c" { SwitchToMode "normal"; }
-        
+
         // ----- Tab Operations -----
         bind "c" { NewTab; SwitchToMode "normal"; }
         bind "&" { CloseTab; SwitchToMode "normal"; }
@@ -86,7 +86,7 @@ keybinds clear-defaults=true {
         }
         bind "Tab" { GoToNextTab; SwitchToMode "normal"; }
         bind "Shift Tab" { GoToPreviousTab; SwitchToMode "normal"; }
-        
+
         // Direct tab access (0-9)
         bind "0" { GoToTab 1; SwitchToMode "normal"; }
         bind "1" { GoToTab 1; SwitchToMode "normal"; }
@@ -98,7 +98,7 @@ keybinds clear-defaults=true {
         bind "7" { GoToTab 7; SwitchToMode "normal"; }
         bind "8" { GoToTab 8; SwitchToMode "normal"; }
         bind "9" { GoToTab 9; SwitchToMode "normal"; }
-        
+
         // ----- Pane Operations -----
         bind "v" { NewPane "Right"; SwitchToMode "normal"; }
         bind "h" { NewPane "Down"; SwitchToMode "normal"; }
@@ -106,13 +106,13 @@ keybinds clear-defaults=true {
         bind "m" { ToggleFocusFullscreen; SwitchToMode "normal"; }  // Maximize pane
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "Space" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
-        
+
         // ----- Pane Navigation -----
         bind "Left" { MoveFocus "Left"; SwitchToMode "normal"; }
         bind "Right" { MoveFocus "Right"; SwitchToMode "normal"; }
         bind "Up" { MoveFocus "Up"; SwitchToMode "normal"; }
         bind "Down" { MoveFocus "Down"; SwitchToMode "normal"; }
-        
+
         // Cycle through panes (w = move mode, p = pane mode)
         bind "w" { SwitchToMode "move"; }
         bind "p" { SwitchToMode "pane"; }
@@ -121,7 +121,7 @@ keybinds clear-defaults=true {
         bind "[" { SwitchToMode "scroll"; }
         bind "/" { SwitchToMode "search"; }
         bind "r" { SwitchToMode "resize"; }
-        
+
         // ----- Process Output Management -----
         bind "e" { EditScrollback; SwitchToMode "normal"; }
         bind "Shift s" { ToggleActiveSyncTab; SwitchToMode "normal"; }
@@ -131,11 +131,11 @@ keybinds clear-defaults=true {
             }
             SwitchToMode "normal";
         }
-        
+
         // ----- Session Management -----
         bind "d" { Detach; }
         bind "k" { Quit; }
-        
+
         // ----- Plugin Shortcuts -----
         // Pane picker - quickly switch between panes with fuzzy search
         // - Type to search (fuzzy matches across tab name, pane ID, and title)
@@ -164,7 +164,7 @@ keybinds clear-defaults=true {
             }
             SwitchToMode "normal";
         }
-        
+
         // Keybind helper (forgot) - show available keybindings
         bind "?" {
             LaunchOrFocusPlugin "file:{{ .chezmoi.homeDir }}/.config/zellij/plugins/zellij-forgot.wasm" {
@@ -184,7 +184,7 @@ keybinds clear-defaults=true {
         bind "Esc" { SwitchToMode "normal"; }
         bind "Ctrl c" { SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
-        
+
         bind "Left" { MovePane "Left"; }
         bind "Right" { MovePane "Right"; }
         bind "Up" { MovePane "Up"; }
@@ -201,12 +201,12 @@ keybinds clear-defaults=true {
         bind "Esc" { SwitchToMode "normal"; }
         bind "Ctrl c" { SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
-        
+
         bind "Left" { MoveFocus "Left"; }
         bind "Right" { MoveFocus "Right"; }
         bind "Up" { MoveFocus "Up"; }
         bind "Down" { MoveFocus "Down"; }
-        
+
         bind "n" { NewPane; SwitchToMode "normal"; }
         bind "x" { CloseFocus; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
@@ -221,7 +221,7 @@ keybinds clear-defaults=true {
         bind "Ctrl c" { SwitchToMode "normal"; }
         bind "q" { SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
-        
+
         bind "j" "Down" { ScrollDown; }
         bind "k" "Up" { ScrollUp; }
         bind "Ctrl f" "PageDown" { PageScrollDown; }
@@ -230,7 +230,7 @@ keybinds clear-defaults=true {
         bind "u" { HalfPageScrollUp; }
         bind "g" { ScrollToTop; }
         bind "Shift g" { ScrollToBottom; }
-        
+
         // Search in scroll mode
         bind "/" { SwitchToMode "search"; }
     }
@@ -242,11 +242,11 @@ keybinds clear-defaults=true {
         bind "Esc" { ScrollToBottom; SwitchToMode "normal"; }
         bind "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "scroll"; }
-        
+
         bind "n" { Search "down"; }
         bind "p" { Search "up"; }
         bind "Shift n" { Search "up"; }
-        
+
         bind "c" { SearchToggleOption "CaseSensitivity"; }
         bind "w" { SearchToggleOption "Wrap"; }
         bind "o" { SearchToggleOption "WholeWord"; }
@@ -259,17 +259,17 @@ keybinds clear-defaults=true {
         bind "Esc" { SwitchToMode "normal"; }
         bind "Ctrl c" { SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
-        
+
         bind "Left" { Resize "Increase Left"; }
         bind "Right" { Resize "Increase Right"; }
         bind "Up" { Resize "Increase Up"; }
         bind "Down" { Resize "Increase Down"; }
-        
+
         bind "Shift Left" { Resize "Decrease Left"; }
         bind "Shift Right" { Resize "Decrease Right"; }
         bind "Shift Up" { Resize "Decrease Up"; }
         bind "Shift Down" { Resize "Decrease Down"; }
-        
+
         bind "=" { Resize "Increase"; }
         bind "-" { Resize "Decrease"; }
     }
@@ -288,7 +288,7 @@ keybinds clear-defaults=true {
         // Quick access to locked mode (Ctrl+g to pass all keys through)
         bind "Ctrl g" { SwitchToMode "locked"; }
     }
-    
+
     shared_except "normal" "locked" {
         // Always allow returning to normal mode
         bind "Ctrl n" { SwitchToMode "normal"; }
@@ -423,7 +423,7 @@ themes {
         // Special mode (PANE, TAB, etc.) - highlighted with orange border
         frame_highlight {
             base 250 179 135        // Orange border for mode indication
-            background 0            // Transparent background  
+            background 0            // Transparent background
             emphasis_0 245 194 231
             emphasis_1 250 179 135
             emphasis_2 250 179 135

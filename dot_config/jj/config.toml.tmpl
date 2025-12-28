@@ -1,0 +1,41 @@
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+"$schema" = "https://jj-vcs.github.io/jj/latest/config-schema.json"
+
+[user]
+# [[ if hasKey . "name" -]] #
+# [[ if ne .name "" -]] #
+name = # [[ .name | quote ]] #
+# [[- end ]] #
+# [[- end ]] #
+# [[ if hasKey . "email" -]] #
+# [[ if ne .email "" -]] #
+email = # [[ .email | quote ]] #
+# [[- end ]] #
+# [[- end ]] #
+
+# [[ if and (hasKey . "signingKey") (ne .signingKey "") -]] #
+[signing]
+behavior = "own"
+backend = "ssh"
+key = # [[ .signingKey | quote ]] #
+sign-all = true
+
+[signing.backends.ssh]
+# [[ if eq .chezmoi.os "darwin" -]] #
+program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+# [[ else -]] #
+program = "/usr/local/bin/op-ssh-sign"
+# [[ end -]] #
+# [[ end -]] #
+
+[git]
+private-commits = '''description(glob:'private:*')'''
+
+[ui]
+editor = "nvim"
+diff-formatter = ["difft", "--color=always", "--display=inline", "$left", "$right"]
+merge-editor = "mergiraf"
+default-command = "log"
+pager = "bat --style=plain"
+# Use 'diff' style which provides context similar to git's diff3, required for mergiraf
+conflict-marker-style = "diff"

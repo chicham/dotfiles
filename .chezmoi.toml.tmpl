@@ -15,8 +15,8 @@ signingKey = # [[ output "op" "read" "op://Private/Github Signing/public key" | 
 # [[ end ]] #
 
 [merge]
-  command = 'nvim'
-  args = ["-d", "{{ .Destination }}", "{{ .Source }}", "{{ .Target }}"]
+  command = "mergiraf"
+  args = ["merge", "--git", "{{ .Source }}", "{{ .Destination }}", "{{ .Target }}"]
 
 [diff]
   command = "difft"

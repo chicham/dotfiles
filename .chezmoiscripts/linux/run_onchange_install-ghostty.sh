@@ -43,7 +43,7 @@ if [ -z "$LATEST_TAG" ]; then
   exit 1
 fi
 
-# Remove 'v' prefix for the filename construction if necessary, 
+# Remove 'v' prefix for the filename construction if necessary,
 # but looking at the example: v${VERSION}/Ghostty-${VERSION}...
 # The repo tags are like 'v1.0.1-0'. The files are 'Ghostty-1.0.1-0-x86_64.AppImage'.
 # So we need to strip the leading 'v' for the filename part.

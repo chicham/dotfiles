@@ -12,6 +12,7 @@ packages:
       - 'atuin'
       - 'direnv'
       - 'difftastic'
+      - 'mergiraf'
       - 'git-cliff'
       - 'fd'
       - 'uv'
