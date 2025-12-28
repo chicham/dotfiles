@@ -21,8 +21,10 @@ packages:
       - 'ripgrep'
       - 'pixi'
       - 'colima'
+      - 'zellij'
     casks:
       - 'wezterm'
+      - 'ghostty'
       - 'google-chrome'
       - 'google-cloud-sdk'
       - 'nikitabobko/tap/aerospace'
