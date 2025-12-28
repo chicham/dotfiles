@@ -183,9 +183,6 @@ base = "#282828" # Background
 mantle = "#282828" # Background variation
 crust = "#1d2021" # Background variation
 
-[pixi]
-disabled = true
-
 [python]
 style = "green"
 

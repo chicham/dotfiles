@@ -4,6 +4,11 @@
 # Reference: https://www.chezmoi.io/reference/special-files-and-directories/chezmoiexternal-format/
 
 # [[ $rustArch := (eq .chezmoi.arch "amd64" | ternary "x86_64" "aarch64") ]] #
+# [[ $fzfArch := (eq .chezmoi.arch "amd64" | ternary "amd64" "arm64") ]] #
+# [[ $libc := "gnu" ]] #
+# [[ if eq .chezmoi.arch "arm64" ]] #
+#   [[ $libc = "musl" ]] #
+# [[ end ]] #
 
 # Neovim AppImage
 [".local/bin/nvim"]
@@ -46,6 +51,60 @@
   url = # [[ printf "https://codeberg.org/mergiraf/mergiraf/releases/download/v0.16.1/mergiraf_%s-unknown-linux-gnu.tar.gz" $rustArch | quote ]] #
   executable = true
   path = "./mergiraf"
+
+# zellij - A terminal workspace with batteries included
+[".local/bin/zellij"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "zellij-org/zellij" (printf "zellij-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "zellij"
+
+# starship - The minimal, blazing-fast, and infinitely customizable prompt for any shell
+[".local/bin/starship"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "starship/starship" (printf "starship-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "starship"
+
+# ghostty - A fast, feature-rich, and cross-platform terminal emulator
+[".local/bin/ghostty"]
+  type = "file"
+  url = # [[ gitHubLatestReleaseAssetURL "pkgforge-dev/ghostty-appimage" (printf "Ghostty-*-%s.AppImage" $rustArch) | quote ]] #
+  executable = true
+
+# fzf - A command-line fuzzy finder
+[".local/bin/fzf"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "junegunn/fzf" (printf "fzf-*-%s_%s.tar.gz" "linux" $fzfArch) | quote ]] #
+  executable = true
+  path = "fzf"
+
+# atuin - Magical shell history
+[".local/bin/atuin"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "atuinsh/atuin" (printf "atuin-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/atuin"
+
+# zoxide - A smarter cd command
+[".local/bin/zoxide"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "ajeetdsouza/zoxide" (printf "zoxide-*-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "zoxide"
+
+# uv - An extremely fast Python package installer and resolver
+[".local/bin/uv"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "astral-sh/uv" (printf "uv-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/uv"
+
+[".local/bin/uvx"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "astral-sh/uv" (printf "uv-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/uvx"
 
 # direnv - Unclutter your .profile
 [".local/bin/direnv"]

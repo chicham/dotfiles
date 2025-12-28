@@ -20,7 +20,6 @@ packages:
       - 'rust'
       - 'git-extras'
       - 'ripgrep'
-      - 'pixi'
       - 'colima'
       - 'zellij'
     casks:
