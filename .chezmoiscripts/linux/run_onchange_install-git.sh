@@ -16,7 +16,7 @@ fi
 # Git LFS is now managed by chezmoiexternal.toml
 if command -v git-lfs > /dev/null 2>&1; then
   echo "Git LFS is installed."
-  
+
   # Install Git LFS hooks
   if command -v git > /dev/null 2>&1; then
     git lfs install --skip-repo

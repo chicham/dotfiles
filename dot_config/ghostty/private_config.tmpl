@@ -1,3 +1,4 @@
+# chezmoi:template:left-delimiter="[[ " right-delimiter=" ]] #"
 # ============================================================================
 # Ghostty Configuration
 # Migrated from WezTerm
@@ -35,13 +36,13 @@ window-padding-y = 0,4
 # Window decorations (TITLE | RESIZE equivalent)
 window-decoration = true
 
-{{ if eq .chezmoi.os "darwin" -}}
+# [[ if eq .chezmoi.os "darwin" ]] #
 # Tabs are now managed by Zellij, use transparent for clean titlebar with buttons
 macos-titlebar-style = transparent
 
 # macOS specific
 macos-option-as-alt = left
-{{ end -}}
+# [[ end ]] #
 
 # Note: Ghostty doesn't have a scrollbar configuration option
 # Scrolling is handled via scrollback buffer

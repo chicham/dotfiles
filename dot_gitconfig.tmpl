@@ -141,12 +141,6 @@
 
 # Check Git version and use the appropriate conflict style
 # zdiff3 was introduced in Git 2.35.0
-# [[ $gitVersionOutput := output "git" "--version" -]] #
-# [[ $gitVersion := index (splitList " " $gitVersionOutput) 2 -]] #
-# [[ $versionParts := splitList "." $gitVersion -]] #
-# [[ $majorVersion := index $versionParts 0 | atoi -]] #
-# [[ $minorVersion := index $versionParts 1 | atoi -]] #
-# [[ $useZdiff3 := or (gt $majorVersion 2) (and (eq $majorVersion 2) (ge $minorVersion 35)) -]] #
 
 [merge "mergiraf"]
     name = mergiraf
@@ -158,6 +152,9 @@
     # Use diff3 conflict style for better compatibility with mergiraf
     conflictstyle = diff3
     # Always use rebase for merging
+    ff = only
+    # Use mergiraf as the default merge tool
+    tool = mergiraf
     ff = only
     # Use mergiraf as the default merge tool
     tool = mergiraf

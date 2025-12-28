@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# dot_config/zellij/config.kdl.tmpl hash: {{ include "dot_config/zellij/config.kdl.tmpl" | sha256sum }}
+
+set -euo pipefail
+
+PLUGIN_DIR="${HOME}/.config/zellij/plugins"
+mkdir -p "$PLUGIN_DIR"
+
+echo "Ensuring Zellij plugins are installed/updated..."
+
+download_plugin() {
+    local repo="$1"
+    local asset="$2"
+    local output="$3"
+    local url="https://github.com/${repo}/releases/latest/download/${asset}"
+
+    echo "Downloading ${output} from ${repo}..."
+    if curl -L -f -o "${PLUGIN_DIR}/${output}" "${url}"; then
+        echo "  Successfully downloaded ${output}"
+    else
+        echo "  Failed to download ${output} from ${url}"
+        return 1
+    fi
+}
+
+# Install plugins
+download_plugin "shihanng/zellij-pane-picker" "zellij-pane-picker.wasm" "zellij-pane-picker.wasm"
+download_plugin "laperlej/zellij-choose-tree" "zellij-choose-tree.wasm" "zellij-choose-tree.wasm"
+download_plugin "karimould/zellij-forgot" "zellij_forgot.wasm" "zellij-forgot.wasm"
+
+echo "Zellij plugins setup complete."
