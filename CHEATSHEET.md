@@ -276,7 +276,7 @@ The `dotfiles_doctor` command performs comprehensive environment checks:
    | Core | chezmoi, fish, starship, wezterm, direnv |
    | Editors | neovim, vscode |
    | CLI Tools | bat, eza, fd, fzf, zoxide, atuin |
-   | Git Tools | git, git-lfs, github-cli, difftastic, git-cliff, git-extras, pre-commit |
+   | Git Tools | git, git-lfs, github-cli, difftastic, git-cliff, jj, prek |
    | Development | gcloud, uv |
    | Platform | brew (macOS only) |
 

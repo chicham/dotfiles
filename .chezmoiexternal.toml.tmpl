@@ -106,6 +106,34 @@
   executable = true
   path = "*/uvx"
 
+# jj - Jujutsu version control
+[".local/bin/jj"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "jj-vcs/jj" (printf "jj-v*-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/jj"
+
+# dust - More intuitive version of du in Rust
+[".local/bin/dust"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "bootandy/dust" (printf "dust*-%s-unknown-linux-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/dust"
+
+# bottom - A customizable cross-platform graphical process/system monitor
+[".local/bin/btm"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "ClementTsang/bottom" (printf "bottom_%s-unknown-linux-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/btm"
+
+# rip2 - A safe and ergonomic rm replacement (binary name: rip)
+[".local/bin/rip"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "MilesCranmer/rip2" (printf "rip-Linux-%s-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "*/rip"
+
 # direnv - Unclutter your .profile
 [".local/bin/direnv"]
   type = "file"

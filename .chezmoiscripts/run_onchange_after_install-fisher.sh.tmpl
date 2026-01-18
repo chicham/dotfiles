@@ -1,4 +1,5 @@
 #!/bin/sh
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
 
 # Install Fisher (a plugin manager for Fish shell)
 # https://github.com/jorgebucaran/fisher
@@ -24,5 +25,4 @@ if ! fish -c "functions -q fisher" > /dev/null 2>&1; then
   fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
 fi
 
-# Update Fisher plugins (non-installed plugins only)
 fish -c "fisher update"

@@ -1,21 +1,21 @@
-# Pre-commit Setup
+# Prek Setup
 
-This repository comes with an automatic pre-commit configuration that helps maintain code quality across all your Git repositories.
+This repository comes with an automatic prek configuration that helps maintain code quality across all your Git repositories.
 
-## What is pre-commit?
+## What is prek?
 
-[pre-commit](https://pre-commit.com/) is a framework for managing and maintaining Git hooks. It automatically runs a set of checks on your code before each commit, ensuring that your code meets quality standards.
+[prek](https://github.com/j178/prek) is a fast, drop-in alternative to pre-commit that runs the same hook configuration and manages hook environments. It automatically runs a set of checks on your code before each commit, ensuring that your code meets quality standards.
 
 ## How It Works
 
 When you run `git init` to create a new repository:
 
-1. The pre-commit hooks are automatically installed in your new repository's `.git/hooks` directory
-1. A sample pre-commit configuration file is available at `~/.git_template/pre-commit-config.yaml`
+1. The prek hooks are automatically installed in your new repository's `.git/hooks` directory
+1. A sample pre-commit-compatible configuration file is available at `~/.git_template/pre-commit-config.yaml`
 
 ## Setting Up a New Repository
 
-To use pre-commit in a new repository:
+To use prek in a new repository:
 
 1. Copy the sample configuration:
 
@@ -59,14 +59,14 @@ Edit your `.pre-commit-config.yaml` file to add or remove hooks as needed. Visit
 
 ## Troubleshooting
 
-If you ever need to bypass pre-commit (not recommended for normal use):
+If you ever need to bypass prek (not recommended for normal use):
 
 ```bash
 git commit --no-verify
 ```
 
-If pre-commit is not installed, the global hooks will guide you to install it with:
+If prek is not installed, the global hooks will guide you to install it with:
 
 ```bash
-uv pip install pre-commit
+uv tool install prek
 ```

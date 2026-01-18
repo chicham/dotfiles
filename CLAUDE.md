@@ -71,7 +71,7 @@ This is a dotfiles template repository managed with [chezmoi](https://chezmoi.io
 - Document environment assumptions
 - Quote all variables: `"${var}"`
 - Avoid hardcoded paths when possible
-- Always run pre-commit hooks to verify changes
+- Always run prek hooks to verify changes
 
 ## Development Workflow
 

@@ -48,14 +48,22 @@ end
 # [[ if eq .chezmoi.os "darwin" -]] #
 
 if type -q brew; and set -q HOMEBREW_PREFIX
-    if test -d "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk"
-        fish_add_path "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
+    set gcloud_cask_root ""
+
+    if test -d "$HOMEBREW_PREFIX/Caskroom/gcloud-cli"
+        set gcloud_cask_root "$HOMEBREW_PREFIX/Caskroom/gcloud-cli/latest/google-cloud-sdk"
+    else if test -d "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk"
+        set gcloud_cask_root "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk"
+    end
+
+    if test -n "$gcloud_cask_root"
+        fish_add_path "$gcloud_cask_root/bin"
 
         # Defer sourcing the expensive path.fish.inc until gcloud is actually used
         function __init_gcloud --on-event fish_preexec
             if string match -q "gcloud*" (commandline)
-                if test -f "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
-                    source "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc"
+                if test -f "$gcloud_cask_root/path.fish.inc"
+                    source "$gcloud_cask_root/path.fish.inc"
                 end
                 functions --erase __init_gcloud
             end
