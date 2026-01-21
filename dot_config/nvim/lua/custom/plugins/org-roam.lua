@@ -11,36 +11,39 @@ return {
   },
   keys = {
     { "<leader>npr", function() _G.org_promote_reading_note() end, desc = "Promote [R]eading from inbox" },
-    { "<leader>npn", function() _G.org_promote_inbox_note() end, desc = "Promote [N]ote or idea from inbox" },
-    { "<leader>npx", function() _G.org_promote_experiment() end, desc = "Promote e[X]periment from inbox" },
-    { "<leader>nrt", function() _G.org_refile_to_daily() end, desc = "Refile to [R]efiles [T]oday" },
-    { "<leader>nry", function() _G.org_refile_to_yesterday() end, desc = "Refile to [R]efiles [Y]esterday" },
+    { "<leader>npi", function() _G.org_promote_inbox_note() end, desc = "Promote [I]dea/note from inbox" },
+    { "<leader>npe", function() _G.org_promote_experiment() end, desc = "Promote [E]xperiment from inbox" },
+    { "<leader>nph", function() _G.org_promote_headline_to_note() end, desc = "Promote [H]eadline to own note" },
+    { "<leader>nrc", function() _G.org_cleanup_done_tasks() end, desc = "[R]efile [C]ompleted tasks from inbox" },
+    { "<leader>nrT", function() _G.org_refile_manual_to_daily() end, desc = "Manual refile to [T]oday" },
     {
-      "<leader>nt",
-      function()
-        if _G.ensure_daily_capture_targets then
-          _G.ensure_daily_capture_targets()
-        end
-        require("orgmode").instance().capture:open_template_by_shortcut("j")
-      end,
-      desc = "Quick add [t]ask to today",
-    },
-    {
-      "<leader>ne",
+      "<leader>nn",
       function()
         if _G.ensure_daily_capture_targets then
           _G.ensure_daily_capture_targets()
         end
         require("orgmode").instance().capture:open_template_by_shortcut("o")
       end,
-      desc = "Quick add not[e] to today",
+      desc = "Quick add [N]ote to today",
     },
     {
       "<leader>nw",
       function()
-        capture_roam_dailies_template(os.time(), "w")
+        local roam = require("org-roam")
+        local templates = roam.config.extensions.dailies.templates
+        -- Pass only the "w" template so it opens directly without selection
+        roam.api.capture_node({
+          templates = { w = templates.w },
+        }):catch(function(err)
+          vim.notify("Weekly review capture failed: " .. tostring(err), vim.log.levels.ERROR)
+        end)
       end,
       desc = "Create [W]eekly Review",
+    },
+    {
+      "<leader>nW",
+      function() _G.org_weekly_review_view() end,
+      desc = "[W]eekly Review View",
     },
   },
   config = function()
@@ -96,10 +99,7 @@ return {
 #+TITLE: %<%Y-%m-%d %A>
 #+FILETAGS: :daily:
 
-# Shortcuts: <Leader>nt=task, <Leader>ne=note, <Leader>nrt=refile today, <Leader>nry=refile yesterday, I=clock-in, O=clock-out
-
-* Planned [/]
-  %?
+# Shortcuts: <Leader>nn=note, <Leader>nrc=cleanup done tasks, I=clock-in, O=clock-out
 
 * Done
 
@@ -140,17 +140,25 @@ return {
         -- Default template for new notes/ideas
         n = {
           description = "note",
-          template = "%?",
-          target = "%[slug].org",
+          template = [[
+:PROPERTIES:
+:ID: %(return require('orgmode.org.id').new())
+:CREATED: %U
+:END:
+#+TITLE: %^{Title}
+#+FILETAGS: :note:
+
+* Notes
+%?]],
+          target = "notes/%<%Y%m%d%H%M%S>-%[slug].org",
         },
         -- Reading/Literature template - Single source of truth
-            p = {
-              description = "Reading/Literature",
-              template = [[
+        p = {
+          description = "Reading/Literature",
+          template = [=[
 :PROPERTIES:
 :ID: %(return _G.org_roam_capture_id or require('orgmode.org.id').new())
 :CREATED: %U
-:URL: %(return (_G.org_roam_capture_url and _G.org_roam_capture_url ~= "" and _G.org_roam_capture_url) or vim.fn.input("URL: "))
 :DATE_READ: %u
 :AUTHOR: %(return vim.fn.input("Author(s): "))
 :JOURNAL: %(return vim.fn.input("Journal/Publisher: "))
@@ -158,7 +166,7 @@ return {
 :DOI: %(return vim.fn.input("DOI (optional): "))
 :KEYWORDS: %(return vim.fn.input("Keywords (comma separated): "))
 :END:
-#+TITLE: %(return (_G.org_roam_capture_title and _G.org_roam_capture_title ~= "" and _G.org_roam_capture_title) or vim.fn.input("Title: "))
+#+TITLE: [[%(return (_G.org_roam_capture_url and _G.org_roam_capture_url ~= "" and _G.org_roam_capture_url) or vim.fn.input("URL: "))][%(return (_G.org_roam_capture_title and _G.org_roam_capture_title ~= "" and _G.org_roam_capture_title) or vim.fn.input("Title: "))]]
 #+FILETAGS: :reading:research:
 
 * Hypothesis/Claim
@@ -195,9 +203,22 @@ return {
 # Is the evidence sufficient and convincing?
 # What flaws/strengths do you see?
 # How can this paper be helpful to your research/writing?
-]],
-              target = "literature/%<%Y%m%d%H%M%S>-%[slug].org",
-            },
+]=],
+          target = "literature/%<%Y%m%d%H%M%S>-%[slug].org",
+        },
+        -- Experiment template - Single source of truth
+        e = {
+          description = "Experiment",
+          template = [[
+* %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return _G.prompt_experiment_title()) :experiment:
+:PROPERTIES:
+:ID: %(return require('orgmode.org.id').new())
+:CREATED: %U
+:END:
+
+%(return _G.get_experiment_template_sections())%?]],
+          target = "../experiments/%<%Y-%m-%d>-%(return _G.get_experiment_slug()).org",
+        },
       },
 
       ui = {
@@ -306,6 +327,20 @@ return {
         template_config.target = vim.fs.joinpath(vim.fn.expand(roam.config.directory), target)
       end
 
+      if config.check_existing_by_title and template_config.target then
+        local slug = require("org-roam.utils").title_to_slug(title)
+        local target_dir = vim.fn.fnamemodify(template_config.target, ":h")
+        local slug_pattern = "%-" .. vim.pesc(slug) .. "%.org$"
+        local matches = vim.fs.find(function(name, _)
+          return name:match(slug_pattern) or name == slug .. ".org"
+        end, { path = target_dir, type = "file", limit = 1 })
+        if matches and #matches > 0 then
+          vim.cmd("edit " .. vim.fn.fnameescape(matches[1]))
+          vim.notify("Reading note already exists: " .. matches[1], vim.log.levels.WARN)
+          return
+        end
+      end
+
       -- Use native org-roam capture API with modified template
       roam.api.capture_node({
         title = title,
@@ -333,7 +368,7 @@ return {
 
     -- Promote reading list entry
     _G.org_promote_reading_note = function()
-      promote_headline({ tags = { "reading" }, template = "p", require_url = true })
+      promote_headline({ tags = { "reading" }, template = "p", require_url = true, check_existing_by_title = true })
     end
 
     -- Promote note or idea
@@ -341,90 +376,265 @@ return {
       promote_headline({ tags = { "note", "idea" }, template = "n" })
     end
 
-    -- Promote experiment to project logbook
-    _G.org_promote_experiment = function()
-      local org = require("orgmode")
-      local source_file = org.instance().files:get_current_file()
-      local source_headline = source_file and source_file:get_closest_headline()
-
-      if not source_headline then
-        vim.notify("No headline found.", vim.log.levels.WARN)
-        return
-      end
-
-      if not vim.tbl_contains(source_headline:get_tags(), "experiment") then
-        vim.notify("Headline is not tagged :experiment:", vim.log.levels.WARN)
-        return
-      end
-
-      local project = source_headline:get_property("PROJECT", false) or vim.fn.input("Experiment project: ")
-      if project == "" then
-        vim.notify("Project is required.", vim.log.levels.WARN)
-        return
-      end
-
-      local logbook = vim.g.org_experiment_logbook_name or "logbook.org"
-      local path = vim.fn.expand("~/.orgfiles/gtd/projects/" .. project .. "/" .. logbook)
-
-      -- Ensure logbook exists with Experiments headline
-      if vim.fn.filereadable(path) == 0 then
-        local status, org_id_module = pcall(require, "orgmode.org.id")
-        local org_id = status and org_id_module.new() or "TEMP-ID"
-        vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
-        vim.fn.writefile({
-          ":PROPERTIES:",
-          ":ID: " .. org_id,
-          ":CREATED: " .. os.date("[%Y-%m-%d %a %H:%M]"),
-          ":PROJECT: " .. project,
-          ":END:",
-          "#+TITLE: " .. project .. " Experiment Logbook",
-          "#+FILETAGS: :experiment:logbook:",
-          "",
-          "* Experiments",
-        }, path)
-      end
-
-      local dest_file = org.instance().files:get(path)
-      local dest_headline = dest_file and dest_file:find_headline_by_title("Experiments")
-
-      if not dest_file or not dest_headline then
-        vim.notify("Missing Experiments headline in logbook.", vim.log.levels.WARN)
-        return
-      end
-
-      local item_range = source_headline:get_range()
-      org.instance().capture:_refile_from_org_file({
-        source_headline = source_headline,
-        destination_file = dest_file,
-        destination_headline = dest_headline,
-      })
-
-      remove_headline_from_source(source_file, item_range)
+    -- Promote any headline to its own note (no tag restriction)
+    _G.org_promote_headline_to_note = function()
+      promote_headline({ tags = {}, template = "n" })
     end
 
-    -- Ensure daily file exists (using native org-roam dailies API)
+    -- Promote any headline to its own experiment file
+    _G.org_promote_experiment = function()
+      promote_headline({ tags = {}, template = "e" })
+    end
+
+    -- Ensure daily file exists (creates from template if missing)
     _G.org_roam_ensure_daily_file = function(time)
       local roam = require("org-roam")
-      local date_obj = time and require("orgmode.objects.date").from_timestamp(time) or require("orgmode.objects.date").today()
-
-      -- Use native goto_date which creates file if not exists
-      roam.extensions.dailies.goto_date({ date = date_obj }):next(function()
-        local path = vim.api.nvim_buf_get_name(0)
-        -- Ensure headlines exist after creation
-        if _G.ensure_daily_capture_targets then
-          _G.ensure_daily_capture_targets()
-        end
-        return path
-      end)
-
-      -- Fallback: construct path manually
       local base_dir = vim.fn.expand(roam.config.directory)
       local daily_dir = roam.config.extensions.dailies.directory or "daily"
-      local date_str = os.date("%Y-%m-%d", time or os.time())
-      return vim.fs.joinpath(base_dir, daily_dir, date_str .. ".org")
+      local t = time or os.time()
+      local date_str = os.date("%Y-%m-%d", t)
+      local path = vim.fs.joinpath(base_dir, daily_dir, date_str .. ".org")
+
+      if vim.fn.filereadable(path) == 0 then
+        local template_cfg = roam.config.extensions.dailies.templates.d
+        if not template_cfg then
+          vim.notify("Daily template 'd' not found", vim.log.levels.ERROR)
+          return nil
+        end
+
+        -- Expand template placeholders with the target time
+        local content = template_cfg.template
+        content = content:gsub("%%%(return require%('orgmode%.org%.id'%)%.new%(%)%)", function()
+          local ok, id_mod = pcall(require, "orgmode.org.id")
+          return ok and id_mod.new() or "TEMP-ID"
+        end)
+        content = content:gsub("%%U", os.date("[%Y-%m-%d %a %H:%M]", t))
+        content = content:gsub("%%<([^>]+)>", function(fmt)
+          return os.date(fmt, t)
+        end)
+
+        vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
+        vim.fn.writefile(vim.split(content, "\n"), path)
+      end
+
+      return path
     end
 
-    -- Refile headline to daily's Done section
+    -- Auto-refile completed tasks to their respective daily Done sections based on CLOSED date
+    -- @param source_path: path to source file (required)
+    -- @param tag_filter: optional tag to filter headlines (nil = no filter)
+    local function cleanup_done_tasks(source_path, tag_filter)
+      local org = require("orgmode").instance()
+      local file_path = vim.fn.expand(source_path)
+
+      if not file_path or file_path == "" then
+        vim.notify("Source file path is required", vim.log.levels.WARN)
+        return
+      end
+
+      file_path = vim.fn.resolve(vim.fn.fnamemodify(file_path, ":p"))
+
+      -- Load source file using internal API
+      local source_file = org.files:get(file_path)
+      if not source_file then
+        vim.notify("Source file not found: " .. file_path, vim.log.levels.WARN)
+        return
+      end
+
+      -- Collect identifying info for done headlines (not the objects themselves)
+      -- We store title + closed date components to re-find them after each refile
+      local function collect_done_info(file, filter)
+        local result = {}
+        local function traverse(headlines)
+          for _, h in ipairs(headlines) do
+            local closed = h:get_closed_date()
+            local is_done = h:is_done()
+            local title = h:get_title()
+            local tags = h:get_tags()
+
+            local matches_tag = true
+            if filter then
+              matches_tag = vim.tbl_contains(tags, filter)
+            end
+
+            if matches_tag and is_done and closed then
+              table.insert(result, {
+                title = title,
+                closed_year = closed.year,
+                closed_month = closed.month,
+                closed_day = closed.day,
+              })
+            end
+
+            -- Recurse into children
+            local children = h:get_child_headlines()
+            if children and #children > 0 then
+              traverse(children)
+            end
+          end
+        end
+        traverse(file:get_headlines())
+        return result
+      end
+
+      local done_info = collect_done_info(source_file, tag_filter)
+
+      if #done_info == 0 then
+        local filter_msg = tag_filter and (" with tag :" .. tag_filter .. ":") or ""
+        vim.notify("No completed tasks found" .. filter_msg, vim.log.levels.INFO)
+        return
+      end
+
+      local refiled_count = 0
+      local errors = {}
+
+      -- Process each task by re-finding it fresh after each refile
+      for _, info in ipairs(done_info) do
+        -- Reload source file to get fresh state
+        source_file = org.files:get(file_path)
+        if not source_file then
+          table.insert(errors, info.title .. " (source gone)")
+          goto continue
+        end
+
+        -- Find the headline by matching title and closed date components
+        local function find_headline(file, title, y, m, d)
+          local function traverse(headlines)
+            for _, h in ipairs(headlines) do
+              local closed = h:get_closed_date()
+              if h:is_done() and h:get_title() == title and closed
+                  and closed.year == y and closed.month == m and closed.day == d then
+                return h
+              end
+              local children = h:get_child_headlines()
+              if children and #children > 0 then
+                local found = traverse(children)
+                if found then return found end
+              end
+            end
+            return nil
+          end
+          return traverse(file:get_headlines())
+        end
+
+        local source_headline = find_headline(source_file, info.title, info.closed_year, info.closed_month, info.closed_day)
+        if not source_headline then
+          table.insert(errors, info.title .. " (not found)")
+          goto continue
+        end
+
+        -- Ensure parent headline has an ID (if exists)
+        local parent_headline = source_headline:get_parent_headline()
+        local parent_id = nil
+        if parent_headline then
+          parent_id = parent_headline:get_property('ID', false)
+          if not parent_id or parent_id == '' then
+            local ok, id_mod = pcall(require, "orgmode.org.id")
+            if ok then
+              parent_id = id_mod.new()
+              parent_headline:set_property('ID', parent_id)
+            end
+          end
+        end
+
+        -- Build time from closed date components
+        local time = os.time({ year = info.closed_year, month = info.closed_month, day = info.closed_day, hour = 12 })
+
+        -- Ensure daily file exists
+        local daily_path = _G.ensure_daily_capture_targets and _G.ensure_daily_capture_targets(time)
+                           or _G.org_roam_ensure_daily_file(time)
+
+        if not daily_path then
+          table.insert(errors, info.title .. " (no daily)")
+          goto continue
+        end
+
+        -- Load destination file
+        local dest_file = org.files:get(daily_path)
+        if not dest_file then
+          table.insert(errors, info.title .. " (daily not loaded)")
+          goto continue
+        end
+
+        -- Find "Done" headline in destination
+        local dest_headline = dest_file:find_headline_by_title("Done")
+        if not dest_headline then
+          table.insert(errors, info.title .. " (no Done section)")
+          goto continue
+        end
+
+        -- Perform refile using internal API
+        local target_line = dest_headline:get_range().end_line
+        local target_level = dest_headline:get_level()
+        local is_same_file = source_file.filename == dest_file.filename
+
+        local lines = source_headline:get_lines()
+
+        -- Add parent link if parent exists
+        if parent_id and parent_headline then
+          local parent_title = parent_headline:get_title()
+          local parent_link = string.format("- Parent: [[id:%s][%s]]", parent_id, parent_title)
+          -- Insert after the headline (skip headline line and properties drawer)
+          local insert_at = 1
+          for i, line in ipairs(lines) do
+            if i > 1 and not line:match("^%s*:") and not line:match("^%s*$") then
+              insert_at = i
+              break
+            end
+          end
+          if insert_at == 1 and #lines > 1 then
+            insert_at = 2
+          end
+          table.insert(lines, insert_at, parent_link)
+        end
+
+        -- Adapt headline level
+        local level = source_headline:get_level()
+        if target_level > 0 and level <= target_level then
+          local diff = target_level - level + 1
+          for i, line in ipairs(lines) do
+            if line:match("^%*+") then
+              lines[i] = string.rep("*", diff) .. line
+            end
+          end
+        elseif target_level > 0 and level > target_level + 1 then
+          local diff = level - target_level - 1
+          for i, line in ipairs(lines) do
+            local stars = line:match("^(%*+)")
+            if stars and #stars > diff then
+              lines[i] = line:sub(diff + 1)
+            end
+          end
+        end
+
+        -- Insert into destination
+        dest_file:update_sync(function()
+          vim.api.nvim_buf_set_lines(0, target_line, target_line, false, lines)
+        end)
+
+        -- Remove from source (if different file)
+        if not is_same_file then
+          source_file:update_sync(function()
+            local range = source_headline:get_range()
+            vim.api.nvim_buf_set_lines(0, range.start_line - 1, range.end_line, false, {})
+          end)
+        end
+
+        refiled_count = refiled_count + 1
+
+        ::continue::
+      end
+
+      -- Report results
+      if refiled_count > 0 then
+        vim.notify(string.format("Refiled %d task(s)", refiled_count), vim.log.levels.INFO)
+      end
+      if #errors > 0 then
+        vim.notify("Failed: " .. table.concat(errors, ", "), vim.log.levels.WARN)
+      end
+    end
+
+    -- Refile headline to a selected daily headline
     local function refile_headline_to_daily(time)
       local org = require("orgmode").instance()
       local source_headline = org.files:get_current_file():get_closest_headline()
@@ -435,7 +645,12 @@ return {
       end
 
       -- Ensure daily file exists
-      local path = _G.org_roam_ensure_daily_file(time)
+      local path = nil
+      if _G.ensure_daily_capture_targets then
+        path = _G.ensure_daily_capture_targets(time)
+      else
+        path = _G.org_roam_ensure_daily_file(time)
+      end
       if not path then
         vim.notify("Unable to create daily note.", vim.log.levels.WARN)
         return
@@ -447,37 +662,131 @@ return {
         return
       end
 
-      -- Find "Done" headline
-      local dest_headline = nil
-      for _, hl in ipairs(dest_file:get_headlines()) do
-        if hl:get_title():match("Done") then
-          dest_headline = hl
-          break
+      local source_bufnr = source_headline.file and source_headline.file:bufnr()
+      if type(_G.org_refile_with_fzf) ~= 'function' then
+        vim.notify('Fzf refile helper not available.', vim.log.levels.WARN)
+        return
+      end
+
+      _G.org_refile_with_fzf({
+        source_headline = source_headline,
+        source_bufnr = source_bufnr,
+        destination_path = path,
+        ensure_path = path,
+        default_headline = 'Notes',
+        prompt = ('Daily Refile (%s)> '):format(os.date('%Y-%m-%d', time)),
+        message = ('Logged to Daily: %s'):format(os.date('%Y-%m-%d', time)),
+      })
+    end
+
+    -- Cleanup: auto-refile completed tasks from inbox to their respective daily notes
+    _G.org_cleanup_done_tasks = function(source_path, tag_filter)
+      -- Default to inbox if no source specified
+      local path = source_path or "~/.orgfiles/gtd/inbox.org"
+      cleanup_done_tasks(path, tag_filter)
+    end
+
+    -- Manual refile current headline to today's daily
+    _G.org_refile_manual_to_daily = function()
+      refile_headline_to_daily(os.time())
+    end
+
+    -- Weekly review view: show all tasks and notes from the past 7 days
+    _G.org_weekly_review_view = function()
+      local roam = require("org-roam")
+      local base_dir = vim.fn.expand(roam.config.directory)
+      local daily_dir = roam.config.extensions.dailies.directory or "daily"
+      local daily_path = vim.fs.joinpath(base_dir, daily_dir)
+
+      local now = os.time()
+      local day_seconds = 24 * 60 * 60
+      local items = {}
+
+      -- Collect items from past 7 days
+      for i = 0, 6 do
+        local time = now - (i * day_seconds)
+        local date_str = os.date("%Y-%m-%d", time)
+        local weekday = os.date("%a", time)
+        local file_path = vim.fs.joinpath(daily_path, date_str .. ".org")
+
+        if vim.fn.filereadable(file_path) == 1 then
+          local lines = vim.fn.readfile(file_path)
+          local current_section = nil
+          local current_level = 0
+
+          for lnum, line in ipairs(lines) do
+            -- Detect section headlines (Done, Notes)
+            local stars, title = line:match("^(%*+)%s+(.+)$")
+            if stars then
+              local level = #stars
+              local clean_title = title:gsub("%s*%[.-%]%s*", ""):gsub("%s*:.+:%s*$", "")
+              if level == 1 and (clean_title == "Done" or clean_title == "Notes") then
+                current_section = clean_title
+                current_level = level
+              elseif level == 1 then
+                current_section = nil
+              elseif current_section and level > current_level then
+                -- This is a child headline under a tracked section
+                local display = string.format("%s %s | %-7s | %s", date_str, weekday, current_section, title)
+                table.insert(items, {
+                  display = display,
+                  file = file_path,
+                  lnum = lnum,
+                  date = date_str,
+                  section = current_section,
+                })
+              end
+            end
+          end
         end
       end
 
-      org.capture:_refile_from_org_file({
-        source_headline = source_headline,
-        destination_file = dest_file,
-        destination_headline = dest_headline,
-      })
-
-      return path
-    end
-
-    -- Refile to today's daily
-    _G.org_refile_to_daily = function()
-      local time = os.time()
-      if refile_headline_to_daily(time) then
-        vim.notify("Logged to Daily: " .. os.date("%Y-%m-%d", time), vim.log.levels.INFO)
+      if #items == 0 then
+        vim.notify("No items found in the past 7 days.", vim.log.levels.INFO)
+        return
       end
-    end
 
-    -- Refile to yesterday's daily
-    _G.org_refile_to_yesterday = function()
-      local time = os.time() - (24 * 60 * 60)
-      if refile_headline_to_daily(time) then
-        vim.notify("Logged to Daily: " .. os.date("%Y-%m-%d", time), vim.log.levels.INFO)
+      -- Build display list
+      local displays = {}
+      for _, item in ipairs(items) do
+        table.insert(displays, item.display)
+      end
+
+      -- Use fzf-lua if available, otherwise vim.ui.select
+      local ok, fzf = pcall(require, "fzf-lua")
+      if ok then
+        fzf.fzf_exec(displays, {
+          prompt = "Weekly Review> ",
+          actions = {
+            ["default"] = function(selected)
+              if selected and selected[1] then
+                for _, item in ipairs(items) do
+                  if item.display == selected[1] then
+                    vim.cmd("edit " .. vim.fn.fnameescape(item.file))
+                    vim.api.nvim_win_set_cursor(0, { item.lnum, 0 })
+                    break
+                  end
+                end
+              end
+            end,
+          },
+          winopts = {
+            height = 0.6,
+            width = 0.8,
+          },
+        })
+      else
+        vim.ui.select(displays, { prompt = "Weekly Review> " }, function(choice)
+          if choice then
+            for _, item in ipairs(items) do
+              if item.display == choice then
+                vim.cmd("edit " .. vim.fn.fnameescape(item.file))
+                vim.api.nvim_win_set_cursor(0, { item.lnum, 0 })
+                break
+              end
+            end
+          end
+        end)
       end
     end
 
