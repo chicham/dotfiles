@@ -22,11 +22,51 @@ style = "blue"
 [gcloud]
 disabled = true
 
+# --- jj module (replaces git_branch + git_status) ---
+# Uses same individual jj calls as the proven statusline-command.sh
+[custom.jj]
+when           = "jj root --ignore-working-copy 2>/dev/null"
+shell          = ["sh"]
+ignore_timeout = true
+command = '''
+ws=$(jj workspace list --ignore-working-copy 2>/dev/null | awk '/^\*/{print $2}')
+cid=$(jj log -r @ --no-graph -T 'change_id.shortest()' --ignore-working-copy 2>/dev/null)
+bk=$(jj log -r @ --no-graph -T 'bookmarks.join(", ")' --ignore-working-copy 2>/dev/null)
+hc=$(jj log -r @ --no-graph -T 'conflict' --ignore-working-copy 2>/dev/null)
+he=$(jj log -r @ --no-graph -T 'empty' --ignore-working-copy 2>/dev/null)
+out=""
+[ -n "$ws" ] && out="⎇ $ws "
+if [ "$hc" = "true" ]; then out="${out}✖ "; elif [ "$he" = "true" ]; then out="${out}○ "; else out="${out}● "; fi
+out="${out}${cid}"
+[ -n "$bk" ] && out="$out $bk"
+echo "$out"
+'''
+format = "[$output]($style) "
+style  = "mauve"
+
 [git_branch]
-style = "mauve"
+disabled = true
+
+[git_commit]
+disabled = true
 
 [git_status]
-style = "red"
+disabled = true
+
+# --- git fallback (only in non-jj repos) ---
+[custom.git_info]
+when           = "! jj root --ignore-working-copy 2>/dev/null && git rev-parse --git-dir 2>/dev/null"
+shell          = ["sh"]
+ignore_timeout = true
+command = '''
+branch=$(git branch --show-current 2>/dev/null)
+[ -z "$branch" ] && branch=$(git rev-parse --short HEAD 2>/dev/null)
+dirty=""
+[ -n "$(git status --porcelain 2>/dev/null)" ] && dirty=" ✚"
+echo "${branch}${dirty}"
+'''
+format = "[$output]($style) "
+style  = "mauve"
 
 [golang]
 style = "blue"
@@ -185,6 +225,9 @@ crust = "#1d2021" # Background variation
 
 [python]
 style = "green"
+
+[package]
+disabled = true
 
 [rust]
 style = "peach"

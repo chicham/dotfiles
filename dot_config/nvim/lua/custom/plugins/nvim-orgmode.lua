@@ -83,14 +83,15 @@ return {
 ]]
 		end
 		
+		local orgfiles_base = vim.fn.expand("~/.orgfiles")
 		local org_dirs = {
-			gtd = "~/.orgfiles/gtd",
-			gtd_projects = "~/.orgfiles/gtd/projects",
-			research = "~/.orgfiles/research",
-			roam = "~/.orgfiles/roam",
-			roam_notes = "~/.orgfiles/roam/notes",
-			roam_daily = "~/.orgfiles/roam/daily",
-			experiments = "~/.orgfiles/experiments",
+			gtd = orgfiles_base .. "/gtd",
+			gtd_projects = orgfiles_base .. "/gtd/projects",
+			research = orgfiles_base .. "/research",
+			roam = orgfiles_base .. "/roam",
+			roam_notes = orgfiles_base .. "/roam/notes",
+			roam_daily = orgfiles_base .. "/roam/daily",
+			experiments = orgfiles_base .. "/experiments",
 		}
 
 		local org_files = {
@@ -297,7 +298,7 @@ return {
 			vim.api.nvim_win_set_cursor(0, { #lines + #insert_lines - 1, 0 })
 		end
 
-		ensure_inbox_headlines()
+		-- ensure_inbox_headlines() -- removed: inbox is for temporary tasks only
 		-- =============================================================================
 		-- HIGH-PERFORMANCE WORKFLOW DOCUMENTATION
 		-- =============================================================================
@@ -329,6 +330,7 @@ return {
 			org_dirs.research .. "/*.org",
 			org_dirs.roam .. "/**/*.org",
 			org_dirs.experiments .. "/**/*.org",
+			orgfiles_base .. "/gcal.org",
 		}
 
 		-- Setup orgmode with GTD-focused research workflow
@@ -336,6 +338,17 @@ return {
 			-- File organization for GTD + research workflow
 			org_agenda_files = agenda_globs,
 			org_default_notes_file = org_files.gtd_inbox,
+
+			-- Enable automatic indentation for proper folding
+			org_startup_indented = true,
+			org_adapt_indentation = true,
+
+			-- Work day time grid: 9:30 - 18:30
+			org_agenda_time_grid = {
+				type = { "daily", "today", "require-timed" },
+				times = { 930, 1030, 1130, 1230, 1330, 1430, 1530, 1630, 1730, 1830 },
+			},
+
 			org_agenda_custom_commands = {
 				r = {
 					description = "Running experiments",
@@ -344,6 +357,26 @@ return {
 							type = "tags_todo",
 							match = "experiment/WORKING",
 							org_agenda_overriding_header = "Running Experiments",
+						},
+						{
+							type = "tags_todo",
+							match = "experiment/WAITING",
+							org_agenda_overriding_header = "Waiting Experiments",
+						},
+						{
+							type = "tags_todo",
+							match = "experiment/TODO",
+							org_agenda_overriding_header = "Pending Experiments",
+						},
+					},
+				},
+				p = {
+					description = "People — milestones & deadlines",
+					types = {
+						{
+							type = "tags_todo",
+							match = "person",
+							org_agenda_overriding_header = "People — open items",
 						},
 					},
 				},
@@ -388,16 +421,17 @@ return {
 					template = [[:PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
+:PERSON: %(return _G.org_prompt_person_for_capture())
 :END:
 #+TITLE: %^{Meeting Title}
 #+FILETAGS: :meeting:
 #+DATE: %<%Y-%m-%d %a>
 
 * Attendees
-- %^{Attendees}
+- %(return _G._capture_person_name or "")
+- %?
 
 * Agenda
-- %?
 
 * Notes
 
@@ -430,10 +464,10 @@ return {
 				},
 
 				l = {
-					description = "Link (Commit)",
-					template = "* %^{Title|%(return _G.org_capture_default_title())}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:FILE: %(return _G.org_capture_file_path())\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n- Source: %(return _G.org_capture_abs_link())\n- Line: %(return _G.org_capture_line_text())",
+					description = "Code TODO",
+					template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n%(return _G.org_capture_abs_link())",
 					target = org_files.gtd_inbox,
-					headline = "Misc",
+					headline = "Tasks",
 				},
 
 				-- Quick note to today's daily log
@@ -859,6 +893,30 @@ return {
 					vim.keymap.set({ 'n', 'v' }, '<Leader>oli', function()
 						_G.org_insert_link_fzf()
 					end, { buffer = true, desc = 'Insert link (fzf)' })
+					vim.keymap.set('n', '<Leader>oep', function()
+						local src = vim.api.nvim_buf_get_name(0)
+						if src == '' or vim.fn.filereadable(src) ~= 1 then
+							vim.notify('No org file to export.', vim.log.levels.WARN)
+							return
+						end
+						if vim.bo.modified then
+							vim.cmd('write')
+						end
+						local pdf = vim.fn.fnamemodify(src, ':r') .. '.pdf'
+						vim.notify('Exporting to PDF…', vim.log.levels.INFO)
+						vim.system(
+							{ 'pandoc', src, '-o', pdf },
+							{ text = true },
+							vim.schedule_wrap(function(obj)
+								if obj.code ~= 0 then
+									vim.notify('pandoc failed: ' .. (obj.stderr or ''), vim.log.levels.ERROR)
+									return
+								end
+								vim.system({ 'open', pdf }, { detach = true })
+								vim.notify('Opened ' .. pdf, vim.log.levels.INFO)
+							end)
+						)
+					end, { buffer = true, desc = 'Export to PDF (pandoc) and open' })
 				end)
 			end,
 		})

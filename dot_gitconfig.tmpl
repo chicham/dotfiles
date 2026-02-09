@@ -153,23 +153,8 @@
     conflictstyle = diff3
     # Always use rebase for merging
     ff = only
-    # Use mergiraf as the default merge tool
-    tool = mergiraf
-    ff = only
-    # Use mergiraf as the default merge tool
-    tool = mergiraf
-
-[mergetool "vscode"]
-    cmd = code --wait "$MERGED"
-    trustExitCode = true
-
-[mergetool "nvim"]
-    cmd = nvim -d "$LOCAL" "$REMOTE" "$MERGED" -c 'wincmd J | wincmd ='
-    trustExitCode = true
-
-[mergetool "fugitive"]
-    cmd = nvim -f -c \"Gvdiffsplit!\" \"$MERGED\"
-    trustExitCode = true
+    # Use nvim as the default merge tool for manual conflict resolution
+    tool = nvim
 
 [mergetool]
     prompt = false
@@ -232,17 +217,18 @@
     vsmerge = mergetool --tool=vscode
     # Use neovim for resolving merge conflicts
     nvimmerge = mergetool --tool=nvim
-    # Use fugitive for resolving merge conflicts
-    fugmerge = mergetool --tool=fugitive
 
 [credential]
     # [[ if .credentialHelper -]] #
     # Use specified credential helper
     helper = # [[ .credentialHelper ]] #
-    # [[ else ]] #
-    # Cache credentials for 1 hour (3600 seconds)
-    helper = cache --timeout=3600
-    # [[ end ]] #
+# [[ else ]] #
+    # Use GitHub CLI for credential management
+    helper = !gh auth git-credential
+# [[ end ]] #
+[credential "https://git.overleaf.com"]
+    helper =
+    helper = "!f() { echo username=git; echo \"password=$(op read op://Personal/OVERLEAF_GIT_TOKEN/credential)\"; }; f"
 
 # [[ if eq .chezmoi.os "darwin" ]] #
 [url "git@github.com:"]

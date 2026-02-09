@@ -26,6 +26,9 @@ return {
       end,
       desc = "Quick add [N]ote to today",
     },
+    { "<leader>nss", function() _G.org_person_overview() end, desc = "[S]upervisee overview" },
+    { "<leader>nsa", function() _G.org_assign_person() end, desc = "[S]upervisee [A]ssign to headline" },
+    { "<leader>nsl", function() _G.org_insert_person_link() end, desc = "[S]upervisee [L]ink insert" },
     {
       "<leader>nw",
       function()
@@ -47,15 +50,16 @@ return {
     },
   },
   config = function()
+    local orgfiles_base = vim.fn.expand("~/.orgfiles")
     require("org-roam").setup({
       -- Main directory for org-roam files
-      directory = "~/.orgfiles/roam",
+      directory = orgfiles_base .. "/roam",
 
       -- Make use of existing org-files from orgmode
       org_files = {
-        "~/.orgfiles/gtd/*.org",
-        "~/.orgfiles/gtd/projects/*.org",
-        "~/.orgfiles/research/*.org",
+        orgfiles_base .. "/gtd/*.org",
+        orgfiles_base .. "/gtd/projects/*.org",
+        orgfiles_base .. "/research/*.org",
       },
 
       bindings = {
@@ -682,7 +686,7 @@ return {
     -- Cleanup: auto-refile completed tasks from inbox to their respective daily notes
     _G.org_cleanup_done_tasks = function(source_path, tag_filter)
       -- Default to inbox if no source specified
-      local path = source_path or "~/.orgfiles/gtd/inbox.org"
+      local path = source_path or vim.fn.expand("~/.orgfiles/gtd/inbox.org")
       cleanup_done_tasks(path, tag_filter)
     end
 
@@ -788,6 +792,142 @@ return {
           end
         end)
       end
+    end
+
+    -- =========================================================================
+    -- People tracking helpers
+    -- =========================================================================
+
+    -- Scan roam/people/**/*.org for person files (tagged :person:)
+    local function scan_people_files()
+      local people_dir = vim.fn.expand(orgfiles_base .. "/roam/people")
+      -- Match both roam/people/*.org and roam/people/*/*.org
+      local files = vim.fn.glob(people_dir .. "/**/*.org", false, true)
+      local people = {}
+
+      for _, path in ipairs(files) do
+        local lines = vim.fn.readfile(path, "", 20)
+        local name, id, is_person
+        for _, line in ipairs(lines) do
+          if not name then
+            name = line:match("^#+TITLE:%s*(.+)$")
+          end
+          if not id then
+            id = line:match("^:ID:%s*(.+)$")
+          end
+          if not is_person and line:match("^#+FILETAGS:.*:person:") then
+            is_person = true
+          end
+          if name and id and is_person then break end
+        end
+        if name and is_person then
+          table.insert(people, { name = vim.trim(name), id = id or "", path = path })
+        end
+      end
+
+      table.sort(people, function(a, b) return a.name < b.name end)
+      return people
+    end
+
+    -- fzf picker: select a person, call callback({name, id, path})
+    _G.org_select_person = function(opts, callback)
+      opts = opts or {}
+      local people = scan_people_files()
+
+      if #people == 0 then
+        vim.notify("No people found in roam/people/. Create person files first.", vim.log.levels.WARN)
+        return
+      end
+
+      local displays = {}
+      local display_map = {}
+      for _, p in ipairs(people) do
+        table.insert(displays, p.name)
+        display_map[p.name] = p
+      end
+
+      local function on_select(choice)
+        if not choice then return end
+        local person = display_map[choice]
+        if person and callback then
+          callback(person)
+        end
+      end
+
+      local ok, fzf = pcall(require, "fzf-lua")
+      if ok then
+        fzf.fzf_exec(displays, {
+          prompt = opts.prompt or "Person > ",
+          actions = {
+            ["default"] = function(selected)
+              if selected and selected[1] then
+                on_select(selected[1])
+              end
+            end,
+          },
+          winopts = { height = 0.4, width = 0.5 },
+        })
+      else
+        vim.ui.select(displays, { prompt = opts.prompt or "Person > " }, on_select)
+      end
+    end
+
+    -- Open a person's file (dashboard). Use <Leader>nl for backlinks.
+    _G.org_person_overview = function()
+      _G.org_select_person({ prompt = "Open person > " }, function(person)
+        vim.cmd("edit " .. vim.fn.fnameescape(person.path))
+      end)
+    end
+
+    -- Assign :PERSON: property to the headline under cursor
+    _G.org_assign_person = function()
+      _G.org_select_person({ prompt = "Assign person > " }, function(person)
+        local org = require("orgmode")
+        local headline = org.instance().files:get_current_file():get_closest_headline()
+        if not headline then
+          vim.notify("No headline found under cursor.", vim.log.levels.WARN)
+          return
+        end
+        headline:set_property("PERSON", person.name)
+        vim.notify("Assigned: " .. person.name, vim.log.levels.INFO)
+      end)
+    end
+
+    -- Insert [[id:UUID][Name]] link to a person at cursor position
+    _G.org_insert_person_link = function()
+      _G.org_select_person({ prompt = "Link person > " }, function(person)
+        if not person.id or person.id == "" then
+          vim.notify("Person has no :ID: property: " .. person.name, vim.log.levels.WARN)
+          return
+        end
+        local link = string.format("[[id:%s][%s]]", person.id, person.name)
+        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+        local line = vim.api.nvim_get_current_line()
+        local new_line = line:sub(1, col) .. link .. line:sub(col + 1)
+        vim.api.nvim_set_current_line(new_line)
+        vim.api.nvim_win_set_cursor(0, { row, col + #link })
+      end)
+    end
+
+    -- For capture templates: synchronous person prompt with completion
+    _G._person_complete = function(arg_lead, _, _)
+      local people = scan_people_files()
+      local matches = {}
+      for _, p in ipairs(people) do
+        if p.name:lower():find(arg_lead:lower(), 1, true) then
+          table.insert(matches, p.name)
+        end
+      end
+      return matches
+    end
+
+    _G.org_prompt_person_for_capture = function()
+      local input = vim.fn.input({
+        prompt = "Person: ",
+        completion = "customlist,v:lua._person_complete",
+      })
+      _G._capture_person_name = input
+      return input
     end
 
     -- Keymaps are defined in the lazy.nvim keys table.

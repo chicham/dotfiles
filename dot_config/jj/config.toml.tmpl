@@ -27,20 +27,216 @@ program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
 program = "/usr/local/bin/op-ssh-sign"
 # [[ end -]] #
 # [[ end -]] #
-
 [git]
-private-commits = '''description(glob:'private:*')'''
+private-commits = '''description(glob:'private:*') | description(glob:'wip*')'''
 
 [ui]
 editor = "nvim"
+diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 diff-formatter = ["difft", "--color=always", "--display=inline", "$left", "$right"]
-merge-editor = "mergiraf"
-default-command = "log"
+merge-editor = "diffconflicts"
+default-command = ["log", "--no-pager", "--reversed"]
 pager = "bat --style=plain"
-# Use 'diff' style which provides context similar to git's diff3, required for mergiraf
 conflict-marker-style = "diff"
+log-word-wrap = true
+
+[merge-tools.mergiraf]
+conflict-marker-style = "git"
+
+[merge-tools.nvim]
+program = "nvim"
+merge-args = ["-d", "$left", "$output", "$right",
+              "-c", "wincmd w",
+              "-c", "wincmd J"]
+merge-tool-edits-conflict-markers = true
 
 [fix.tools.ruff]
-command = ["uvx", "ruff", "check", "--fix", "--stdin-filename=$path", "-"]
+command = ["ruff", "-", "--stdin-filename=$path"]
 patterns = ["glob:'**/*.py'"]
 
+[aliases]
+prek = ["util", "exec", "--", "uvx", "prek"]
+
+# --- Inspection ---
+
+# Conflict detection.
+conflicts = ["log", "-r", "conflicts()", "--no-pager"]
+
+# History inspection: full evolog with patches.
+evolve = ["evolog", "-p", "--no-pager"]
+
+# Files touched by the current change.
+changed = ["diff", "--name-only"]
+
+# All in-flight work (log view of the `pending()` revset).
+pending = ["log", "-r", "pending()", "--no-pager"]
+
+# Show main plus all pending work (the full megamerge graph).
+wip-show = ["log", "-r", "main | pending()", "--no-pager"]
+
+# Current branch commits only — scoped view for reviewing in-progress work.
+mine = ["log", "-r", "chain(@)", "--no-pager"]
+
+# Current branch with patches — pre-landing review.
+stack = ["log", "-r", "chain(@)", "--no-pager", "-p"]
+
+# Full diff introduced by this branch (base → tip). Base is wip for workspaces
+# started from wip, main otherwise — so the diff is always branch-scoped.
+chain-diff = ["diff", "--from", "chain_base()", "--to", "my_tip()"]
+
+
+# --- Wip graph operations ---
+
+# One entry per tracked branch tip — compact "what's in flight" view.
+wip-tips = ["log", "-r", "parents(wip)", "--no-pager"]
+
+# Wire a new branch tip into wip as an additional parent.
+# Usage: `jj wip-add @` — typical right after creating a feature workspace.
+wip-add = ["rebase", "-r", "wip", "-d", "parents(wip)", "-d"]
+
+# Remove the current branch from wip without abandoning its commits.
+# Used in the land recipe after `refresh` + advancing main.
+wip-detach = ["rebase", "-r", "wip", "-d", "parents(wip) ~ my_tip()"]
+
+# Remove redundant parent edges from wip. Cheap, safe hygiene — run after any
+# graph mutation (rebase, absorb, land, drop).
+wip-clean = ["simplify-parents", "-r", "wip"]
+
+# Abandon all commits on the current branch; wip auto-reparents.
+# Used by /jj drop.
+wip-drop = ["abandon", "-r", "chain(@)"]
+
+
+# --- Branch lifecycle ---
+
+# Rebase the current branch onto the latest main. Run after another agent
+# lands, to catch this workspace up without waiting for a cross-workspace
+# sync. `--skip-emptied` drops commits whose content is already in main.
+refresh = ["rebase", "-b", "@", "-d", "main", "--skip-emptied"]
+
+# Rebase all *idle* wip-tracked branches onto the latest main. Skips branches
+# with an active workspace on them so parallel agents don't go stale mid-edit.
+# Replaces the old unconditional `main-sync`. Run after landing.
+sync = ["rebase", "-s", "roots(pending() ~ ::working_copies())", "-d", "main", "--skip-emptied"]
+
+
+# --- Editing on a branch ---
+
+# Create a new commit at the tip of the current branch, below wip if present.
+# `present(wip)` resolves to empty when wip doesn't exist; --insert-before with
+# an empty revset is a no-op, so this works in plain repos too.
+# Usage: `jj tip-add -m "feat: step N"`.
+tip-add = ["new", "--insert-before", "present(wip)", "--insert-after", "my_tip()"]
+
+# Flatten the current chain into a single commit (tip's message survives).
+# Uses my_tip() as anchor so it works even when @ is mid-branch.
+squash-chain = ["squash", "--from", "chain(my_tip()) ~ my_tip()", "--into", "my_tip()"]
+
+
+# Absorb working-copy hunks into the current branch's ancestors only.
+# Unscoped `jj absorb` can reach into sibling branches and rewrite another
+# agent's commits (→ stale workspace). This variant stays inside `chain(@)`.
+# Parens required: `~` binds looser than `&`, giving `chain(@) ~ (@ & mutable())`
+# without them — which silently includes @ itself when @ is immutable.
+absorb-here = ["absorb", "--into", "(chain(@) ~ @) & mutable()"]
+
+
+# --- Cross-branch ---
+
+# Fold a sibling branch onto my branch tip (make them sequential).
+# Usage: `jj linearize feat-b@` — rebases feat-b's branch onto my_tip().
+linearize = ["rebase", "-d", "my_tip()", "-b"]
+
+# Advance main. Always pass `--to` explicitly — either the tip of the chain
+# to promote or a revset resolving to it.
+# Usage: `jj land --to 'heads(chain(@))'` (current chain)
+#     or `jj land --to <change-id>` (specific commit).
+# Pair with `jj reparent` to rebase sibling chains onto the new main,
+# or with `jj sync` to only rebase idle siblings.
+land = ["bookmark", "move", "main"]
+
+# Re-parent every sibling chain onto main. Run after `jj land`. Rewrites
+# commits that peer workspaces sit on — jj auto-follows their @ when the
+# tree is clean, but uncommitted edits can conflict. Use `jj sync` instead
+# when peers might be editing.
+reparent = ["rebase", "-s", "roots(pending())", "-d", "main", "--skip-emptied"]
+
+# Recipe: promote main as trunk's sole direct successor.
+# Run after `jj land` when the landed commit sat atop a synthetic merge
+# of parallel WIP — main ends up with trunk + sibling stacks as parents.
+# Pair with `jj reparent` for chains *above* main.
+#
+# Before:  trunk → { main(merge), sibling-A, sibling-B, ... }
+# After:   trunk → main → { sibling-A, sibling-B, ... }
+#
+# Two steps (jj aliases can't sequence; -A/-B in one rebase silently
+# no-ops when trunk is already a parent of main):
+#   jj rebase -r main -d 'trunk()'                       # detach
+#   jj rebase -s 'children(trunk()) ~ main' -d main      # pull siblings
+
+[templates]
+log = '''
+
+label(if(current_working_copy, "working_copy"),
+  concat(
+    separate(" ",
+      coalesce(
+        if(hidden, label("hidden",
+          change_id.shortest(4) ++ label("change_offset", "/") ++ change_offset)),
+        if(divergent, label("divergent",
+          change_id.shortest(4) ++ label("change_offset", "/") ++ change_offset)),
+        change_id.shortest(4),
+      ),
+      bookmarks,
+      tags,
+      working_copies,
+      commit_id.shortest(4),
+      if(conflict, label("conflict", "conflict")),
+      if(divergent, label("divergent", "divergent")),
+      if(hidden, label("hidden", "hidden")),
+    ) ++ "\n",
+    separate(" ",
+      if(empty, label("empty", "(empty)")),
+      if(description, description.first_line(), label("empty description placeholder", "(no description set)")),
+    ) ++ "\n",
+  )
+)
+'''
+
+["revset-aliases"]
+# The nearest base commit for branch x: wip if x descends from wip (workspace
+# created from wip), otherwise main. Factored out so chain() and chain-diff
+# always use a consistent scope — chain() never explodes into sibling branches.
+"chain_base(x)" = "heads((main | present(wip)) & ::x)"
+"chain_base()" = "chain_base(@)"
+
+# Commits on branch x above its base. Handles both normal branches (base=main)
+# and workspaces started from wip (base=wip, so only the new commits are shown).
+"chain(x)" = "chain_base(x)..x"
+
+# All in-flight work. With wip: wip-tracked branches + any untracked mutable
+# above main (orphaned branches, wip-descendants not yet landed).
+# Without wip: all mutable commits above main.
+"pending()" = "(main..present(wip)) | (mutable() ~ ::main ~ ::present(wip))"
+
+# The tip of the current branch as tracked by wip — the parent of wip that
+# is connected to rev (above or below). Resolves correctly whether @ is at the
+# tip, mid-branch, or on a fresh empty leaf.
+# Without wip (plain repos): falls back to heads(chain(rev)) = rev itself.
+# NOTE: revset function names cannot contain hyphens (jj parses `-` as minus).
+"my_tip(rev)" = "(present(parents(wip)) & rev::) | (heads(chain(rev)) ~ ::present(wip))"
+"my_tip()" = "my_tip(@)"
+
+# First commit of the current branch above its base.
+"my_root()" = "roots(chain(@))"
+
+# Other tracked branch tips — everything in wip's parents except this branch.
+"siblings()" = "parents(present(wip)) ~ my_tip()"
+
+[merge-tools.diffconflicts]
+program = "nvim"
+merge-args = [
+    "-c", "let g:jj_diffconflicts_marker_length=$marker_length",
+    "-c", "JJDiffConflicts!", "$output", "$base", "$left", "$right",
+]
+merge-tool-edits-conflict-markers = true

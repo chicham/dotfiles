@@ -2,8 +2,12 @@
 -- Fast and powerful fuzzy finder using FZF
 return {
 	"ibhagwan/fzf-lua",
-	lazy = false, -- Disable lazy loading so register_ui_select works immediately
-	priority = 1000, -- Load early to hijack vim.ui.select
+	-- Deferred off the startup critical path. VeryLazy fires right after the
+	-- first screen is drawn, at which point register_ui_select() and all the
+	-- keymaps below are installed -- so vim.ui.select and the <leader>f/g maps
+	-- are ready before any interactive use. :FzfLua also force-loads it.
+	event = "VeryLazy",
+	cmd = "FzfLua",
 	dependencies = {
 		"nvim-tree/nvim-web-devicons", -- Optional for file icons
 	},
@@ -62,7 +66,7 @@ return {
 		vim.keymap.set("n", "<leader>fm", fzf.marks, { desc = "Find marks" })
 		vim.keymap.set("n", "<leader>fo", function()
 			fzf.files({
-				cwd = "~/.orgfiles",
+				cwd = vim.fn.expand("~/.orgfiles"),
 				prompt = "OrgFiles> ",
 			})
 		end, { desc = "Find any org files" })
@@ -70,7 +74,7 @@ return {
 		vim.keymap.set("n", "<leader>fh", function()
 			fzf.grep({
 				search = "^\\*+\\s",
-				cwd = "~/.orgfiles",
+				cwd = vim.fn.expand("~/.orgfiles"),
 				prompt = "OrgHeadlines> ",
 				no_esc = true,
 				rg_opts = "--column --line-number --no-heading --color=always --smart-case",
@@ -128,7 +132,6 @@ return {
 		vim.keymap.set("n", "<leader>fD", fzf.diagnostics_workspace, { desc = "Find diagnostics (workspace)" })
 
 		-- Utility
-		vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Find help tags" })
 		vim.keymap.set("n", "<leader>fC", fzf.command_history, { desc = "Find command history" })
 		vim.keymap.set("n", "<leader>fk", fzf.keymaps, { desc = "Find keymaps" })
 		vim.keymap.set("n", "<leader>fr", fzf.oldfiles, { desc = "Find recent files" })
@@ -139,36 +142,5 @@ return {
 
 		-- Command palette
 		vim.keymap.set("n", "<leader>:", fzf.commands, { desc = "Command Palette" })
-
-		-- Register bindings with which-key
-		-- local wk = require("which-key")
-		-- wk.add({
-		-- 	["<leader>f"] = {
-		-- 		name = "[F]ind",
-		-- 		e = "Files (git with fallback)",
-		-- 		b = "Buffers",
-		-- 		h = "History/oldfiles",
-		-- 		m = "Marks",
-		-- 		g = "Grep (live)",
-		-- 		w = "Word under cursor",
-		-- 		r = "References",
-		-- 		d = "Definitions",
-		-- 		t = "Type definitions",
-		-- 		i = "Implementations",
-		-- 		s = "Document symbols",
-		-- 		S = "Workspace symbols",
-		-- 		x = "Document diagnostics",
-		-- 		X = "Workspace diagnostics",
-		-- 		k = "Keymaps",
-		-- 		c = "Command history",
-		-- 		["/"] = "Current buffer",
-		-- 		g = {
-		-- 			name = "[G]it",
-		-- 			c = "Commits",
-		-- 			b = "Branches",
-		-- 			s = "Status",
-		-- 		},
-		-- 	},
-		-- })
 	end,
 }

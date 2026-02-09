@@ -35,8 +35,8 @@ vault = "Work"
 
 [[ssh-keys]]
 item = "Github"
-vault = "Private"
+vault = "Personal"
 
 [[ssh-keys]]
 item = "Github Signing"
-vault = "Private"
+vault = "Personal"

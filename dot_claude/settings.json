@@ -1,0 +1,60 @@
+{
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "WebFetch|mcp__github__get_file_contents|mcp__tree_sitter__get_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r 'select(.tool_input.file_path // empty | type == \"string\" and endswith(\".ipynb\")) | .tool_input.file_path' | xargs -r sh -c 'for f in \"$@\"; do md_file=\"${f%.ipynb}.md\"; ~/.local/bin/uvx jupytext --to md \"$f\" -o \"$md_file\" && cat \"$md_file\"; done' _"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -q '\\.py$'; then uvx ruff check \"$file_path\"; fi; }"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "cship"
+  },
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "warp@claude-code-warp": true,
+    "colgrep@lightonai-colgrep": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
+      }
+    },
+    "lightonai-colgrep": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/hicham.randrianarivo/Library/Application Support/colgrep/claude-marketplace"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "advisorModel": "opus",
+  "skipWorkflowUsageWarning": true,
+  "skipAutoPermissionPrompt": true,
+  "mcpServers": {},
+  "feedbackSurveyState": {
+    "lastShownTime": 1753970076745
+  }
+}

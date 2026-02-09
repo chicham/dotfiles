@@ -24,6 +24,10 @@ return {
         mode = { 'o', 'x' },
       },
 
+      -- NB: ai/ii (indentation) live on mini.indentscope now, so its scope
+      -- highlight and the ii/ai text objects are computed identically — see
+      -- lua/custom/plugins/mini-indentscope.lua.
+
       -- Subword text objects
       {
         'az',
@@ -81,6 +85,26 @@ return {
         'ik',
         function()
           vt.key 'inner'
+        end,
+        mode = { 'o', 'x' },
+      },
+
+      -- NB: ib/ab (any bracket / any quote) are NOT here. anyBracket uses
+      -- lexical %b() scanning, which jumps to a sibling bracket when the cursor
+      -- sits inside nested brackets, and cannot understand Python's """ """ /
+      -- f-strings. They are now a treesitter-based object — see
+      -- lua/custom/anyblock.lua (wired in init.lua).
+      {
+        'iq',
+        function()
+          vt.anyQuote 'inner'
+        end,
+        mode = { 'o', 'x' },
+      },
+      {
+        'aq',
+        function()
+          vt.anyQuote 'outer'
         end,
         mode = { 'o', 'x' },
       },

@@ -1,6 +1,7 @@
 return {
   'alker0/chezmoi.vim',
-  event = { 'BufReadPre', 'BufNewFile' },
+  -- Upstream requires this NOT be lazy-loaded for reliable filetype detection.
+  lazy = false,
   init = function()
     -- This option is required.
     vim.g['chezmoi#use_tmp_buffer'] = true
