@@ -115,7 +115,8 @@ drop     → abandon the feature instead of landing, then remove workspace
 |-------|------|----------|
 | `jj refresh` | Rebase my branch onto current main — may bury first-class conflicts in non-tip commits; run the `chain(@) & conflicts()` gate after every refresh, not only at land | workspace |
 | `jj sync` | Rebase all *idle* wip-tracked branches onto current main (skips `working_copies()`) | anywhere |
-| `jj land --to <rev>` | Move `main` bookmark to `<rev>` — always pass `--to` explicitly | workspace |
+| `jj land-chain` | Zero-arg: move `main` to the current chain tip (`my_tip()`, evaluated by jj — no fish footgun). The common case. | workspace |
+| `jj land --to <rev>` | Move `main` bookmark to `<rev>` — for a specific non-tip commit. **In fish, single-quote the revset**: `--to 'my_tip()'`; bare `--to my_tip()` is command substitution and silently moves nothing. | workspace |
 | `jj reparent` | Rebase **every** sibling root onto new main (stales peers; use `sync` when peers may be editing) | workspace |
 | `jj linearize <tip>` | Fold a sibling branch onto my tip | workspace |
 
@@ -225,7 +226,9 @@ jj wip-clean                   # remove any now-redundant main parent edge
 ## Land (`/jj land <name>`)
 
 Land a feature onto main. **Order matters:** refresh first, **verify no conflicts**,
-then move the `main` bookmark, then rebase siblings, then detach.
+then move the `main` bookmark, then detach. **Do NOT rebase peer branches** — neither
+live-workspace siblings nor idle ones. Each branch refreshes itself when its owner is
+ready (see the `jj sync` warning below).
 
 > Every step below is an ASK-FIRST op (see Permission Model): show the command, predict the result, get approval. Do NOT paste the whole block as one batch.
 
@@ -234,19 +237,59 @@ cd .workspaces/<name>
 jj squash-chain -m "type(scope): combined desc"  # optional: flatten to one commit; MUST pass -m, else jj prompts for a combined description and hangs
 jj refresh                          # rebase my branch onto current main (wip follows)
 jj log -r 'chain(@) & conflicts()'  # GATE: must be EMPTY before landing — see below
-jj land --to my_tip()               # advance main to my branch tip (unambiguous structural ref)
-                                    #   (or `jj land --to <change-id>` for a specific commit)
+jj land-chain                       # advance main to my chain tip — zero-arg, jj evaluates my_tip()
+                                    #   (or `jj land --to <change-id>` for a specific non-tip commit;
+                                    #    in fish single-quote any revset: `jj land --to 'my_tip()'` —
+                                    #    bare `--to my_tip()` is command substitution → main does NOT move)
                                     #   land only moves main FORWARD; after `jj refresh` the tip is a
                                     #   descendant of main. Never pass `-B`/`--allow-backwards`. Under
                                     #   concurrent landings, re-run refresh + the conflict gate first.
-jj sync                             # rebase idle sibling chains onto new main (skips active peer working copies)
-                                    #   — use `jj reparent` ONLY if certain no peer workspace is live
-jj wip-detach                       # remove my branch from wip
+jj log -r main -T 'change_id.short()'  # VERIFY main actually moved to the tip — the silent-no-op guard
+jj wip-detach                       # remove my branch from wip (falls back to `main` when it's the last sibling)
 cd <repo-root>
 jj workspace forget <name>
 rm -rf .workspaces/<name>
 jj wip-clean                        # drop redundant parent edges (incl. stale old-main → wip)
 ```
+
+> ⚠️ **`jj sync` is a deliberate housekeeping pass, not a land step — landing only moves
+> `main` and detaches your branch.** `sync` rebases the *idle, clean* feature branches onto
+> the latest main. Its target excludes, by construction: the `wip` merge node, every
+> **live-workspace** chain (`::working_copies()`), and **any chain containing a conflict**
+> (`::conflicts() | conflicts()::`) — so it never rebases the megamerge node, never stales a
+> peer mid-edit, and never churns/re-conflicts an already-broken or divergent branch.
+> (Earlier the alias was `rebase -s 'roots(pending() ~ ::working_copies())' -d main`, which
+> also grabbed `wip` and force-rebased conflicted idle branches — fixed in `~/.config/jj/config.toml`.)
+> Even though it's now safe, don't fold it into a land: a focused land shouldn't touch peers
+> at all — each catches up with its own `jj refresh` when its owner chooses. If you ran a
+> rebase-of-peers by mistake, revert just that op: `jj op revert <op-id>` (from `jj op log`)
+> restores the branches without disturbing the landed `main`.
+
+### Landing several stacked sibling branches in one go
+
+When you have **multiple** wip-tracked siblings to land (e.g. two finished features),
+land them **sequentially**, re-refreshing each onto the *new* main the previous land
+produced — never land them all against the original main:
+
+```bash
+# 1. land branch A
+cd .workspaces/A;  jj refresh;  jj log -r 'chain(@) & conflicts()'   # gate empty
+jj land-chain;     jj log -r main -T 'change_id.short()'             # main → A-tip; verify
+jj wip-detach
+# 2. land branch B onto the NEW main (now includes A)
+cd ../B;           jj refresh                                        # rebases B onto A-tip
+jj log -r 'chain(@) & conflicts()'                                  # gate empty (resolve if A & B touched the same files)
+jj land-chain;     jj log -r main -T 'change_id.short()'             # main → B-tip; verify
+jj wip-detach      # B is now wip's only parent → wip-detach's `| main` fallback fires (no error)
+# 3. clean up both
+cd <repo-root>;    jj wip-clean
+jj workspace forget A B;  rm -rf .workspaces/A .workspaces/B
+```
+
+Skip `jj sync` here: both branches have live workspaces (sync skips `working_copies()`),
+and you refresh B by hand. Only the *second* refresh can conflict — and only if A and B
+edited the same file; disjoint file sets land clean. Leave any non-wip-tracked sibling
+(e.g. a conflicted branch you don't own) untouched.
 
 ### Mergeability gate (MUST pass before deleting the workspace)
 

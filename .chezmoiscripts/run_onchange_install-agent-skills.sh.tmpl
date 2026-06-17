@@ -1,0 +1,19 @@
+#!/bin/bash
+# custom-skills/jj/SKILL.md hash: {{ include "custom-skills/jj/SKILL.md" | sha256sum }}
+# custom-skills/org/SKILL.md hash: {{ include "custom-skills/org/SKILL.md" | sha256sum }}
+# custom-skills/artitrack/SKILL.md hash: {{ include "custom-skills/artitrack/SKILL.md" | sha256sum }}
+# custom-skills/gh-issues/SKILL.md hash: {{ include "custom-skills/gh-issues/SKILL.md" | sha256sum }}
+# custom-skills/data/SKILL.md hash: {{ include "custom-skills/data/SKILL.md" | sha256sum }}
+# custom-skills/global-rules/SKILL.md hash: {{ include "custom-skills/global-rules/SKILL.md" | sha256sum }}
+
+echo "Installing/updating custom agent skills..."
+if command -v npx >/dev/null 2>&1; then
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/jj" -g --all
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/org" -g --all
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/artitrack" -g --all
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/gh-issues" -g --all
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/data" -g --all
+    npx skills add "$HOME/.local/share/chezmoi/custom-skills/global-rules" -g --all
+else
+    echo "Warning: npx not found, skipping skill installation."
+fi
