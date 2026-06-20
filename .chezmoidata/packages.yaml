@@ -17,6 +17,7 @@ packages:
       - 'jj'
       - 'fd'
       - 'uv'
+      - 'bun'
       - 'fzf'
       - 'rust'
       - 'ripgrep'

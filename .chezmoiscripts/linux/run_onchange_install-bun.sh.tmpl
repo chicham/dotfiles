@@ -1,0 +1,14 @@
+#!/bin/sh
+# chezmoi:template:left-delimiter="# [[" right-delimiter="]] #"
+# Installs Bun on Linux — provides `bunx`, used by the `skills` CLI to manage
+# agent skills. Official installer drops into ~/.bun, no sudo required.
+# https://bun.sh/docs/installation
+set -eu
+
+if command -v bun > /dev/null 2>&1 || [ -x "${HOME}/.bun/bin/bun" ]; then
+  echo "Bun is already installed: $(bun --version 2>/dev/null || "${HOME}/.bun/bin/bun" --version)"
+  exit 0
+fi
+
+echo "Installing Bun..."
+curl -fsSL https://bun.sh/install | bash
