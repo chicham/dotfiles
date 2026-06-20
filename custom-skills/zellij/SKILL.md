@@ -33,8 +33,10 @@ they reflect the wrapped command, not the pane. A non-zero exit propagates.
 
 ## What it does (so you can reason about failures)
 
-- Opens a floating pane via `zellij action new-pane --floating --tab-id <caller's tab>`
-  (falls back to `zellij run --floating` if the caller's pane id is unknown).
+- Opens a floating pane via `zellij action new-pane --floating --tab-id <caller's tab>`.
+  Resolving the caller's tab needs `jq`; if `jq` is missing or `ZELLIJ_PANE_ID`
+  is unset, it falls back to `zellij run --floating`, which lands the pane on the
+  **currently active** tab — not necessarily the one hosting Claude Code.
 - The pane runs the command in your **current working directory**, `tee`s output
   to a temp file (so the user sees it live and you get it un-truncated), and
   records `$?` to a temp file.
@@ -48,6 +50,12 @@ they reflect the wrapped command, not the pane. A non-zero exit propagates.
 
 ## When NOT to use it
 
+- **Long-lived / never-exiting processes** (dev servers, file watchers, `tail
+  -f`, anything that stays up until you kill it): `zbash` blocks until the
+  command records an exit code, so it will hang for the full `ZBASH_TIMEOUT`,
+  then report a spurious timeout while the process keeps running orphaned in the
+  pane. Start those directly in their own zellij pane (`zellij run --floating --
+  <cmd>`) or background them — don't wrap them in `zbash`.
 - **Interactive / TUI programs** (editors, `top`, REPLs, anything needing
   keystrokes): a one-shot capture pane is the wrong tool. Drive those with
   `zellij action write-chars` / `send-keys` + `dump-screen` instead, or the
@@ -61,4 +69,6 @@ they reflect the wrapped command, not the pane. A non-zero exit propagates.
 
 The `cc-wt` launcher (separate, not part of this skill) uses the same
 tab-pinned-floating-pane mechanism to run `claude --worktree` as a jj workspace
-in a floating pane. See `~/.local/share/cc-zellij/bin/`.
+in a floating pane. It's a fish function (`dot_config/fish/functions/cc-wt.fish`)
+that prepends the `git`/`tmux` shims in `~/.local/share/cc-zellij/bin/` to `PATH`,
+which is where the tmux→zellij-floating-pane translation lives.
