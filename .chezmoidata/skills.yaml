@@ -1,0 +1,11 @@
+# Agent skills installed globally via the `skills` CLI (bunx skills).
+# Consumed by .chezmoiscripts/run_onchange_after_install-agent-skills.sh.tmpl
+skills:
+  # Skills authored in this repo, under custom-skills/<name>/SKILL.md
+  local:
+    - jj
+    - org
+    - artitrack
+    - gh-issues
+    - data
+    - global-rules
