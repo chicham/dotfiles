@@ -14,4 +14,8 @@ fi
 echo "Installing/updating local agent skills..."
 {{ range .skills.local -}}
 bunx skills add "$HOME/.local/share/chezmoi/custom-skills/{{ . }}" -g --all
+{{ end }}
+echo "Installing/updating remote agent skills..."
+{{ range .skills.remote -}}
+bunx skills add {{ .repo | quote }} -s {{ join "," .skills | quote }} -a '*' -g -y --full-depth
 {{ end -}}

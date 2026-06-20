@@ -1,5 +1,5 @@
 # Agent skills installed globally via the `skills` CLI (bunx skills).
-# Consumed by .chezmoiscripts/run_onchange_after_install-agent-skills.sh.tmpl
+# Consumed by the install-agent-skills script in .chezmoiscripts/.
 skills:
   # Skills authored in this repo, under custom-skills/<name>/SKILL.md
   local:
@@ -9,3 +9,18 @@ skills:
     - gh-issues
     - data
     - global-rules
+  # Skills from public repositories, pinned by name and grouped by source repo.
+  # Origin recovered from ~/.agents/.skill-lock.json (the skills CLI lockfile).
+  remote:
+    - repo: anthropics/knowledge-work-plugins
+      skills: [architecture, code-review, debug, documentation, interview-prep, system-design, testing-strategy]
+    - repo: anthropics/skills
+      skills: [skill-creator]
+    - repo: anthropics/claude-plugins-official
+      skills: [claude-md-improver]
+    - repo: ast-grep/agent-skill
+      skills: [ast-grep]
+    - repo: vercel-labs/skills
+      skills: [find-skills]
+    - repo: karpathy/nanochat
+      skills: [read-arxiv-paper]
