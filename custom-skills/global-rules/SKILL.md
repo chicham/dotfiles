@@ -85,6 +85,12 @@ Modes. Every task runs in one of three modes. Ask if ambiguous.
 - **Reversibility / ablation discipline.** Behavioural changes to research/training code default to master-equivalent and are opt-in via a flag (config, env var, or CLI arg). Defaults reproduce the baseline bit-exactly. Every reported result includes both `flag-on` and `flag-off` cells — without the control, the effect can't be attributed to the change vs unrelated drift. Applies to architecture knobs, loss changes, training-distribution overrides, sampling schedules, dataset pipelines. Correctness bug fixes exempt; recipe-level changes are not.
 - **Append-only experiment logbook.** Experiment org files (`~/.orgfiles/experiments/`, `~/.orgfiles/gtd/projects/`) record how hypotheses evolved. Append dated subsections (e.g. `*** Result [YYYY-MM-DD]`, `*** Refuted [YYYY-MM-DD]`) under the original block — never delete or overwrite a prior hypothesis, prediction, or decision. Revising a decision: leave the old in place, append the new with its triggering evidence. Keep entries tight: a numbers table, a few lines of reading, the decision — not multi-paragraph essays. Plain factual fixes (typo, broken link) exempt.
 
+## Zellij Integration
+
+Inside a zellij session (`$ZELLIJ` set), prefer visible-pane execution:
+- **`zbash '<cmd>'`** — run a command in a floating pane pinned to the current tab so the user can watch it, while still returning stdout/stderr + exit code (like `bash -c`). Route **notable** commands that run to completion through `zbash`: builds, test runs, long scripts — anything worth watching. Keep trivial reads (`ls`, `cat`, `jj/git status`) on the normal Bash tool, and keep long-lived processes (dev servers, watchers) out of `zbash` — it blocks until the command exits, so they'd hang it; start those in their own pane instead. Falls back to normal execution outside zellij. Full contract: the `zellij` skill.
+- **`cc-wt <name>`** — launch a worktree session: a jj workspace at `~/.claude/workspaces/<name>` (off `main`) opened as `claude` in a floating pane on the current tab. Distinct from the `.workspaces/<name>` convention used for the jj dev workflow above.
+
 ## Knowledge
 `~/.orgfiles/` — use `/org`. `rg` for orgfiles (not `colgrep`).
 - **Plans** → save to `~/.orgfiles/gtd/inbox.org` via `/org`.
