@@ -8,6 +8,7 @@ README.md
 .chezmoiexternal.toml
 {{- end }}
 CHANGELOG.md
+AGENTS.md
 CLAUDE.md
 TODO.md
 CHEATSHEET.md
