@@ -1,0 +1,83 @@
+#!/bin/sh
+# tmux -> zellij shim for Claude Code's `--worktree --tmux=classic` feature.
+# Deployed by chezmoi to ~/.local/share/cc-zellij/bin/tmux and put on PATH ONLY
+# by the `cc-wt` launcher (never globally) so its blast radius is one process.
+#
+# Only the 4 subcommands Claude actually emits are handled (captured via recon):
+#   tmux -V
+#   tmux show-options -g prefix
+#   tmux has-session -t NAME
+#   tmux new-session -A -s NAME -c DIR -- CMD...
+#
+# A "tmux session" maps to a zellij FLOATING PANE whose cwd is the workspace,
+# pinned to the tab hosting the INVOKING claude pane ($ZELLIJ_PANE_ID) rather
+# than the active tab. Dedup/attach keys off pane_cwd (stable) not the title,
+# because a running claude renames its own pane title.
+set -u
+
+WS_ROOT="$HOME/.claude/workspaces"
+
+ws_dir_from_path() { printf '%s/%s' "$WS_ROOT" "$(basename "$1")"; }
+ws_dir_from_name() { printf '%s/%s' "$WS_ROOT" "${1##*worktree-}"; }
+
+# Echo the id of an existing floating pane running in $1 (cwd), or nothing.
+floating_pane_id_for() {
+  zellij action list-panes -j 2>/dev/null \
+    | jq -r --arg d "$1" 'map(select(.is_floating==true and .pane_cwd==$d)) | (.[0].id // empty)' 2>/dev/null
+}
+
+case "${1:-}" in
+  -V)
+    echo "tmux 3.5"
+    ;;
+
+  show-options)
+    echo "prefix C-b"
+    ;;
+
+  has-session)
+    name=""
+    while [ $# -gt 0 ]; do
+      [ "$1" = "-t" ] && { shift; name="${1:-}"; }
+      shift
+    done
+    [ -n "$(floating_pane_id_for "$(ws_dir_from_name "$name")")" ] && exit 0 || exit 1
+    ;;
+
+  new-session)
+    name=""; dir=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        -s) shift; name="${1:-}" ;;
+        -c) shift; dir="${1:-}" ;;
+        --) shift; break ;;
+      esac
+      shift
+    done
+    # Remaining "$@" is the command to run (e.g. the claude binary).
+    [ -n "$dir" ] && dir="$(ws_dir_from_path "$dir")"
+    id="$(floating_pane_id_for "$dir")"
+    if [ -n "$id" ]; then
+      # -A attach semantics: reveal/focus the existing floating pane.
+      zellij action focus-pane-id "$id" >/dev/null 2>&1
+    else
+      # Pin the floating pane to the tab hosting the INVOKING claude pane,
+      # not whatever tab is currently active.
+      tab_id=""
+      if [ -n "${ZELLIJ_PANE_ID:-}" ]; then
+        tab_id="$(zellij action list-panes -j 2>/dev/null \
+          | jq -r --arg p "$ZELLIJ_PANE_ID" 'map(select((.id|tostring)==$p)) | (.[0].tab_id // empty)' 2>/dev/null)"
+      fi
+      if [ -n "$tab_id" ]; then
+        zellij action new-pane --floating --tab-id "$tab_id" --name "$name" --cwd "$dir" -- "$@" >/dev/null 2>&1
+      else
+        zellij run --floating --name "$name" --cwd "$dir" -- "$@" >/dev/null 2>&1
+      fi
+    fi
+    ;;
+
+  *)
+    :
+    ;;
+esac
+exit 0

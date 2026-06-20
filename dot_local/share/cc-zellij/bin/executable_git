@@ -1,0 +1,44 @@
+#!/bin/sh
+# git -> jj shim for Claude Code's `--worktree` feature.
+# Deployed by chezmoi to ~/.local/share/cc-zellij/bin/git and put on PATH ONLY
+# by the `cc-wt` launcher (never globally).
+#
+# Intercepts ONLY the exact signature Claude emits (captured via recon):
+#   git worktree add --no-track -B worktree-<name> <repo>/.claude/worktrees/<name> origin/main
+# and turns it into a centralized jj workspace at ~/.claude/workspaces/<name>.
+# Every other git invocation is exec'd verbatim to the real git -> zero blast radius.
+set -u
+
+# Resolve the real git: the first `git` on PATH that is not this shim dir.
+# (Portable across macOS/Linux instead of a hardcoded path.)
+self_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+REAL_GIT=""
+IFS=:
+for d in $PATH; do
+  [ "$d" = "$self_dir" ] && continue
+  if [ -x "$d/git" ]; then REAL_GIT="$d/git"; break; fi
+done
+unset IFS
+[ -z "$REAL_GIT" ] && REAL_GIT=git
+
+if [ "${1:-}" = "worktree" ] && [ "${2:-}" = "add" ]; then
+  shift 2
+  # Locate the destination path Claude chose (its .claude/worktrees/ signature).
+  dest=""
+  for a in "$@"; do
+    case "$a" in
+      */.claude/worktrees/*) dest="$a" ;;
+    esac
+  done
+  if [ -n "$dest" ]; then
+    name=$(basename "$dest")
+    target="$HOME/.claude/workspaces/$name"
+    mkdir -p "$HOME/.claude/workspaces"
+    # Base the workspace on local main (the minimal convention).
+    exec jj workspace add --name "$name" -r main "$target"
+  fi
+  # Unrecognized worktree add: fall through to real git unchanged.
+  exec "$REAL_GIT" worktree add "$@"
+fi
+
+exec "$REAL_GIT" "$@"
