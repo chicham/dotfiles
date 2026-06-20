@@ -1,0 +1,64 @@
+#!/bin/sh
+# zbash — run a shell command in a VISIBLE zellij floating pane (pinned to the
+# tab hosting the invoking Claude Code pane) while capturing its stdout/stderr
+# and real exit code back to the caller.
+#
+# Why temp files instead of capture-pane/dump-screen: screen scraping is subject
+# to scrollback truncation, line wrapping and ANSI noise, and neither tmux nor
+# zellij returns a command's numeric exit code natively. Redirecting to files +
+# recording $? is the robust pattern (see the zellij skill SKILL.md).
+#
+# Usage: zbash <command...>
+#   ZBASH_TIMEOUT  max seconds to wait for completion (default 600)
+#   ZBASH_KEEP=1   keep the floating pane open after the command exits
+set -u
+
+[ $# -eq 0 ] && { echo "usage: zbash <command...>" >&2; exit 2; }
+CMD="$*"
+
+# Graceful degradation: not inside zellij, or zellij missing -> run normally.
+if [ -z "${ZELLIJ:-}" ] || ! command -v zellij >/dev/null 2>&1; then
+  sh -c "$CMD"
+  exit $?
+fi
+
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/zbash.XXXXXX") || exit 1
+out="$tmp/out"; rc="$tmp/rc"
+
+# Pin the floating pane to the INVOKING claude pane's tab, not the active tab.
+tab_id=""
+if [ -n "${ZELLIJ_PANE_ID:-}" ]; then
+  tab_id=$(zellij action list-panes -j 2>/dev/null \
+    | jq -r --arg p "$ZELLIJ_PANE_ID" 'map(select((.id|tostring)==$p)) | (.[0].tab_id // empty)' 2>/dev/null)
+fi
+
+close="--close-on-exit"
+[ -n "${ZBASH_KEEP:-}" ] && close=""
+
+# Inner program for the pane: run the command in the caller's cwd, tee output so
+# the user watches it live AND it lands in $out, then record the real exit code.
+# The command runs in a subshell `( ... )` so that a `exit` inside it cannot skip
+# the exit-code recording; $? is read immediately after, before the tee pipe.
+inner='cd '"'$PWD'"' || exit 1; { ( '"$CMD"' ); echo $? > '"'$rc'"'; } 2>&1 | tee '"'$out'"
+
+if [ -n "$tab_id" ]; then
+  zellij action new-pane --floating $close --tab-id "$tab_id" --name "zbash: ${CMD%% *}" \
+    --cwd "$PWD" -- sh -c "$inner" >/dev/null 2>&1
+else
+  zellij run --floating $close --name "zbash: ${CMD%% *}" --cwd "$PWD" -- sh -c "$inner" >/dev/null 2>&1
+fi
+
+# Block until the command records its exit code (or we hit the timeout).
+limit=$(( ${ZBASH_TIMEOUT:-600} * 5 ))
+i=0
+while [ ! -f "$rc" ]; do
+  sleep 0.2
+  i=$((i + 1))
+  [ "$i" -ge "$limit" ] && { echo "zbash: timed out after ${ZBASH_TIMEOUT:-600}s" >&2; break; }
+done
+
+[ -f "$out" ] && cat "$out"
+code=1
+[ -f "$rc" ] && code=$(cat "$rc" 2>/dev/null)
+rm -rf "$tmp"
+exit "${code:-1}"
