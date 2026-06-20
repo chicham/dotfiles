@@ -105,6 +105,23 @@ This cheatsheet provides quick reference for common commands and workflows. For 
 | | `launch rsync -avz src/ dest/ sync.log` | Background file sync |
 | | `launch jupyter lab notebook.log` | Start Jupyter in background |
 
+### Claude Code × Zellij
+
+Run inside a [zellij](https://zellij.dev/) session.
+
+| Task | Command | Description |
+|------|---------|-------------|
+| Worktree as jj workspace + floating pane | `cc-wt <name>` | Runs `claude --worktree <name> --tmux=classic`; creates a [jj](https://jj-vcs.github.io/) workspace at `~/.claude/workspaces/<name>` and opens claude in a floating pane pinned to the current tab |
+| Run a command in a visible floating pane | `zbash '<command>'` | Executes in a floating pane (watch it live) while returning stdout/stderr + the real exit code, like `bash -c` |
+| | `zbash 'cargo test'` | Watch tests run live in a floating pane |
+| | `zbash 'rg TODO src/ | head'` | Pipelines work; quote the whole command |
+| Keep the pane open after exit | `ZBASH_KEEP=1 zbash '<cmd>'` | Default is close-on-exit |
+| Cap how long zbash waits | `ZBASH_TIMEOUT=60 zbash '<cmd>'` | Seconds before giving up (default 600) |
+
+> The `zellij` agent skill tells Claude Code to route shell commands through `zbash`
+> automatically, so you can watch what an agent session is doing. `zbash` falls back to
+> running the command normally when you are not inside zellij.
+
 ## Git & Version Control
 
 | Task | Command |

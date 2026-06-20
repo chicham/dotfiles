@@ -85,6 +85,7 @@ Learn more about Codespaces dotfiles in the [official documentation](https://doc
 - 🐋 **Container Development** - [Colima](https://github.com/abiosoft/colima) for running Docker containers on macOS without Docker Desktop
 - ⏰ **Shell History** - [Atuin](https://atuin.sh/) syncs your command history across machines with powerful search
 - 📁 **Smart Navigation** - [Zoxide](https://github.com/ajeetdsouza/zoxide) learns your most-used directories for instant navigation
+- 🤖 **Claude Code × Zellij** - `cc-wt <name>` runs `claude --worktree` as a centralized [jj](https://jj-vcs.github.io/) workspace inside a [zellij](https://zellij.dev/) floating pane pinned to the current tab; the `zellij` agent skill (`zbash`) runs shell commands in visible floating panes while capturing their output and exit code
 
 ## What Files Will Be Created/Modified 📋
 
@@ -114,6 +115,12 @@ Learn more about Codespaces dotfiles in the [official documentation](https://doc
 - `~/.config/direnv/direnvrc` - Environment management ([Direnv Documentation](https://direnv.net/))
 - `~/.config/atuin/config.toml` - Shell history sync ([Atuin Documentation](https://atuin.sh/))
 - `~/.config/nvim/init.lua` - Neovim editor configuration ([Neovim Documentation](https://neovim.io/doc/))
+
+### Claude Code × Zellij Integration
+- `~/.config/fish/functions/cc-wt.fish` - `cc-wt <name>` launcher (claude worktree → jj workspace in a zellij floating pane)
+- `~/.local/share/cc-zellij/bin/{git,tmux}` - translation shims, activated **only** by `cc-wt` (never on your global PATH)
+- `~/.local/bin/zbash` - run a command in a visible zellij floating pane, capturing output + exit code
+- `~/.claude/skills/zellij/` - agent skill instructing Claude to route commands through `zbash`
 
 ### macOS Window Manager
 - `~/.config/aerospace/aerospace.toml` - AeroSpace window manager ([AeroSpace Documentation](https://nikitabobko.github.io/AeroSpace/)) (macOS only)
