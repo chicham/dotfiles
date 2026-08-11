@@ -1,27 +1,58 @@
-# Agent skills installed globally via the `skills` CLI (bunx skills).
+# Agent skills installed via `gh skill` (GitHub CLI 2.93+).
 # Consumed by the install-agent-skills script in .chezmoiscripts/.
+#
+# Each entry is a source repository plus the exact in-repo paths of the skills to
+# install. Exact paths (rather than bare skill names) skip a full tree traversal,
+# which matters for large repositories.
+#
+# Skills are installed at user scope for Claude Code, landing in ~/.claude/skills.
+# They are NOT tracked by chezmoi: `gh skill` owns their contents and
+# `gh skill update --all` refreshes them.
 skills:
-  # Skills authored in this repo, under custom-skills/<name>/SKILL.md
-  local:
-    - jj
-    - org
-    - artitrack
-    - gh-issues
-    - data
-    - global-rules
-    - zellij
-  # Skills from public repositories, pinned by name and grouped by source repo.
-  # Origin recovered from ~/.agents/.skill-lock.json (the skills CLI lockfile).
-  remote:
-    - repo: anthropics/knowledge-work-plugins
-      skills: [architecture, code-review, debug, documentation, interview-prep, system-design, testing-strategy]
-    - repo: anthropics/skills
-      skills: [skill-creator]
-    - repo: anthropics/claude-plugins-official
-      skills: [claude-md-improver]
-    - repo: ast-grep/agent-skill
-      skills: [ast-grep]
-    - repo: vercel-labs/skills
-      skills: [find-skills]
-    - repo: karpathy/nanochat
-      skills: [read-arxiv-paper]
+  # Personally authored skills. Private repo; published as CalVer releases.
+  - repo: chicham/skills
+    paths:
+      - skills/artitrack
+      - skills/data
+      - skills/gh-issues
+      - skills/global-rules
+      - skills/jj
+      - skills/org
+      - skills/zellij
+
+  - repo: anthropics/knowledge-work-plugins
+    paths:
+      - engineering/skills/architecture
+      - engineering/skills/code-review
+      - engineering/skills/debug
+      - engineering/skills/documentation
+      - engineering/skills/system-design
+      - engineering/skills/testing-strategy
+      - human-resources/skills/interview-prep
+
+  - repo: anthropics/skills
+    paths:
+      - skills/skill-creator
+
+  - repo: anthropics/claude-plugins-official
+    paths:
+      - plugins/claude-md-management/skills/claude-md-improver
+
+  - repo: ast-grep/agent-skill
+    paths:
+      - ast-grep/skills/ast-grep
+
+  - repo: wandb/skills
+    paths:
+      - skills/wandb-primary
+
+  - repo: huggingface/skills
+    paths:
+      - skills/huggingface-datasets
+      - skills/huggingface-papers
+
+  # Skill lives under a hidden directory, so this repo needs --allow-hidden-dirs.
+  - repo: karpathy/nanochat
+    allow_hidden_dirs: true
+    paths:
+      - .claude/skills/read-arxiv-paper

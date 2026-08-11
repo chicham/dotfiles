@@ -1,21 +1,44 @@
-#!/bin/bash
-# Re-run whenever any local skill's SKILL.md changes:
-{{ range .skills.local -}}
-# custom-skills/{{ . }}/SKILL.md hash: {{ include (printf "custom-skills/%s/SKILL.md" .) | sha256sum }}
-{{ end -}}
+#!/bin/sh
+# Install agent skills with `gh skill`, driven by .chezmoidata/skills.yaml.
+# Re-runs whenever that manifest changes:
+# skills.yaml hash: {{ include ".chezmoidata/skills.yaml" | sha256sum }}
 
 set -eu
 
-if ! command -v bunx >/dev/null 2>&1; then
-    echo "Warning: bunx not found, skipping skill installation." >&2
-    exit 0
+if ! command -v gh > /dev/null 2>&1; then
+  echo "Warning: gh not found, skipping skill installation." >&2
+  exit 0
 fi
 
-echo "Installing/updating local agent skills..."
-{{ range .skills.local -}}
-bunx skills add "$HOME/.local/share/chezmoi/custom-skills/{{ . }}" -g --all || echo "Warning: failed to install skill {{ . }}" >&2
+# `gh skill` landed in GitHub CLI 2.93.
+if ! gh skill --help > /dev/null 2>&1; then
+  echo "Warning: this gh has no 'skill' command (needs 2.93+), skipping." >&2
+  exit 0
+fi
+
+if ! gh auth status > /dev/null 2>&1; then
+  echo "Warning: gh is not authenticated, skipping skill installation." >&2
+  echo "  Run 'gh auth login', then 'chezmoi apply' again." >&2
+  exit 0
+fi
+
+install_skill() {
+  repo="$1"
+  path="$2"
+  extra="$3"
+  # shellcheck disable=SC2086 # extra is an intentional flag list
+  gh skill install "${repo}" "${path}" \
+    --agent claude-code --scope user --force ${extra} > /dev/null 2>&1 ||
+    echo "Warning: failed to install ${path} from ${repo}" >&2
+}
+
+echo "Installing/updating agent skills via gh skill..."
+{{ range .skills }}
+{{- $repo := .repo }}
+{{- $extra := "" }}
+{{- if hasKey . "allow_hidden_dirs" }}{{ $extra = "--allow-hidden-dirs" }}{{ end }}
+{{- range .paths }}
+install_skill {{ $repo | quote }} {{ . | quote }} {{ $extra | quote }}
+{{- end }}
 {{ end }}
-echo "Installing/updating remote agent skills..."
-{{ range .skills.remote -}}
-bunx skills add {{ .repo | quote }} -s {{ join "," .skills | quote }} -a '*' -g -y --full-depth || echo "Warning: failed to install skills from {{ .repo }}" >&2
-{{ end -}}
+echo "Agent skills up to date. Refresh later with: gh skill update --all"
