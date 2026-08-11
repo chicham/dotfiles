@@ -122,6 +122,15 @@ Learn more about Codespaces dotfiles in the [official documentation](https://doc
 - `~/.local/bin/zbash` - run a command in a visible zellij floating pane, capturing output + exit code
 - `~/.claude/skills/zellij/` - agent skill instructing Claude to route commands through `zbash`
 
+### Agent Skills
+- `~/.claude/skills/` - [Agent Skills](https://agentskills.io/specification) installed with `gh skill`, **not** tracked by chezmoi
+- `.chezmoidata/skills.yaml` - the manifest of source repositories and skill paths to install
+- `.chezmoiscripts/run_onchange_after_install-agent-skills.sh.tmpl` - installs them on `chezmoi apply`
+
+Personally authored skills live in a separate repository, [`chicham/skills`](https://github.com/chicham/skills),
+and are installed from published releases like any third-party skill. Refresh everything with
+`gh skill update --all`.
+
 ### macOS Window Manager
 - `~/.config/aerospace/aerospace.toml` - AeroSpace window manager ([AeroSpace Documentation](https://nikitabobko.github.io/AeroSpace/)) (macOS only)
 

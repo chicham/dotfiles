@@ -122,6 +122,31 @@ Run inside a [zellij](https://zellij.dev/) session.
 > automatically, so you can watch what an agent session is doing. `zbash` falls back to
 > running the command normally when you are not inside zellij.
 
+### Agent Skills
+
+Managed with `gh skill` (GitHub CLI 2.93+). The `skills` alias is shorthand for `gh skill`.
+
+| Task | Command | Description |
+|------|---------|-------------|
+| Search for a skill | `skills search terraform` | Search skills published across GitHub |
+| Preview before installing | `skills preview chicham/skills jj` | Read a skill's contents without installing it |
+| Install one skill | `skills install chicham/skills jj --agent claude-code --scope user` | Lands in `~/.claude/skills/jj/` |
+| Pin to a release | `skills install chicham/skills jj --pin v2026.08.0` | Otherwise resolves the latest tagged release |
+| Update everything | `skills update --all` | Refreshes every installed skill from its source |
+| Reinstall from the manifest | `chezmoi apply` | Re-runs the install script when `.chezmoidata/skills.yaml` changes |
+
+Authoring your own skills, in [`chicham/skills`](https://github.com/chicham/skills):
+
+| Task | Command | Description |
+|------|---------|-------------|
+| Validate before publishing | `gh skill publish --dry-run` | Checks frontmatter, naming, and description limits |
+| Bump the version | `bump-my-version bump patch` | CalVer `YYYY.0M.PATCH`; commits but does not tag |
+| Cut a release | `gh skill publish --tag v2026.08.0` | Tags the commit and creates the GitHub release |
+
+> Skills are **not** tracked by chezmoi — `gh skill` owns `~/.claude/skills/`. Chezmoi only
+> carries the manifest (`.chezmoidata/skills.yaml`) and the script that installs from it, so a
+> fresh machine ends up with the same set.
+
 ## Git & Version Control
 
 | Task | Command |
