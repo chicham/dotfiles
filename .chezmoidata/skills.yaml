@@ -1,25 +1,19 @@
 # Agent skills installed via `gh skill` (GitHub CLI 2.93+).
 # Consumed by the install-agent-skills script in .chezmoiscripts/.
 #
-# Each entry is a source repository plus the exact in-repo paths of the skills to
-# install. Exact paths (rather than bare skill names) skip a full tree traversal,
-# which matters for large repositories.
-#
 # Skills are installed at user scope for Claude Code, landing in ~/.claude/skills.
 # They are NOT tracked by chezmoi: `gh skill` owns their contents and
 # `gh skill update --all` refreshes them.
 skills:
-  # Personally authored skills. Private repo; published as CalVer releases.
+  # Own skills. `all: true` means every skill in the repository is installed, and
+  # the list is discovered from the repository at apply time — publishing a new
+  # skill to chicham/skills installs it here with no change to this file.
   - repo: chicham/skills
-    paths:
-      - skills/artitrack
-      - skills/data
-      - skills/gh-issues
-      - skills/global-rules
-      - skills/jj
-      - skills/org
-      - skills/zellij
+    all: true
 
+  # Third-party repositories carry many more skills than are wanted here, so
+  # these name the subset explicitly. Exact in-repo paths (rather than bare
+  # skill names) skip a full tree traversal, which matters for large repos.
   - repo: anthropics/knowledge-work-plugins
     paths:
       - engineering/skills/architecture

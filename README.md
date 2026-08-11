@@ -124,12 +124,15 @@ Learn more about Codespaces dotfiles in the [official documentation](https://doc
 
 ### Agent Skills
 - `~/.claude/skills/` - [Agent Skills](https://agentskills.io/specification) installed with `gh skill`, **not** tracked by chezmoi
-- `.chezmoidata/skills.yaml` - the manifest of source repositories and skill paths to install
+- `.chezmoidata/skills.yaml` - the manifest of source repositories to install from
 - `.chezmoiscripts/run_onchange_after_install-agent-skills.sh.tmpl` - installs them on `chezmoi apply`
 
 Personally authored skills live in a separate repository, [`chicham/skills`](https://github.com/chicham/skills),
-and are installed from published releases like any third-party skill. Refresh everything with
-`gh skill update --all`.
+and are installed from its published releases like any third-party skill. That repository is
+marked `all: true` in the manifest, so the script discovers its skills from the repository at
+install time — publishing a new skill there installs it here with no dotfiles change. Third-party
+repositories name the wanted subset explicitly, since they carry far more skills than are wanted.
+Refresh everything with `gh skill update --all`.
 
 ### macOS Window Manager
 - `~/.config/aerospace/aerospace.toml` - AeroSpace window manager ([AeroSpace Documentation](https://nikitabobko.github.io/AeroSpace/)) (macOS only)

@@ -32,13 +32,35 @@ install_skill() {
     echo "Warning: failed to install ${path} from ${repo}" >&2
 }
 
+# Install every skill a repository publishes, discovering the list from the
+# repository itself rather than from a hand-maintained list.
+install_repo() {
+  repo="$1"
+  paths=$(gh api "repos/${repo}/git/trees/HEAD?recursive=1" \
+    --jq '.tree[] | select(.path | endswith("/SKILL.md")) | .path | sub("/SKILL.md$";"")' 2> /dev/null) || {
+    echo "Warning: could not list skills in ${repo}" >&2
+    return 0
+  }
+  if [ -z "${paths}" ]; then
+    echo "Warning: no skills found in ${repo}" >&2
+    return 0
+  fi
+  for path in ${paths}; do
+    install_skill "${repo}" "${path}" ""
+  done
+}
+
 echo "Installing/updating agent skills via gh skill..."
 {{ range .skills }}
 {{- $repo := .repo }}
+{{- if hasKey . "all" }}
+install_repo {{ $repo | quote }}
+{{- else }}
 {{- $extra := "" }}
 {{- if hasKey . "allow_hidden_dirs" }}{{ $extra = "--allow-hidden-dirs" }}{{ end }}
 {{- range .paths }}
 install_skill {{ $repo | quote }} {{ . | quote }} {{ $extra | quote }}
+{{- end }}
 {{- end }}
 {{ end }}
 echo "Agent skills up to date. Refresh later with: gh skill update --all"
