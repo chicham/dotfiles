@@ -10,47 +10,58 @@
 #   [[ $libc = "musl" ]] #
 # [[ end ]] #
 
+# [[ if has "editor" .modules ]] #
 # Neovim AppImage
 [".local/bin/nvim"]
   type = "file"
   url = # [[ printf "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-%s.appimage" (eq .chezmoi.arch "amd64" | ternary "x86_64" "arm64") | quote ]] #
   refreshPeriod = "672h"
   executable = true
+# [[ end ]] #
 
 # eza - A modern replacement for 'ls'
 [".local/bin/eza"]
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "eza-community/eza" (printf "eza_%s-unknown-linux-gnu.zip" $rustArch) | quote ]] #
   executable = true
-  path = "./eza"
+  path = "eza"
 
 # bat - A cat clone with syntax highlighting
 [".local/bin/bat"]
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "sharkdp/bat" (printf "bat-*-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
   executable = true
-  path = "*/bat"
+  stripComponents = 1
+  path = "bat"
 
 # fd - A simple, fast and user-friendly alternative to 'find'
 [".local/bin/fd"]
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "sharkdp/fd" (printf "fd-*-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
   executable = true
-  path = "*/fd"
+  stripComponents = 1
+  path = "fd"
 
+# [[ if has "git_advanced" .modules ]] #
 # difftastic - A structural diff tool
 [".local/bin/difft"]
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "Wilfred/difftastic" (printf "difft-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
   executable = true
-  path = "./difft"
+  path = "difft"
 
 # mergiraf - A syntax-aware merge tool
+# Codeberg has no chezmoi helper analogous to gitHubLatestReleaseAssetURL,
+# so we resolve the latest tag via the Gitea API at template render time.
+# Use chezmoi's built-in httpGet/fromJson rather than shelling out to
+# curl+sed: same network dependency, but no external process per render
+# and the JSON parse is robust against whitespace/key-order changes.
+# [[ $mergirafTag := (output "curl" "-fsSL" "--max-time" "10" "https://codeberg.org/api/v1/repos/mergiraf/mergiraf/releases/latest" | fromJson).tag_name ]] #
 [".local/bin/mergiraf"]
   type = "archive-file"
-  url = # [[ printf "https://codeberg.org/mergiraf/mergiraf/releases/download/v0.16.1/mergiraf_%s-unknown-linux-gnu.tar.gz" $rustArch | quote ]] #
+  url = # [[ printf "https://codeberg.org/mergiraf/mergiraf/releases/download/%s/mergiraf_%s-unknown-linux-gnu.tar.gz" $mergirafTag $rustArch | quote ]] #
   executable = true
-  path = "./mergiraf"
+  path = "mergiraf"
 
 # zellij - A terminal workspace with batteries included
 [".local/bin/zellij"]
@@ -111,7 +122,8 @@
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "jj-vcs/jj" (printf "jj-v*-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
   executable = true
-  path = "*/jj"
+  stripComponents = 1
+  path = "jj"
 
 # dust - More intuitive version of du in Rust
 [".local/bin/dust"]
@@ -140,42 +152,104 @@
   url = # [[ gitHubLatestReleaseAssetURL "direnv/direnv" (printf "direnv.linux-%s" .chezmoi.arch) | quote ]] #
   executable = true
 
-# WezTerm - Terminal emulator and multiplexer (Ubuntu 22.04 default for all Linux)
-[".local/bin/wezterm"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
-  executable = true
-  path = "wezterm/usr/bin/wezterm"
-
-[".local/bin/wezterm-mux-server"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
-  executable = true
-  path = "wezterm/usr/bin/wezterm-mux-server"
-
-[".local/bin/wezterm-gui"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
-  executable = true
-  path = "wezterm/usr/bin/wezterm-gui"
-
-[".local/bin/strip-ansi-escapes"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
-  executable = true
-  path = "wezterm/usr/bin/strip-ansi-escapes"
-
-[".local/bin/open-wezterm-here"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "wez/wezterm" "wezterm-*.Ubuntu22.04.tar.xz" | quote ]] #
-  executable = true
-  path = "wezterm/usr/bin/open-wezterm-here"
-
 # Git LFS - Git extension for versioning large files
 [".local/bin/git-lfs"]
   type = "archive-file"
   url = # [[ gitHubLatestReleaseAssetURL "git-lfs/git-lfs" (printf "git-lfs-linux-%s-*.tar.gz" .chezmoi.arch) | quote ]] #
   executable = true
-  path = "*/git-lfs"
+  stripComponents = 1
+  path = "git-lfs"
+# [[ end ]] #
+
+# [[ if has "multiplexer" .modules ]] #
+# zellij - A terminal workspace with batteries included
+[".local/bin/zellij"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "zellij-org/zellij" (printf "zellij-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "zellij"
+# [[ end ]] #
+
+# starship - The minimal, blazing-fast, and infinitely customizable prompt for any shell
+[".local/bin/starship"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "starship/starship" (printf "starship-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "starship"
+
+# [[ if has "terminal" .modules ]] #
+# ghostty - A fast, feature-rich, and cross-platform terminal emulator
+[".local/bin/ghostty"]
+  type = "file"
+  url = # [[ gitHubLatestReleaseAssetURL "pkgforge-dev/ghostty-appimage" (printf "Ghostty-*-%s.AppImage" $rustArch) | quote ]] #
+  executable = true
+# [[ end ]] #
+
+# fzf - A command-line fuzzy finder
+[".local/bin/fzf"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "junegunn/fzf" (printf "fzf-*-%s_%s.tar.gz" "linux" $fzfArch) | quote ]] #
+  executable = true
+  path = "fzf"
+
+# [[ if has "atuin" .modules ]] #
+# atuin - Magical shell history
+[".local/bin/atuin"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "atuinsh/atuin" (printf "atuin-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  stripComponents = 1
+  path = "atuin"
+# [[ end ]] #
+
+# zoxide - A smarter cd command
+[".local/bin/zoxide"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "ajeetdsouza/zoxide" (printf "zoxide-*-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "zoxide"
+
+# uv - An extremely fast Python package installer and resolver
+[".local/bin/uv"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "astral-sh/uv" (printf "uv-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  stripComponents = 1
+  path = "uv"
+
+[".local/bin/uvx"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "astral-sh/uv" (printf "uv-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  stripComponents = 1
+  path = "uvx"
+
+# dust - More intuitive version of du in Rust
+[".local/bin/dust"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "bootandy/dust" (printf "dust*-%s-unknown-linux-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  stripComponents = 1
+  path = "dust"
+
+# bottom - A customizable cross-platform graphical process/system monitor
+[".local/bin/btm"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "ClementTsang/bottom" (printf "bottom_%s-unknown-linux-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "btm"
+
+# rip2 - A safe and ergonomic rm replacement (binary name: rip)
+[".local/bin/rip"]
+  type = "archive-file"
+  url = # [[ gitHubLatestReleaseAssetURL "MilesCranmer/rip2" (printf "rip-Linux-%s-*.tar.gz" $rustArch) | quote ]] #
+  executable = true
+  path = "rip"
+
+# direnv - Unclutter your .profile
+[".local/bin/direnv"]
+  type = "file"
+  url = # [[ gitHubLatestReleaseAssetURL "direnv/direnv" (printf "direnv.linux-%s" .chezmoi.arch) | quote ]] #
+  executable = true
 
 # [[ end ]] #

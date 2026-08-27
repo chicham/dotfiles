@@ -5,13 +5,14 @@ This cheatsheet provides quick reference for common commands and workflows. For 
 ## Table of Contents
 
 - [Environment Setup](#environment-setup)
+- [Chezmoi](#chezmoi)
 - [Core Tools](#core-tools)
 - [Terminal & Shell](#terminal--shell)
 - [Git & Version Control](#git--version-control)
 - [Remote Server Operations](#remote-server-operations)
 - [Python Development](#python-development)
 - [System Health & Diagnostics](#system-health--diagnostics)
-- [WezTerm Terminal](#wezterm-terminal)
+- [Ghostty Terminal](#ghostty-terminal)
 - [Testing & Development](#testing--development)
 
 ## Environment Setup
@@ -30,8 +31,31 @@ This cheatsheet provides quick reference for common commands and workflows. For 
   └── starship.toml    # Prompt configuration
 
 ~/.ssh/config          # SSH configuration
-~/.wezterm.lua        # Terminal configuration
+~/.config/ghostty/config # Terminal configuration
 ~/.gitconfig          # Git configuration
+```
+
+## Chezmoi
+
+| Task | Command |
+|------|---------|
+| Status | `chezmoi status` |
+| Diff | `chezmoi diff` |
+| Edit a file | `chezmoi edit ~/.config/fish/config.fish` |
+| Apply changes | `chezmoi apply` |
+| Update from repo | `chezmoi update` |
+
+### Remove All Chezmoi-Managed Files (Danger)
+
+Review first:
+```bash
+chezmoi managed -p absolute
+```
+
+Remove all managed files, then remove chezmoi state/source:
+```bash
+chezmoi managed -p absolute -0 | xargs -0 chezmoi destroy --force
+chezmoi purge --force
 ```
 
 ### Core Tools
@@ -77,33 +101,8 @@ This cheatsheet provides quick reference for common commands and workflows. For 
 | Change directory with history | `cd` (uses `zoxide` for smart navigation) |
 | Find files by name | `fd pattern` |
 | Fuzzy find files | `fzf` |
-| Watch file contents | `watch-file logfile.txt` |
-| Run commands in background | `command args | run-and-watch output.log` |
-| Search command history | `Ctrl+R` (uses `atuin`) |
-| Activate Python environment | `direnv allow` (in directory with `.envrc`) |
-
-### Basic Navigation & File Operations
-
-| Task | Command | Description |
-|------|---------|-------------|
-| List files | `ls` | Group directories first |
-| List details | `ll` | Long format with human sizes |
-| List hidden | `la` | Include hidden files |
-| Tree view | `lt` | Show directory tree |
-| View file | `cat file` | Syntax highlighting (uses bat) |
-| Find files | `find pattern` | Smart find (uses fd) |
-| Change directory | `cd` | Smart navigation (uses zoxide) |
-
-### Utility Functions
-
-| Function | Usage | Description |
-|----------|-------|-------------|
-| `watch-file` | `watch-file <file> [language] [--bat-args "..."]` | Watch file with live syntax highlighting |
-| | `watch-file log.txt json` | Force JSON highlighting |
-| | `watch-file data.txt --bat-args "--plain"` | Custom bat display options |
-| `launch` | `launch <command> [args...] [logfile]` | Run command in background |
-| | `launch rsync -avz src/ dest/ sync.log` | Background file sync |
-| | `launch jupyter lab notebook.log` | Start Jupyter in background |
+| Tab completion picker | `Tab` opens an fzf picker over every fish completion (commands, flags, flag values); `Tab`/`Shift-Tab` cycle, typing re-filters live, `Esc` cancels, `Enter` inserts |
+| Search shell history via fzf | `Ctrl-R` / `Alt-R` (this directory) / `Alt-F` (global) — requires `atuin` module |
 
 ### Claude Code × Zellij
 
@@ -233,6 +232,39 @@ When in a Flog window, you can use these built-in commands:
 | `u` | Update/reload Flog window |
 | `gq` | Quit Flog |
 
+### Code Review (tuicr, `git_advanced` module)
+
+`review <Tab>` opens the fzf picker over these subcommands with descriptions;
+any unrecognized subcommand passes through to `tuicr` directly.
+
+| Command | Reviews |
+|---------|---------|
+| `review` | Uncommitted working-tree changes |
+| `review file <path>` | One file or directory |
+| `review branch [base]` | This branch/chain against `main` (or `base`) |
+| `review commit [rev]` | The last commit (or `rev`) |
+| `review pr <n>` | A GitHub PR |
+| `review list` | Persisted review sessions |
+| `review comments` | Comments stored in a session |
+
+### Agent Skills (`gh skill`, `agent_skills` module)
+
+Every `chezmoi apply` runs `gh skill update --all`, then installs every custom skill
+from the private `artefactory/skills` companion repo plus every skill listed in its
+`recommended-skills.txt` (external pointers, never vendored), for each agent the team
+uses (`claude-code`, `github-copilot`, `codex`, `gemini-cli`) — never `--force`, so a
+name collision with a skill you authored yourself is left alone. Requires an
+authenticated `gh` and read access to `artefactory/skills`.
+
+| Task | Command |
+|------|---------|
+| Add/remove a skill (custom or recommended) | edit `artefactory/skills` (`skills/` or `recommended-skills.txt`), not this repo |
+| Edit agent targets | `.chezmoidata/agent_skills.yaml` |
+| Check for updates (read-only) | `gh skill update --dry-run` |
+| Install one more, for one agent | `gh skill install <owner>/<repo> <skill> --agent codex --scope user` |
+| Publish a new org skill | `gh skill publish --tag vX.Y.Z` from a clone of `artefactory/skills` |
+| Force-refresh now | `chezmoi apply` (or re-run the script directly) |
+
 ### Git Shortcuts
 
 | Alias | Command | Description |
@@ -315,7 +347,7 @@ The `dotfiles_doctor` command performs comprehensive environment checks:
 1. Tool Status Checks:
    | Category | Tools Checked |
    |----------|---------------|
-   | Core | chezmoi, fish, starship, wezterm, direnv |
+   | Core | chezmoi, fish, starship, ghostty, direnv |
    | Editors | neovim, vscode |
    | CLI Tools | bat, eza, fd, fzf, zoxide, atuin |
    | Git Tools | git, git-lfs, github-cli, difftastic, git-cliff, jj, prek |
@@ -332,7 +364,7 @@ The `dotfiles_doctor` command performs comprehensive environment checks:
 3. Environment Status:
    | Check | Success Criteria |
    |-------|-----------------|
-   | Terminal Integration | WezTerm detection |
+| Terminal Integration | Ghostty detection |
    | Git Configuration | user.name and user.email set |
    | GitHub Auth | CLI authentication active |
    | Shell History | Atuin sync enabled |
@@ -383,27 +415,16 @@ Features:
 - Progress indicators
 - Font cache updating (Linux)
 
-## WezTerm Terminal
+## Ghostty Terminal
 
-### Basic Navigation
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+Shift+P` | Command palette |
-| `Ctrl+Shift+T` | New tab |
-| `Ctrl+Shift+N` | New window |
-| `Ctrl+Shift+LeftArrow/RightArrow` | Switch tabs |
-| `Ctrl+Shift+-` | Split pane horizontally |
-| `Ctrl+Shift+\` | Split pane vertically |
-| `Alt+Arrow` | Navigate between panes |
-
-### SSH Integration
+### Configuration
 
 | Task | Command | Description |
 |------|---------|-------------|
-| Connect SSH | `wezterm ssh user@host` | Open new SSH connection |
-| Multiplexed SSH | `wezterm connect SSHMUX:host` | Open multiplexed SSH session |
-| SSH with Config | `wezterm connect user@host` | Use SSH config settings |
+| Edit config | `chezmoi edit ~/.config/ghostty/config` | Update Ghostty settings |
+| Apply config | `chezmoi apply` | Apply the updated config |
+
+Note: restart Ghostty after changes if the config does not reload automatically.
 
 ## Testing & Development
 

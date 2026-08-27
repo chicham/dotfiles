@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### ⚠ BREAKING CHANGES
+
+- **Modules `cloud` and `macos_desktop` have been split into atomic modules.**
+  - `cloud` → `gcloud` (Google Cloud SDK) + `colima` (container runtime)
+  - `macos_desktop` → `aerospace` (window manager) + `onepassword` (password manager)
+
+  **Migration:** existing users must re-run `chezmoi init` and reselect modules.
+  Old names (`cloud`, `macos_desktop`) are no longer recognized.
 
 ### Bug Fixes
 
@@ -112,6 +120,8 @@ All notable changes to this project will be documented in this file.
 - Better image ([034abcc](034abcc87b6bc0bcca51422bc26e6a4e44b9a922))
 
 - Update template configuration for dynamic GitHub data ([6cec36d](6cec36d3c411d0de3c95e2bfebc51c00791754e0))
+
+- Update WezTerm installation for Linux systems ([ae93773](ae93773d0ad0940bc27708777c7f23310441f683))
 
 
 ### Chores
@@ -276,6 +286,8 @@ All notable changes to this project will be documented in this file.
 - Refine Git configuration with updated pager, aliases, and credential helper logic ([7a2ee4a](7a2ee4adf60777f0ff65b2ae263af44d28a2b412))
 
 - Exclude macOS GUI configurations on SSH sessions ([0283933](02839334bf7ea6aa1b15f813f82c00c3bcd086df))
+
+- Atuin desktop on macos ([49bfebd](49bfebde479eb60a1db8f69986e5261ddb81d20f))
 
 
 ### Fix

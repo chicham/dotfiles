@@ -1,36 +1,85 @@
-packages:
-  darwin:
-    brews:
-      - 'fish'
-      - 'starship'
-      - 'neovim'
-      - 'git'
-      - 'git-lfs'
-      - 'bat'
-      - 'eza'
-      - 'zoxide'
-      - 'atuin'
-      - 'direnv'
-      - 'difftastic'
-      - 'mergiraf'
-      - 'git-cliff'
-      - 'jj'
-      - 'fd'
-      - 'uv'
-      - 'bun'
-      - 'fzf'
-      - 'rust'
-      - 'ripgrep'
-      - 'rip2'
-      - 'dust'
-      - 'bottom'
-      - 'colima'
-      - 'zellij'
-    casks:
-      - 'wezterm'
-      - 'ghostty'
-      - 'google-chrome'
-      - 'gcloud-cli'
-      - 'nikitabobko/tap/aerospace'
-      - '1password'
-      - '1password-cli'
+vscode:
+  extensions:
+    - 'Catppuccin.catppuccin-vsc'
+    - 'Catppuccin.catppuccin-vsc-icons'
+    - 'ms-python.python'
+    - 'ms-python.vscode-pylance'
+    - 'charliermarsh.ruff'
+    - 'mkhl.direnv'
+  modules: {}
+
+    core:
+      brews:
+        - 'fish'
+        - 'starship'
+        - 'git'
+        - 'bat'
+        - 'eza'
+        - 'fd'
+        - 'fzf'
+        - 'ripgrep'
+        - 'zoxide'
+        - 'rip2'
+        - 'dust'
+        - 'dysk'
+        - 'procs'
+        - 'sd'
+        - 'choose-rust'
+        - 'hyperfine'
+        - 'bottom'
+        - 'direnv'
+        - 'uv'
+        - 'rust'
+        - 'gh'
+        - 'bun'
+      casks:
+        - 'font-fira-code-nerd-font'
+        - 'visual-studio-code'
+        - 'google-chrome'
+    modules:
+      editor:
+        brews:
+          - 'neovim'
+        casks: []
+      terminal:
+        brews: []
+        casks:
+          - 'ghostty'
+      git_advanced:
+        brews:
+          - 'jj'
+          - 'mergiraf'
+          - 'difftastic'
+          - 'git-cliff'
+          - 'git-lfs'
+          - 'git-extras'
+          - 'tuicr'
+        casks: []
+      atuin:
+        brews:
+          - 'atuin'
+        casks: []
+      python_dev:
+        brews: []
+        casks: []
+      gcloud:
+        brews: []
+        casks:
+          - 'gcloud-cli'
+      colima:
+        brews:
+          - 'colima'
+        casks: []
+      multiplexer:
+        brews:
+          - 'zellij'
+        casks: []
+      aerospace:
+        brews: []
+        casks:
+          - 'nikitabobko/tap/aerospace'
+      onepassword:
+        brews: []
+        casks:
+          - '1password'
+          - '1password-cli'

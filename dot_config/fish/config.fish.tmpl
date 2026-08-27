@@ -44,6 +44,7 @@ if test -d $HOME/.cargo/bin
     fish_add_path $HOME/.cargo/bin
 end
 
+# [[ if has "gcloud" .modules -]] #
 # Google Cloud SDK configuration
 # [[ if eq .chezmoi.os "darwin" -]] #
 
@@ -81,41 +82,57 @@ if test -d $HOME/.local/google-cloud-sdk
     end
 end
 # [[ end -]] #
+# [[ end -]] #
 
+# [[ if has "atuin" .modules -]] #
 # Atuin shell history tool
 if test -d $HOME/.atuin/bin
     fish_add_path $HOME/.atuin/bin
 end
+# [[ end -]] #
+
+# nvm Node Version Manager
+# [[ if eq .chezmoi.os "linux" -]] #
+if test -d "$HOME/.nvm"
+    set -gx NVM_DIR (test -z "$XDG_CONFIG_HOME"; and printf %s "$HOME/.nvm"; or printf %s "$XDG_CONFIG_HOME/nvm")
+    test -s "$NVM_DIR/nvm.sh"; and source "$NVM_DIR/nvm.sh" # This loads nvm
+end
+# [[ end ]] #
 
 ###########################################
 # ENVIRONMENT VARIABLES
 ###########################################
 
 # Text editors
+# [[ if has "editor" .modules -]] #
 set -gx EDITOR nvim
 set -gx VISUAL nvim
+# [[ else -]] #
+set -gx EDITOR vi
+set -gx VISUAL vi
+# [[ end -]] #
 
 # Terminal capabilities
-if test "$TERM_PROGRAM" = ghostty
-    set -gx TERM xterm-256color
-else if test "$TERM_PROGRAM" = WezTerm
-    set -gx TERM wezterm
-    set -gx COLORTERM truecolor
-else
-    set -gx TERM xterm-256color
-end
+set -gx TERM xterm-256color
 
+# [[ if has "git_advanced" .modules -]] #
 # Use difftastic for git diffs if available
 if type -q difft
     set -gx GIT_EXTERNAL_DIFF difft
 end
+# [[ end -]] #
 
 ###########################################
 # TOOL CONFIGURATION
 ###########################################
 
-# FZF fuzzy finder
-set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
+# FZF fuzzy finder - global QoL, applies to every invocation (ctrl-t, alt-c,
+# fuzzy_complete, and any script/plugin that shells out to fzf).
+set -gx FZF_DEFAULT_OPTS "\
+--height=~40% --layout=reverse --border=none --cycle --highlight-line \
+--scroll-off=3 --info=inline-right --pointer='▶' --marker='✓ ' \
+--bind=ctrl-/:toggle-preview \
+--bind=ctrl-a:select-all,ctrl-d:deselect-all"
 
 # Starship prompt - https://starship.rs
 if type -q starship
@@ -129,6 +146,14 @@ end
 if type -q zoxide
     function __init_zoxide --on-event fish_prompt
         zoxide init fish --cmd cd | source
+        # zoxide's own init registers `complete -c cd --wraps __zoxide_z`,
+        # which makes fish treat cd as already having completions and skip
+        # autoloading completions/cd.fish for the rest of THIS interactive
+        # session - so the ranked-jump completion must also be registered
+        # here explicitly. completions/cd.fish still autoloads normally in
+        # the fresh non-interactive `fish -c` subshells fuzzy_complete's
+        # change:reload spawns, since those never source zoxide init.
+        source $__fish_config_dir/completions/cd.fish
         functions --erase __init_zoxide
     end
 end
@@ -141,13 +166,8 @@ if type -q zellij
     end
 end
 
-# Direnv for directory-specific environments - https://direnv.net
-if type -q direnv
-    function __init_direnv --on-event fish_prompt
-        direnv hook fish | source
-        functions --erase __init_direnv
-    end
-end
+# Direnv is initialised in conf.d/direnv.fish, which shadows homebrew's
+# eager vendor hook - https://direnv.net
 
 # Chezmoi dotfile manager - https://chezmoi.io
 if type -q chezmoi
@@ -162,28 +182,55 @@ end
 # FZF configuration with custom key bindings
 if type -q fzf
     set -x FZF_DISABLE_KEYBINDINGS 1
-    fzf --fish | source
-    # Unbind FZF's ctrl-r to prevent conflict with Atuin
-    bind -e \cr 2>/dev/null
-    bind -M insert -e \cr 2>/dev/null
-    bind \ct __fzf_search_current_dir
-    bind \ec __fzf_search_history
-    bind \eC '__fzf_cd --hidden'
-end
+    __cached_init fzf fzf --fish
+    # Drop FZF's own alt-c cd widget; Alt+Shift+C below is the directory jump.
+    bind -e alt-c 2>/dev/null
+    if bind -M insert >/dev/null 2>&1
+        bind -M insert -e alt-c 2>/dev/null
+    end
+    bind \ct __fzf_search_current_dir      # Ctrl+T: search files
+    bind \eC '__fzf_cd --hidden'           # Alt+Shift+C: cd with hidden files
 
-# Atuin shell history with search - https://atuin.sh
-if type -q atuin
-    # Initialize atuin - this creates functions and bindings
-    atuin init fish | source
-    atuin gen-completions --shell fish | source
-end
-
-# Atuin key bindings - use Ctrl-f since Ctrl-r preset cannot be overridden
-if status is-interactive
-    if type -q atuin
-        bind \cf _atuin_search
+    # Route the completion picker itself (Tab) through fzf.
+    bind \t fuzzy_complete
+    if bind -M insert >/dev/null 2>&1
+        bind -M insert \t fuzzy_complete
     end
 end
+
+# [[ if has "atuin" .modules -]] #
+# Atuin shell history with search - https://atuin.sh
+if type -q atuin
+    # atuin's init spawns `atuin uuid` for the session id; uuidgen produces the
+    # same 32 hex chars for a fraction of the cost, so seed the two variables
+    # the init checks before sourcing it.
+    if type -q uuidgen
+        if not set -q ATUIN_SESSION; or test "$ATUIN_SHLVL" != "$SHLVL"
+            set -gx ATUIN_SESSION (uuidgen | string lower | string replace -a - '')
+            set -gx ATUIN_SHLVL $SHLVL
+        end
+    end
+
+    set -gx ATUIN_NOBIND true
+    # --disable-up-arrow: keep fish's native up/down prefix search on the arrow
+    # keys, instead of Atuin's own history TUI.
+    __cached_init atuin atuin init fish --disable-up-arrow
+    __cached_init atuin-completions atuin gen-completions --shell fish
+end
+
+# Atuin history rendered through fzf instead of atuin's own TUI, when both
+# tools are present.
+if status is-interactive; and type -q fzf; and type -q atuin
+    bind ctrl-r '__atuin_fzf_search directory'
+    bind alt-r '__atuin_fzf_search directory'
+    bind alt-f '__atuin_fzf_search global'
+    if bind -M insert >/dev/null 2>&1
+        bind -M insert ctrl-r '__atuin_fzf_search directory'
+        bind -M insert alt-r '__atuin_fzf_search directory'
+        bind -M insert alt-f '__atuin_fzf_search global'
+    end
+end
+# [[ end -]] #
 
 # Docker - https://www.docker.com
 # Lazy load completions on first use to improve startup time
@@ -197,10 +244,12 @@ if type -q docker
 end
 
 # Rip (alternative rm) completions
-# Lazy load completions on first use
+# Lazy load completions on first use. `rm` is aliased to `rip` (see
+# aliases.fish), so the trigger has to match what's actually typed, not just
+# the literal "rip" - otherwise this hook never fires for real usage.
 if type -q rip
     function __init_rip_completions --on-event fish_preexec
-        if string match -q "rip*" (commandline)
+        if string match -qr '^(rip|rm)' (commandline)
             rip completions fish | source
             functions --erase __init_rip_completions
         end
