@@ -32,8 +32,9 @@ private-commits = '''description(glob:'private:*') | description(glob:'wip*')'''
 
 [ui]
 editor = "nvim"
-diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+diff-editor = "oyui"
 diff-formatter = ["difft", "--color=always", "--display=inline", "$left", "$right"]
+diff-instructions = false
 merge-editor = "diffconflicts"
 default-command = ["log", "--no-pager", "--reversed"]
 pager = "bat --style=plain"
@@ -50,12 +51,22 @@ merge-args = ["-d", "$left", "$output", "$right",
               "-c", "wincmd J"]
 merge-tool-edits-conflict-markers = true
 
-[fix.tools.ruff]
-command = ["ruff", "-", "--stdin-filename=$path"]
-patterns = ["glob:'**/*.py'"]
+[merge-tools.oyui]
+program = "oyui"
+edit-args = ["diff", "$left", "$right"]
 
 [aliases]
-prek = ["util", "exec", "--", "uvx", "prek"]
+
+# Run every hook in .pre-commit-config.yaml over the whole repo.
+# `--all-files` is mandatory: plain `prek run` errors in a jj repo
+# ("config file is not staged") because jj keeps no git index.
+prek = ["util", "exec", "--", "prek", "run", "--all-files"]
+
+# Same hooks, scoped to the working-copy changes. The empty-list guard is
+# required: `prek run --files` with no arguments drops into prek's git-stash
+# path, which manipulates the git index underneath jj.
+prek-diff = ["util", "exec", "--", "sh", "-c",
+             'files=$(jj diff --name-only); if [ -n "$files" ]; then prek run --files $files; else echo "no changes"; fi']
 
 # --- Inspection ---
 
@@ -84,6 +95,16 @@ stack = ["log", "-r", "chain(@)", "--no-pager", "-p"]
 # started from wip, main otherwise — so the diff is always branch-scoped.
 chain-diff = ["diff", "--from", "chain_base()", "--to", "my_tip()"]
 
+# Every branch tip, tracked by wip or not — the honest answer to "what am I
+# working on". `wip-tips` reads wip's parents, so a branch whose commits were
+# made with plain `jj new`/`jj commit` instead of `jj tip-add` never appears
+# there: wip's edge stays on an ancestor and the chain above it is invisible.
+# Excluding `merges()` is what drops the wip nodes themselves — plain
+# `heads(mutable())` returns wip and hides the very tips it should list, since
+# every tracked tip is wip's ancestor. It also survives a DIVERGENT wip (two
+# merge nodes, one unnamed), which `~ wip` does not.
+tips = ["log", "-r", "heads(mutable() ~ merges())", "--no-pager"]
+
 
 # --- Wip graph operations ---
 
@@ -95,8 +116,12 @@ wip-tips = ["log", "-r", "parents(wip)", "--no-pager"]
 wip-add = ["rebase", "-r", "wip", "-d", "parents(wip)", "-d"]
 
 # Remove the current branch from wip without abandoning its commits.
-# Used in the land recipe after `refresh` + advancing main.
-wip-detach = ["rebase", "-r", "wip", "-d", "parents(wip) ~ my_tip()"]
+# Used in the land recipe after `refresh` + advancing main. The `| main`
+# fallback keeps this working when the branch is wip's ONLY parent (landing
+# the last/only sibling): without it the destination revset is empty and the
+# rebase errors with "No revisions found to use as parent". In the multi-sibling
+# case it adds a redundant main edge that the recipe's trailing `wip-clean` drops.
+wip-detach = ["rebase", "-r", "wip", "-d", "(parents(wip) ~ my_tip()) | main"]
 
 # Remove redundant parent edges from wip. Cheap, safe hygiene — run after any
 # graph mutation (rebase, absorb, land, drop).
@@ -114,10 +139,30 @@ wip-drop = ["abandon", "-r", "chain(@)"]
 # sync. `--skip-emptied` drops commits whose content is already in main.
 refresh = ["rebase", "-b", "@", "-d", "main", "--skip-emptied"]
 
-# Rebase all *idle* wip-tracked branches onto the latest main. Skips branches
-# with an active workspace on them so parallel agents don't go stale mid-edit.
-# Replaces the old unconditional `main-sync`. Run after landing.
-sync = ["rebase", "-s", "roots(pending() ~ ::working_copies())", "-d", "main", "--skip-emptied"]
+# Rebase *idle, clean* feature branches onto the latest main — a deliberate
+# housekeeping pass, NOT a land step (landing must not rebase peers; each peer
+# self-`refresh`es when its owner is ready). The target excludes, by construction:
+#   ~ present(wip)      the wip merge node itself (never rebase the megamerge node)
+#   ~ ::working_copies() live-workspace chains (their owners refresh; no mid-edit stale)
+#   ~ (::conflicts() | conflicts()::)  any chain that contains a conflict — so sync
+#                       never churns or re-conflicts already-broken/divergent branches
+# What's left is exactly the clean, idle feature branches that rebase forward safely.
+sync = ["rebase", "-s", "roots((pending() ~ present(wip) ~ ::working_copies()) ~ (::conflicts() | conflicts()::))", "-d", "main", "--skip-emptied"]
+
+# Drop leftover empty spacer commits — the undescribed placeholders `tip-add`
+# leaves behind once their content has been squashed or absorbed elsewhere.
+# Every filter is load-bearing; a bare `empty()` deletes live state:
+#   mutable()                 never touch what's already pushed
+#   description(exact:"")     a described-but-empty commit is a `tip-add` waiting
+#                             to be filled in, i.e. the current unit of work
+#   ~bookmarks()              spares bookmarked empties — notably `wip`, which is
+#                             empty BY DESIGN. Today `wip` also escapes via being a
+#                             conflicted merge (jj doesn't count those as empty), but
+#                             that is incidental: resolve the conflict and this filter
+#                             becomes the only thing protecting it.
+#   ~working_copies()         spares every workspace's @, not just this one's
+# Preview before running: same revset under `jj log -r`.
+tidy = ["abandon", "-r", 'mutable() & empty() & description(exact:"") & ~bookmarks() & ~working_copies()']
 
 
 # --- Editing on a branch ---
@@ -147,19 +192,16 @@ absorb-here = ["absorb", "--into", "(chain(@) ~ @) & mutable()"]
 # Usage: `jj linearize feat-b@` — rebases feat-b's branch onto my_tip().
 linearize = ["rebase", "-d", "my_tip()", "-b"]
 
-# Advance main. Always pass `--to` explicitly — either the tip of the chain
-# to promote or a revset resolving to it.
-# Usage: `jj land --to 'heads(chain(@))'` (current chain)
-#     or `jj land --to <change-id>` (specific commit).
-# Pair with `jj reparent` to rebase sibling chains onto the new main,
-# or with `jj sync` to only rebase idle siblings.
-land = ["bookmark", "move", "main"]
-
-# Re-parent every sibling chain onto main. Run after `jj land`. Rewrites
-# commits that peer workspaces sit on — jj auto-follows their @ when the
-# tree is clean, but uncommitted edits can conflict. Use `jj sync` instead
-# when peers might be editing.
-reparent = ["rebase", "-s", "roots(pending())", "-d", "main", "--skip-emptied"]
+# Rebase sibling chains onto the tip of a given chain.
+# Logic lives in the fish function `land` (single source of truth, with completion);
+# this alias just delegates so `jj land [<rev>]` and `land [<rev>]` are equivalent.
+# See ~/.config/fish/functions/land.fish and ~/.config/fish/completions/land.fish.
+# This ONLY rebases the siblings — advancing `main` is done manually.
+# Full landing recipe:
+#   1. jj refresh                              # rebase chain onto current main
+#   2. jj bookmark move main --to 'my_tip()'  # advance main (manual)
+#   3. jj land [<rev>]                         # rebase siblings onto chain tip
+land = ["util", "exec", "--", "fish", "-c", "land $argv"]
 
 # Recipe: promote main as trunk's sole direct successor.
 # Run after `jj land` when the landed commit sat atop a synthetic merge
@@ -191,6 +233,7 @@ label(if(current_working_copy, "working_copy"),
       tags,
       working_copies,
       commit_id.shortest(4),
+      label("author", author.name()),
       if(conflict, label("conflict", "conflict")),
       if(divergent, label("divergent", "divergent")),
       if(hidden, label("hidden", "hidden")),

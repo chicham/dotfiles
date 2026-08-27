@@ -114,8 +114,13 @@ end
 # TOOL CONFIGURATION
 ###########################################
 
-# FZF fuzzy finder
-set -gx FZF_DEFAULT_OPTS "--layout=reverse --border"
+# FZF fuzzy finder - global QoL, applies to every invocation (ctrl-t, alt-c,
+# fuzzy_complete, and any script/plugin that shells out to fzf).
+set -gx FZF_DEFAULT_OPTS "\
+--height=~40% --layout=reverse --border=none --cycle --highlight-line \
+--scroll-off=3 --info=inline-right --pointer='▶' --marker='✓ ' \
+--bind=ctrl-/:toggle-preview \
+--bind=ctrl-a:select-all,ctrl-d:deselect-all"
 
 # Starship prompt - https://starship.rs
 if type -q starship
@@ -129,6 +134,14 @@ end
 if type -q zoxide
     function __init_zoxide --on-event fish_prompt
         zoxide init fish --cmd cd | source
+        # zoxide's own init registers `complete -c cd --wraps __zoxide_z`,
+        # which makes fish treat cd as already having completions and skip
+        # autoloading completions/cd.fish for the rest of THIS interactive
+        # session - so the ranked-jump completion must also be registered
+        # here explicitly. completions/cd.fish still autoloads normally in
+        # the fresh non-interactive `fish -c` subshells fuzzy_complete's
+        # change:reload spawns, since those never source zoxide init.
+        source $__fish_config_dir/completions/cd.fish
         functions --erase __init_zoxide
     end
 end
@@ -141,13 +154,8 @@ if type -q zellij
     end
 end
 
-# Direnv for directory-specific environments - https://direnv.net
-if type -q direnv
-    function __init_direnv --on-event fish_prompt
-        direnv hook fish | source
-        functions --erase __init_direnv
-    end
-end
+# Direnv is initialised in conf.d/direnv.fish, which shadows homebrew's
+# eager vendor hook - https://direnv.net
 
 # Chezmoi dotfile manager - https://chezmoi.io
 if type -q chezmoi
@@ -162,26 +170,47 @@ end
 # FZF configuration with custom key bindings
 if type -q fzf
     set -x FZF_DISABLE_KEYBINDINGS 1
-    fzf --fish | source
-    # Unbind FZF's ctrl-r to prevent conflict with Atuin
-    bind -e \cr 2>/dev/null
-    bind -M insert -e \cr 2>/dev/null
+    __cached_init fzf fzf --fish
+    # Drop FZF's alt-c cd widget; alt-C below is the directory jump.
+    bind -e alt-c 2>/dev/null
+    bind -M insert -e alt-c 2>/dev/null
     bind \ct __fzf_search_current_dir
-    bind \ec __fzf_search_history
     bind \eC '__fzf_cd --hidden'
+
+    # Route the completion picker itself (Tab) through fzf.
+    bind \t fuzzy_complete
+    bind -M insert \t fuzzy_complete
 end
 
 # Atuin shell history with search - https://atuin.sh
 if type -q atuin
-    # Initialize atuin - this creates functions and bindings
-    atuin init fish | source
-    atuin gen-completions --shell fish | source
+    # atuin's init spawns `atuin uuid` for the session id; uuidgen produces the
+    # same 32 hex chars for a fraction of the cost, so seed the two variables
+    # the init checks before sourcing it.
+    if type -q uuidgen
+        if not set -q ATUIN_SESSION; or test "$ATUIN_SHLVL" != "$SHLVL"
+            set -gx ATUIN_SESSION (uuidgen | string lower | string replace -a - '')
+            set -gx ATUIN_SHLVL $SHLVL
+        end
+    end
+    # --disable-up-arrow: keep fish's native up/down prefix search on the arrow
+    # keys. Trackpad scrolling emits arrow sequences that would otherwise pop
+    # open the history TUI.
+    __cached_init atuin atuin init fish --disable-up-arrow
+    __cached_init atuin-completions atuin gen-completions --shell fish
 end
 
-# Atuin key bindings - use Ctrl-f since Ctrl-r preset cannot be overridden
-if status is-interactive
-    if type -q atuin
-        bind \cf _atuin_search
+# Experimental: atuin data rendered through fzf instead of atuin's own TUI.
+# ctrl-r is bound too but doesn't fire in this terminal setup (ghostty/zellij/
+# fish vi mode) - alt-r/alt-f are the ones that actually work.
+if status is-interactive; and type -q fzf; and type -q atuin
+    bind ctrl-r '__atuin_fzf_search directory'
+    bind alt-r '__atuin_fzf_search directory'
+    bind alt-f '__atuin_fzf_search global'
+    if bind -M insert >/dev/null 2>&1
+        bind -M insert ctrl-r '__atuin_fzf_search directory'
+        bind -M insert alt-r '__atuin_fzf_search directory'
+        bind -M insert alt-f '__atuin_fzf_search global'
     end
 end
 
@@ -197,14 +226,79 @@ if type -q docker
 end
 
 # Rip (alternative rm) completions
-# Lazy load completions on first use
+# Lazy load completions on first use. `rm` is aliased to `rip` (see
+# aliases.fish), so the trigger has to match what's actually typed, not just
+# the literal "rip" - otherwise this hook never fires for real usage.
 if type -q rip
     function __init_rip_completions --on-event fish_preexec
-        if string match -q "rip*" (commandline)
+        if string match -qr '^(rip|rm)' (commandline)
             rip completions fish | source
             functions --erase __init_rip_completions
         end
     end
+end
+
+# artitrack launcher-script flag completion - tab-completes uv run <script>.py's
+# own flags (see packages/artitrack/src/artitrack/cli/fish/__at_launcher_flags.fish
+# in the argimi repo). Must be loaded before the first keystroke, not lazily on
+# preexec like docker/rip below - preexec only fires after Enter, which is too
+# late for Tab-completion on the very first `uv run ...` typed in a session.
+#
+# `at` is installed via `uv tool install --editable` into uv's own tool bin
+# dir (`uv tool dir --bin`) - resolved from uv itself rather than hardcoded,
+# so it tracks UV_TOOL_BIN_DIR/XDG overrides instead of assuming ~/.local/bin.
+# An explicit absolute path (not a bare `at` on PATH) sidesteps both
+# `/usr/bin/at` (the classic Unix job-scheduler, same name) and the unrelated
+# PyPI package also named `at` (what a bare `uvx at` resolves against instead
+# of this tool). The resolved path itself is cached in a universal variable
+# too - `uv tool dir` essentially never changes on a given machine, so only
+# the very first pane ever pays that lookup's ~0.1s.
+#
+# The hook is written to disk as a real completions/uv.fish file rather than
+# sourced into this session's memory - fish autoloads completions by file,
+# first-found-wins per $fish_complete_path, in EVERY fish process that
+# completes `uv`, including a non-interactive `fish -c` a completion picker
+# spawns for its own re-render (fzf's `change:reload` does exactly this,
+# and such a subshell has no access to anything only sourced into a prior
+# interactive session's memory - only a file on disk survives that). The
+# file itself sources uv's real vendor completions before layering our
+# override on top - see __at_launcher_flags.fish's own header.
+set -g __at_uv_completions_file "$HOME/.config/fish/completions/uv.fish"
+
+if not set -q __at_bin
+    set -l bin_dir (uv tool dir --bin 2>/dev/null)
+    if test -n "$bin_dir"
+        set -U __at_bin "$bin_dir/at"
+    end
+end
+
+function __init_at_launcher_completions --on-event fish_prompt
+    if not set -q __at_bin
+        or not test -x $__at_bin
+        return
+    end
+
+    set -l bin_mtime (stat -f %m -- $__at_bin 2>/dev/null; or stat -c %Y -- $__at_bin 2>/dev/null)
+    set -l file_mtime (stat -f %m -- $__at_uv_completions_file 2>/dev/null; or stat -c %Y -- $__at_uv_completions_file 2>/dev/null)
+
+    if test -n "$file_mtime"; and test "$file_mtime" -ge "$bin_mtime" 2>/dev/null
+        functions --erase __init_at_launcher_completions
+        return
+    end
+
+    if test -z "$file_mtime"
+        # No completions/uv.fish yet - write it synchronously so THIS pane's
+        # first `uv` completion already gets it instead of falling through
+        # to vendor's uv.fish, unshadowed, for the rest of the session.
+        $__at_bin completion launcher-hook >$__at_uv_completions_file 2>/dev/null
+    else
+        # File exists but predates the at binary (reinstalled/upgraded) -
+        # regenerate in the background; this pane keeps using the
+        # still-valid stale file, future panes/sessions get the refresh.
+        fish -c "$__at_bin completion launcher-hook >$__at_uv_completions_file 2>/dev/null" &
+        disown
+    end
+    functions --erase __init_at_launcher_completions
 end
 
 
