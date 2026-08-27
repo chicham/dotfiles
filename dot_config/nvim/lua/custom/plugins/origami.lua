@@ -49,6 +49,11 @@ local no_outline_ft = {
   man = true,
 }
 
+-- Runtime switch for the auto-outline behaviour, flipped by :OrigamiToggle
+-- (defined in config). When off, apply_outline and force_treesitter_folds no-op,
+-- so code buffers open fully expanded (foldlevel 99) like any prose file.
+local outline_enabled = true
+
 -- Build a SEMANTIC `folds` query for a language from its grammar:
 --   (<function-like node> body: (_) @fold)   -- fold each function/method body
 --   [ (comment) ... ]+ @fold                 -- fold runs of comments
@@ -139,6 +144,7 @@ end
 -- Force Treesitter as the fold provider (over origami's LSP-folds preference) so
 -- our custom semantic query actually drives folding.
 local function force_treesitter_folds(buf)
+  if not outline_enabled then return end
   local lang = buf_lang(buf)
   if not lang or not ensure_fold_query(lang) then return end
   local win = vim.fn.bufwinid(buf)
@@ -159,6 +165,7 @@ local OUTLINE_FOLDLEVEL = 0
 
 local function apply_outline(buf)
   buf = buf or vim.api.nvim_get_current_buf()
+  if not outline_enabled then return end
   if not vim.api.nvim_buf_is_valid(buf) then return end
   if vim.b[buf].origami_outlined then return end -- only on first open, never on re-entry
   local lang = buf_lang(buf)
@@ -261,6 +268,24 @@ return {
     vim.o.foldtext = 'v:lua.OrigamiSigFoldtext()'
 
     local grp = vim.api.nvim_create_augroup('origami-auto-outline', { clear = true })
+
+    -- Toggle the auto-outline at runtime. When turning off, open every fold so
+    -- nothing is left collapsed; when turning on, clear the per-buffer "already
+    -- outlined" guard and re-outline every listed buffer.
+    vim.api.nvim_create_user_command('OrigamiToggle', function()
+      outline_enabled = not outline_enabled
+      if outline_enabled then
+        for _, b in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+          vim.b[b.bufnr].origami_outlined = nil
+          apply_outline(b.bufnr)
+        end
+      else
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          vim.api.nvim_win_call(win, function() pcall(vim.cmd, 'normal! zR') end)
+        end
+      end
+      vim.notify('Origami auto-outline ' .. (outline_enabled and 'enabled' or 'disabled'))
+    end, { desc = 'Toggle origami auto-outline' })
 
     -- Keep Treesitter as the fold provider for code languages. Runs after
     -- origami's own FileType/LspAttach handlers (registered above in setup), so

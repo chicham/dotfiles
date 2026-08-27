@@ -14,7 +14,10 @@ return {
     -- Stop w/e/b at subword boundaries (camelCase, snake_case, kebab). This is
     -- spider's default, set explicitly here so the intent is obvious.
     subwordMovement = true,
-    -- Still skip lone trailing punctuation (commas, dots)...
+    -- Keep the FAST traversal: skip punctuation that's attached to a word (`:`,
+    -- `(`, `"` in `foo:find("a")`), so w/e/b move word-to-word with few stops.
+    -- To land on an arbitrary special character, use `f<char>`/`t<char>` -- word
+    -- motions are the wrong tool for that (they never land mid-cluster anyway).
     skipInsignificantPunctuation = true,
     -- ...but treat brackets as their own stop so `w` lands on `(` in e.g.
     -- `def infonce():`. overrideDefault=false ADDS to the default patterns.

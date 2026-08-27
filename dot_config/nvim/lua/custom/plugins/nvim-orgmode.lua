@@ -12,6 +12,17 @@ return {
 		local utils = require('orgmode.utils')
 		local fs = require('orgmode.utils.fs')
 		
+		-- Experiment-run capture: prompt once for the project whose tracking.org
+		-- receives the run, and reuse it for the target path.
+		_G.prompt_tracking_project = function()
+			if not _G._tracking_project then
+				local slug = vim.fn.input("Project slug (gtd/projects/<slug>/tracking.org): ")
+				_G._tracking_project = slug ~= "" and slug or "inbox"
+				vim.schedule(function() _G._tracking_project = nil end)
+			end
+			return _G._tracking_project
+		end
+
 		-- Experiment title/slug helpers for filename
 		_G.prompt_experiment_title = function()
 			if not _G._experiment_title then
@@ -324,6 +335,7 @@ return {
 		-- Define agenda files in a variable so we can reuse them for refile targets
 		local agenda_globs = {
 			org_files.gtd_inbox,
+			org_dirs.gtd .. "/reading.org",
 			org_dirs.gtd_projects .. "/**/*.org",
 			org_files.gtd_someday,
 			org_files.gtd_tickler,
@@ -377,6 +389,31 @@ return {
 							type = "tags_todo",
 							match = "person",
 							org_agenda_overriding_header = "People — open items",
+						},
+					},
+				},
+				R = {
+					description = "Reading queue (generative-retrieval)",
+					types = {
+						{
+							type = "tags_todo",
+							match = "reading/WORKING",
+							org_agenda_overriding_header = "● Now reading (WORKING)",
+						},
+						{
+							type = "tags_todo",
+							match = "reading/NEXT",
+							org_agenda_overriding_header = "○ Sprint — NEXT (READ_ORDER 01-08)",
+						},
+						{
+							type = "tags_todo",
+							match = "reading-park/TODO",
+							org_agenda_overriding_header = "Backlog — TODO (by section; see :READ_ORDER:)",
+						},
+						{
+							type = "tags_todo",
+							match = "reading+park/TODO",
+							org_agenda_overriding_header = "Parked — low GR-relevance (skip unless needed)",
 						},
 					},
 				},
@@ -468,6 +505,26 @@ return {
 					template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n%(return _G.org_capture_abs_link())",
 					target = org_files.gtd_inbox,
 					headline = "Tasks",
+				},
+
+				x = {
+					description = "Experiment run (tracking)",
+					template = [[
+* WAITING %^{Run label}
+SCHEDULED: <%<%Y-%m-%d %a>>
+:PROPERTIES:
+:ID: %(return require('orgmode.org.id').new())
+:CREATED: %U
+:RUN_ID: %^{artitrack run id (durable key)}
+:TS_JOB: %^{ts_job train/eval}
+:CELL: %^{Cell / config key}
+:CORPUS: %^{Corpus}
+:HARNESS: %^{Harness|xp_grid.py|xp_dsi.py}
+:STEPS: %^{Step budget}
+:END:
+%?]],
+					target = org_dirs.gtd_projects .. "/%(return _G.prompt_tracking_project())/tracking.org",
+					headline = "Runs",
 				},
 
 				-- Quick note to today's daily log

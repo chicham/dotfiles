@@ -859,7 +859,8 @@ require("lazy").setup({
 					end
 
 					-- LSP keymaps
-					-- Note: gd, gD, gi, gr, gt, gs are handled by fzf-lua for fuzzy finding
+					-- Note: gd, gD, gi, gr, gy, gs are handled by fzf-lua for fuzzy finding
+					-- Note: <leader>cf (format) is handled by conform.nvim, see its keys spec
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
 					map("gK", vim.lsp.buf.signature_help, "Signature Documentation")
 					map("<space>D", vim.lsp.buf.type_definition, "Type Definition")
@@ -867,10 +868,6 @@ require("lazy").setup({
 					map("<space>rn", vim.lsp.buf.rename, "Rename")
 					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
 					map("<space>ca", vim.lsp.buf.code_action, "Code Action")
-					map("<space>f", function()
-						vim.lsp.buf.format({ async = true })
-					end, "Format")
-
 					-- Better diagnostic navigation
 					vim.keymap.set("n", "[d", function()
 						vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
