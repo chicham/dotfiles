@@ -1,0 +1,15 @@
+alias vim='nvim'
+# Block conda/miniconda/anaconda installation attempts
+conda() {
+    echo "⛔ Conda is not allowed in this environment."
+    echo "Please use alternative Python environment tools like venv, virtualenv, or uv."
+    echo "See $HOME/.local/share/conda_warning.txt for more information."
+    return 1
+}
+miniconda() { conda; }
+anaconda() { conda; }
+mamba() { conda; }
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/hicham.randrianarivo/.local/bin:$PATH"
