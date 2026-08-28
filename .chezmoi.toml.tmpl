@@ -13,7 +13,7 @@ modules = # [[ $modules | toJson ]] #
 
 # Your public SSH key for signing commits, retrieved from 1Password if available.
 # [[ if lookPath "op" ]] #
-signingKey = # [[ output "op" "read" "op://Private/Github Signing/public key" | trim | quote ]] #
+signingKey = # [[ output "op" "read" "op://Personal/Github Signing/public key" | trim | quote ]] #
 # [[ end ]] #
 
 # [[ if has "git_advanced" $modules ]] #
