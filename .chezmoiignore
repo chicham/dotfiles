@@ -4,6 +4,9 @@ install.sh
 LICENSE
 README.md
 tests/
+# App-managed: Claude Code rewrites autoMode/feedbackSurveyState in place,
+# so chezmoi tracking it would fight the app and delete that state on apply.
+.claude/settings.json
 
 {{- if ne .chezmoi.os "linux" }}
 .chezmoiexternal.toml
