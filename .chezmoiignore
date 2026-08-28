@@ -1,7 +1,9 @@
 .github/
+docs/
 install.sh
 LICENSE
 README.md
+tests/
 
 {{- if ne .chezmoi.os "linux" }}
 .chezmoiexternal.toml
