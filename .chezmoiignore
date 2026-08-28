@@ -21,11 +21,16 @@ docker-test.sh
 # Exclude Linux-specific files on macOS
 .chezmoiscripts/linux/**
 .config/fish/functions/install_nerd_font.fish
-.config/Code/User/settings.json
+# VSCode on macOS reads Library/Application Support/Code, never .config/Code.
+# Excluding the whole tree (not just settings.json) keeps chezmoi from
+# materializing an empty .config/Code/User directory that then crashes an
+# external diff tool (e.g. difftastic exits 2 on "expected a file, got a
+# directory" when handed that now-childless directory).
+.config/Code/**
 {{ else if eq .chezmoi.os "linux" }}
 # Exclude macOS-specific files on Linux
 .chezmoiscripts/darwin/**
-Library/Application Support/Code/User/settings.json
+Library/Application Support/Code/**
 # aerospace is a darwin-only window manager (see packages.darwin.modules)
 .config/aerospace/**
 {{ end }}
