@@ -256,6 +256,69 @@ if type -q rip
     end
 end
 
+# artitrack launcher-script flag completion - tab-completes uv run <script>.py's
+# own flags (see packages/artitrack/src/artitrack/cli/fish/__at_launcher_flags.fish
+# in the argimi repo). Must be loaded before the first keystroke, not lazily on
+# preexec like docker/rip below - preexec only fires after Enter, which is too
+# late for Tab-completion on the very first `uv run ...` typed in a session.
+#
+# `at` is installed via `uv tool install --editable` into uv's own tool bin
+# dir (`uv tool dir --bin`) - resolved from uv itself rather than hardcoded,
+# so it tracks UV_TOOL_BIN_DIR/XDG overrides instead of assuming ~/.local/bin.
+# An explicit absolute path (not a bare `at` on PATH) sidesteps both
+# `/usr/bin/at` (the classic Unix job-scheduler, same name) and the unrelated
+# PyPI package also named `at` (what a bare `uvx at` resolves against instead
+# of this tool). The resolved path itself is cached in a universal variable
+# too - `uv tool dir` essentially never changes on a given machine, so only
+# the very first pane ever pays that lookup's ~0.1s.
+#
+# The hook is written to disk as a real completions/uv.fish file rather than
+# sourced into this session's memory - fish autoloads completions by file,
+# first-found-wins per $fish_complete_path, in EVERY fish process that
+# completes `uv`, including a non-interactive `fish -c` a completion picker
+# spawns for its own re-render (fzf's `change:reload` does exactly this,
+# and such a subshell has no access to anything only sourced into a prior
+# interactive session's memory - only a file on disk survives that). The
+# file itself sources uv's real vendor completions before layering our
+# override on top - see __at_launcher_flags.fish's own header.
+set -g __at_uv_completions_file "$HOME/.config/fish/completions/uv.fish"
+
+if not set -q __at_bin
+    set -l bin_dir (uv tool dir --bin 2>/dev/null)
+    if test -n "$bin_dir"
+        set -U __at_bin "$bin_dir/at"
+    end
+end
+
+function __init_at_launcher_completions --on-event fish_prompt
+    if not set -q __at_bin
+        or not test -x $__at_bin
+        return
+    end
+
+    set -l bin_mtime (stat -f %m -- $__at_bin 2>/dev/null; or stat -c %Y -- $__at_bin 2>/dev/null)
+    set -l file_mtime (stat -f %m -- $__at_uv_completions_file 2>/dev/null; or stat -c %Y -- $__at_uv_completions_file 2>/dev/null)
+
+    if test -n "$file_mtime"; and test "$file_mtime" -ge "$bin_mtime" 2>/dev/null
+        functions --erase __init_at_launcher_completions
+        return
+    end
+
+    if test -z "$file_mtime"
+        # No completions/uv.fish yet - write it synchronously so THIS pane's
+        # first `uv` completion already gets it instead of falling through
+        # to vendor's uv.fish, unshadowed, for the rest of the session.
+        $__at_bin completion launcher-hook >$__at_uv_completions_file 2>/dev/null
+    else
+        # File exists but predates the at binary (reinstalled/upgraded) -
+        # regenerate in the background; this pane keeps using the
+        # still-valid stale file, future panes/sessions get the refresh.
+        fish -c "$__at_bin completion launcher-hook >$__at_uv_completions_file 2>/dev/null" &
+        disown
+    end
+    functions --erase __init_at_launcher_completions
+end
+
 
 ###########################################
 # ALIASES AND USER PREFERENCES

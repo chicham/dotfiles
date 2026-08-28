@@ -23,17 +23,25 @@ style = "blue"
 disabled = true
 
 # --- jj module (replaces git_branch + git_status) ---
-# Uses same individual jj calls as the proven statusline-command.sh
+# `when` walks up for .jj using shell parameter expansion only; the obvious
+# `jj root` would cost a jj process start (~50ms) on every prompt, including
+# in plain git and non-repo directories.
+# One `jj log` then fetches every field through a delimited template instead
+# of one process per field. Fields are split with parameter expansion rather
+# than `read` + heredoc: starship feeds the command to the shell on stdin,
+# so a heredoc would swallow the rest of the script.
 [custom.jj]
-when           = "jj root --ignore-working-copy 2>/dev/null"
+when           = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 0; d=${d%/*}; done; exit 1'''
 shell          = ["sh"]
 ignore_timeout = true
 command = '''
+info=$(jj log -r @ --no-graph --ignore-working-copy -T 'change_id.shortest() ++ "|" ++ bookmarks.join(", ") ++ "|" ++ conflict ++ "|" ++ empty' 2>/dev/null) || exit 0
+[ -n "$info" ] || exit 0
+cid=${info%%|*}; rest=${info#*|}
+bk=${rest%%|*}; rest=${rest#*|}
+hc=${rest%%|*}
+he=${rest##*|}
 ws=$(jj workspace list --ignore-working-copy 2>/dev/null | awk '/^\*/{print $2}')
-cid=$(jj log -r @ --no-graph -T 'change_id.shortest()' --ignore-working-copy 2>/dev/null)
-bk=$(jj log -r @ --no-graph -T 'bookmarks.join(", ")' --ignore-working-copy 2>/dev/null)
-hc=$(jj log -r @ --no-graph -T 'conflict' --ignore-working-copy 2>/dev/null)
-he=$(jj log -r @ --no-graph -T 'empty' --ignore-working-copy 2>/dev/null)
 out=""
 [ -n "$ws" ] && out="⎇ $ws "
 if [ "$hc" = "true" ]; then out="${out}✖ "; elif [ "$he" = "true" ]; then out="${out}○ "; else out="${out}● "; fi
@@ -54,15 +62,27 @@ disabled = true
 disabled = true
 
 # --- git fallback (only in non-jj repos) ---
+# One ancestor walk decides both questions the old `! jj root && git
+# rev-parse` pair answered, without spawning either tool: whichever of .jj
+# or .git is nearest wins, and a colocated repo hits .jj first so jj keeps
+# priority. `.git` is `-e` not `-d` because worktrees use a file.
+# `status --branch` then yields branch and dirtiness in a single git call.
 [custom.git_info]
-when           = "! jj root --ignore-working-copy 2>/dev/null && git rev-parse --git-dir 2>/dev/null"
+when           = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 1; [ -e "$d/.git" ] && exit 0; d=${d%/*}; done; exit 1'''
 shell          = ["sh"]
 ignore_timeout = true
 command = '''
-branch=$(git branch --show-current 2>/dev/null)
-[ -z "$branch" ] && branch=$(git rev-parse --short HEAD 2>/dev/null)
+st=$(git --no-optional-locks status --porcelain --branch 2>/dev/null) || exit 0
+hdr=${st%%
+*}
+branch=${hdr#\#\# }
+branch=${branch%%...*}
+case "$branch" in
+  "HEAD (no branch)") branch=$(git rev-parse --short HEAD 2>/dev/null) ;;
+  "No commits yet on "*) branch=${branch#No commits yet on } ;;
+esac
 dirty=""
-[ -n "$(git status --porcelain 2>/dev/null)" ] && dirty=" ✚"
+[ "$st" != "$hdr" ] && dirty=" ✚"
 echo "${branch}${dirty}"
 '''
 format = "[$output]($style) "

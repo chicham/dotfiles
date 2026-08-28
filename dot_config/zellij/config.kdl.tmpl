@@ -258,6 +258,11 @@ keybinds clear-defaults=true {
             SwitchToMode "normal";
         }
 
+        // EditScrollback takes no arguments. The `ansi` option belongs to
+        // DumpScreen; passing it here fails to parse, and a parse error
+        // rejects the WHOLE config, so this silently disabled every binding.
+        bind "e" { EditScrollback; }
+
         // ── App launchers ───────────────────────────────────────────────
         // o = org: open org-mode agenda in a centered floating pane
         bind "o" {
@@ -276,6 +281,64 @@ keybinds clear-defaults=true {
             Run "claude" {
                 direction "Right"
                 close_on_exit true
+            }
+            SwitchToMode "normal";
+        }
+
+        // ── Agents (zjherd) ─────────────────────────────────────────────
+        // n = cycle: step to the next agent in tab order, whatever its state.
+        //     For looking in on agents to check they are on the right track.
+        // N = next:  focus the first agent blocked on a permission prompt,
+        //     else the first one that has finished. For answering them.
+        //
+        // The two are separate keys because `next` selects on attention and so
+        // deliberately skips working agents -- which are exactly the ones you
+        // want to look in on.
+        //
+        // Zellij cannot run a command from a keybind without opening a pane,
+        // so this flashes a 1x1 floating pane that closes as soon as zjherd
+        // exits. Ugly but harmless; a WASM plugin is the only clean fix.
+        bind "n" {
+            Run "zjherd" "cycle" {
+                floating true
+                close_on_exit true
+                width "1"
+                height "1"
+            }
+            SwitchToMode "normal";
+        }
+        // `Shift n`, not a literal "N": Ghostty speaks the kitty keyboard
+        // protocol, so shifted letters arrive as the base key plus a SHIFT
+        // modifier and a bare "N" binding never matches. Same form as the
+        // "Shift Tab" binding above.
+        bind "Shift n" {
+            Run "zjherd" "next" {
+                floating true
+                close_on_exit true
+                width "1"
+                height "1"
+            }
+            SwitchToMode "normal";
+        }
+        // p / Shift p mirror n / Shift n.
+        // p = cycle backwards, so overshooting with n is one keystroke to undo.
+        // Shift p = the LEAST urgent agent waiting rather than the most, which
+        // is how you work a queue of several blocked agents from the other end.
+        bind "p" {
+            Run "zjherd" "cycle" "--reverse" {
+                floating true
+                close_on_exit true
+                width "1"
+                height "1"
+            }
+            SwitchToMode "normal";
+        }
+        bind "Shift p" {
+            Run "zjherd" "next" "--reverse" {
+                floating true
+                close_on_exit true
+                width "1"
+                height "1"
             }
             SwitchToMode "normal";
         }

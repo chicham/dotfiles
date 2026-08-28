@@ -1,0 +1,8 @@
+# Only start fish in interactive shells
+if [ -x "$(command -v fish)" ] && [ -t 0 ]; then
+  exec fish
+fi
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/hicham.randrianarivo/.local/bin:$PATH"

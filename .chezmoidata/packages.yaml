@@ -8,6 +8,8 @@ vscode:
     - 'mkhl.direnv'
   modules: {}
 
+packages:
+  darwin:
     core:
       brews:
         - 'fish'

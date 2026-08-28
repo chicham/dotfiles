@@ -31,7 +31,6 @@ Library/Application Support/Code/User/settings.json
 # Remote SSH server exclusions (when SSH_CLIENT is present)
 {{ if env "SSH_CLIENT" }}
 # Terminal emulator configs (use system defaults on remote servers)
-.wezterm.lua
 # macOS-specific GUI applications
 .config/aerospace/**
 # SSH client config (remote servers shouldn't override SSH client settings)

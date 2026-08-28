@@ -46,14 +46,15 @@ return {
 		vim.keymap.set("n", "gr", fzf.lsp_references, { desc = "Go to references" })
 		vim.keymap.set("n", "gD", fzf.lsp_declarations, { desc = "Go to declarations" })
 		vim.keymap.set("n", "gi", fzf.lsp_implementations, { desc = "Go to implementations" })
-		vim.keymap.set("n", "gt", fzf.lsp_typedefs, { desc = "Go to type definitions" })
+		vim.keymap.set("n", "gy", fzf.lsp_typedefs, { desc = "Go to type definitions" })
 		vim.keymap.set("n", "gb", fzf.buffers, { desc = "Go to buffer" })
 		vim.keymap.set("n", "gs", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
 		vim.keymap.set("n", "gS", fzf.lsp_live_workspace_symbols, { desc = "Go to symbol (workspace)" })
 
 		-- <leader>f: All fzf operations
 		-- Files & navigation
-		vim.keymap.set("n", "<leader>ff", function()
+		vim.keymap.set("n", "<leader>ff", fzf.lsp_document_symbols, { desc = "Find symbols (document)" })
+		vim.keymap.set("n", "<leader>fe", function()
 			-- Use git_files with fallback to regular files if not in git repo
 			fzf.git_files({
 				cwd = vim.fn.getcwd(),
@@ -62,7 +63,7 @@ return {
 					fzf.files()
 				end,
 			})
-		end, { desc = "Find files (git with fallback)" })
+		end, { desc = "Edit/open files (git with fallback)" })
 		vim.keymap.set("n", "<leader>fm", fzf.marks, { desc = "Find marks" })
 		vim.keymap.set("n", "<leader>fo", function()
 			fzf.files({
@@ -130,6 +131,48 @@ return {
 		vim.keymap.set("n", "<leader>fa", fzf.lsp_code_actions, { desc = "Find code actions" })
 		vim.keymap.set("n", "<leader>fd", fzf.diagnostics_document, { desc = "Find diagnostics (document)" })
 		vim.keymap.set("n", "<leader>fD", fzf.diagnostics_workspace, { desc = "Find diagnostics (workspace)" })
+
+		-- code-preview: jump to a pending diff tab. Each agent-edited file opens
+		-- its own diff tab; `gt` is remapped to LSP typedefs above, so this picker
+		-- is the way to switch between them. Lists pending files (with change
+		-- status) and switches to the selected file's tab on <CR>.
+		vim.keymap.set("n", "<leader>fp", function()
+			local ok, diff = pcall(require, "code-preview.diff")
+			if not ok then
+				vim.notify("code-preview not loaded", vim.log.levels.WARN)
+				return
+			end
+			local active = diff._active_diffs()
+			local has_changes, changes = pcall(require, "code-preview.changes")
+			local status_of = has_changes and changes.get_all() or {}
+
+			local entries, lookup = {}, {}
+			for path, entry in pairs(active) do
+				if entry.tab and vim.api.nvim_tabpage_is_valid(entry.tab) then
+					local status = status_of[path] and (status_of[path] .. "  ") or ""
+					local display = status .. vim.fn.fnamemodify(path, ":~:.")
+					entries[#entries + 1] = display
+					lookup[display] = entry.tab
+				end
+			end
+
+			if #entries == 0 then
+				vim.notify("No pending code-preview diffs", vim.log.levels.INFO)
+				return
+			end
+
+			fzf.fzf_exec(entries, {
+				prompt = "DiffTabs> ",
+				actions = {
+					["default"] = function(selected)
+						local tab = selected and selected[1] and lookup[selected[1]]
+						if tab and vim.api.nvim_tabpage_is_valid(tab) then
+							vim.api.nvim_set_current_tabpage(tab)
+						end
+					end,
+				},
+			})
+		end, { desc = "Find code-preview diff tabs" })
 
 		-- Utility
 		vim.keymap.set("n", "<leader>fC", fzf.command_history, { desc = "Find command history" })

@@ -2,24 +2,84 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opusplan",
   "hooks": {
     "PostToolUse": [
-      {
-        "matcher": "WebFetch|mcp__github__get_file_contents|mcp__tree_sitter__get_file",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r 'select(.tool_input.file_path // empty | type == \"string\" and endswith(\".ipynb\")) | .tool_input.file_path' | xargs -r sh -c 'for f in \"$@\"; do md_file=\"${f%.ipynb}.md\"; ~/.local/bin/uvx jupytext --to md \"$f\" -o \"$md_file\" && cat \"$md_file\"; done' _"
-          }
-        ]
-      },
       {
         "matcher": "Edit|MultiEdit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -q '\\.py$'; then uvx ruff check \"$file_path\"; fi; }"
+            "command": "jq -r '.tool_input.file_path' | { read file_path; case \"$file_path\" in *.py) uv run ruff check --fix --ignore RUF100 -q \"$file_path\" >&2; uv run ruff format -q \"$file_path\" >&2; uv run ruff check --ignore RUF100 \"$file_path\" >&2 || exit 2 ;; esac; }"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude PostToolUse"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude SessionStart"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude PreToolUse"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude Notification"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude Stop"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/hicham.randrianarivo/.local/bin/zjherd-report claude SessionEnd"
           }
         ]
       }
@@ -31,30 +91,18 @@
   },
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": true,
-    "warp@claude-code-warp": true,
-    "colgrep@lightonai-colgrep": true
+    "clangd-lsp@claude-plugins-official": true
   },
-  "extraKnownMarketplaces": {
-    "claude-code-warp": {
-      "source": {
-        "source": "github",
-        "repo": "warpdotdev/claude-code-warp"
-      }
-    },
-    "lightonai-colgrep": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/hicham.randrianarivo/Library/Application Support/colgrep/claude-marketplace"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
+  "outputStyle": "Terse",
   "alwaysThinkingEnabled": true,
   "effortLevel": "medium",
-  "advisorModel": "opus",
+  "autoCompactWindow": 500000,
+  "advisorModel": "fable",
+  "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "mcpServers": {},
-  "feedbackSurveyState": {
-    "lastShownTime": 1753970076745
-  }
+  "mcpServers": {}
 }
