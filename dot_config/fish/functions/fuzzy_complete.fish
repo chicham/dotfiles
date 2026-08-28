@@ -3,6 +3,16 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
     set -l token (commandline -t)
     set -l command (commandline -co)[1]
 
+    # A passthrough runner (e.g. `uv run <script>.py`) hands control to the script —
+    # the script's own flags are what's actually being completed past that point, so
+    # show it, not the runner, as the fzf prompt. Guarded on the detector function's
+    # existence so this is a no-op when artitrack's launcher-completion hook isn't
+    # loaded in this session.
+    if functions -q __at_uv_run_launcher_script
+        and set -l launcher_script (__at_uv_run_launcher_script 2>/dev/null)
+        set command (path basename -- $launcher_script)
+    end
+
     # A bare/empty command line completes to every command on PATH
     # (thousands of entries) - not worth rendering through fzf, and fish's
     # native pager handles that case fine on its own.
