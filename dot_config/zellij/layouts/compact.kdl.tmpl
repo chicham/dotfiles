@@ -1,0 +1,44 @@
+// chezmoi:template:left-delimiter="// [[" right-delimiter="]] //"
+// Overrides zellij's built-in "compact" layout (looked up by name before
+// falling back to the bundled one) to swap the stock compact-bar for
+// zjstatus, styled to match the Catppuccin Mocha fish/starship prompt
+// (dot_config/starship.toml): same palette, same flat "no powerline
+// arrows" segment style, and the same jj status line content/color (mauve)
+// shown in the shell prompt.
+layout {
+    pane size=1 borderless=true {
+        plugin location="file:// [[ .chezmoi.homeDir ]] ///.config/zellij/plugins/zjstatus.wasm" {
+            format_left   "#[fg=#cba6f7,bold] {session} {mode}"
+            format_center "{tabs}"
+            format_right  "{command_jj}"
+            format_space  ""
+
+            border_enabled false
+            hide_frame_for_single_pane true
+
+            // Mode names match this config's own custom mode names
+            // (see the `keybinds` block in config.kdl).
+            mode_normal  "#[fg=#6c7086]"
+            mode_tmux    "#[fg=#fab387,bold] LEADER "
+            mode_resize  "#[fg=#fab387,bold] RESIZE "
+            mode_scroll  "#[fg=#94e2d5,bold] SCROLL "
+            mode_search  "#[fg=#94e2d5,bold] SEARCH "
+            mode_locked  "#[fg=#f38ba8,bold] LOCKED "
+
+            tab_normal            "#[fg=#6c7086] {name} "
+            tab_active            "#[fg=#1e1e2e,bg=#a6e3a1,bold] {name} "
+            tab_normal_fullscreen "#[fg=#6c7086] {name} [] "
+            tab_active_fullscreen "#[fg=#1e1e2e,bg=#a6e3a1,bold] {name} [] "
+
+            // Same one-liner as the starship jj prompt module — identical
+            // content and color (mauve) in both places. Silent (empty
+            // output) outside a jj repo, same as the prompt module.
+            command_jj_command "jj log -r @ --no-graph --ignore-working-copy -T 'change_id.shortest() ++ \"|\" ++ bookmarks.join(\", \") ++ \"|\" ++ conflict ++ \"|\" ++ empty' 2>/dev/null | awk -F'|' '{cid=$1; bk=$2; hc=$3; he=$4; sym=(hc==\"true\")?\"✖\":(he==\"true\")?\"○\":\"●\"; out=sym\" \"cid; if (bk!=\"\") out=out\" \"bk; print out}'"
+            command_jj_format     "#[fg=#cba6f7] {stdout} "
+            command_jj_interval   "2"
+            command_jj_rendermode "static"
+            command_jj_cwd        "{focused_pane_cwd}"
+        }
+    }
+    pane
+}

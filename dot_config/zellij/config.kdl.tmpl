@@ -12,7 +12,12 @@
 //
 // Plugins kept:
 //   - session-manager (built-in): switch/attach/resurrect sessions, new-in-folder
+//   - layout-manager (built-in): apply/record layouts without restarting
 //   - forgot: searchable keybind cheat sheet (auto-loads from this config)
+//   - zjstatus: status bar, styled to match the fish/starship prompt
+//     (Catppuccin Mocha, same jj status line/color). Not bound to a key —
+//     it replaces the stock compact-bar via layouts/compact.kdl.tmpl,
+//     which overrides zellij's built-in "compact" layout by name.
 //
 // Plugins removed (wasm files kept in plugins/ dir, just unbound):
 //   - choose-tree: replaced by built-in session-manager which also handles
@@ -119,6 +124,7 @@ web_server_port 8082
 //   ├─────────────────────────────────────────────────────┤
 //   │ WORKSPACE                                           │
 //   │   s       session-manager (switch/attach/resurrect) │
+//   │   Shift+L layout-manager (apply/record layouts)     │
 //   │   w       share plugin (web tokens / start server)  │
 //   │   ?       keybinding help (forgot plugin)           │
 //   ├─────────────────────────────────────────────────────┤
@@ -228,6 +234,18 @@ keybinds clear-defaults=true {
         //   filepicker). Also handles rename via Ctrl-r in-plugin.
         bind "s" {
             LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "normal";
+        }
+
+        // ── Layout manager (built-in plugin) ─────────────────────────────
+        // Shift+L = layouts: apply a bundled/custom layout to the current
+        //   session, or record the current pane arrangement as one, without
+        //   restarting zellij.
+        bind "Shift l" {
+            LaunchOrFocusPlugin "layout-manager" {
                 floating true
                 move_to_focused_tab true
             }
