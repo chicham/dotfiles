@@ -21,7 +21,7 @@ These are the invariants — they must hold even when the `/jj` skill is not loa
 - **Never edit in the default workspace.** Create `.workspaces/<name>` at the repo root first, on a commit no other workspace is checked out to (a workspace goes stale when a peer rewrites or abandons its checkout). Workspaces are ephemeral: delete after the work lands.
 - **Never write to `wip`.** It stays empty and terminal. Before the FIRST edit of any change, check `jj log -r @`: if `@` carries `wip` / a `wip*` marker / no description, run `jj tip-add -m "..."` first. A dirty wip blocks pushes and forces a messy recovery.
 - **One `jj tip-add -m "..."` per change.** Never edit an existing named commit directly. Every atomic change = one commit; never batch unrelated edits.
-- **Never land on your own initiative.** Landing requires all three: green tests, tuicr comments drained, and the user's explicit go-ahead.
+- **Never land on your own initiative.** Landing requires all three: green tests, review comments drained, and the user's explicit go-ahead.
 - **Every new change starts from main.** Before `jj start <name>`, confirm the base is `main` (or a commit already landed on it). Never branch a new feature off another in-progress/unlanded commit or chain — if you need what's in that chain, land it (or get explicit go-ahead to land it) first, then start fresh from main.
 - Remind to `/compact` after tasks, then run a daily review via `/org`.
 
@@ -77,7 +77,7 @@ Modes. Every task runs in one of three modes. Ask if ambiguous.
 
 - maker (delegated): same as helper/peer steps 1–4, then implement. Use when the user explicitly delegates implementation to you.
   - MUST work in a named jj workspace (see workspace directives above). Never edit in default workspace.
-  - MUST open a tuicr session on the workspace before the first edit (see tuicr Review section).
+  - MUST point the user at the workspace review surface before the first edit (see Local Review section).
   - After implementation: run tests, confirm green, leave changes in working copy.
 
 **All modes:**
@@ -87,33 +87,32 @@ Modes. Every task runs in one of three modes. Ask if ambiguous.
 - **Reversibility / ablation discipline.** Behavioural changes to research/training code default to master-equivalent and are opt-in via a flag (config, env var, or CLI arg). Defaults reproduce the baseline bit-exactly. Every reported result includes both `flag-on` and `flag-off` cells — without the control, the effect can't be attributed to the change vs unrelated drift. Applies to architecture knobs, loss changes, training-distribution overrides, sampling schedules, dataset pipelines. Correctness bug fixes exempt; recipe-level changes are not. Before a result is published, acted on, or merged, load the `gating` skill to build the actual verification check (an anchor outside the code, a known-bad it demonstrably rejects, a stated coverage limit) — the flag-on/flag-off control tells you an effect exists; a gate tells you the check that would catch it being wrong can actually fail.
 - **Append-only experiment logbook.** Experiment org files (`~/.orgfiles/experiments/`, `~/.orgfiles/gtd/projects/`) record how hypotheses evolved. Append dated subsections (e.g. `*** Result [YYYY-MM-DD]`, `*** Refuted [YYYY-MM-DD]`) under the original block — never delete or overwrite a prior hypothesis, prediction, or decision. Revising a decision: leave the old in place, append the new with its triggering evidence. Keep entries tight: a numbers table, a few lines of reading, the decision — not multi-paragraph essays. Plain factual fixes (typo, broken link) exempt.
 
-## tuicr Review (mandatory in maker mode)
+## Local Review (mandatory in maker mode)
 
-**The user opens tuicr themselves. Never launch it.** The agent's job is to make the user's pane
-show the feature's changes live, and to react to the comments that come back. Peer-mode
+**The user reviews in Neovim themselves; never drive their editor for them.** The agent's job is
+to point them at the right surface, then react to the comments that come back. Peer-mode
 scaffolds/stubs/tests and review-mode inspection are exempt, as are docs, orgfiles, and config-only
-edits. Full CLI reference: `/tuicr`.
+edits. Full reference: the `local-review` skill.
 
-1. **Hand over the watch command.** Right after creating the workspace, before the first edit, print
-   the exact command for the user's pane — the chain plus the working copy, so every commit and every
-   uncommitted edit shows up:
-   ```bash
-   cd <workspace-root> && tuicr -r 'chain(@)' -w
-   ```
-   Then keep working; do not block waiting for the pane.
+1. **Point at the surface.** Right after creating the workspace, before the first edit, tell the
+   user the workspace root so they can open it in nvim and review with `quickfix-review-nvim`
+   (`<leader>ci/cs/cn/cp` etc.) once you commit; for a GitHub PR, tell them the PR number to open
+   with `octo.nvim`. Then keep working; do not block waiting on the review.
 2. **Announce every checkpoint.** After each `jj tip-add` cycle, say what landed in one line so the
-   user can reload if the pane looks stale: `:e` reloads diff + comments, `:commits` reopens the
-   local commit selector when a new commit doesn't show after `:e`.
-3. **Poll for comments** at the same checkpoints: `tuicr review comments --repo <workspace-root> --session <slug>`
-   (get the slug from `tuicr review list --repo <workspace-root>`). Diff comment IDs against the last poll.
-4. **Handle by type:** `issue` → fix immediately, own commit; `suggestion` → implement (own commit) or
-   reply in chat with a concrete reason why not; `note` → answer in chat; `praise` → no action.
-5. **Drain before landing.** A final `comments` pass with nothing outstanding is a hard land gate,
-   alongside green tests and explicit user validation.
-6. **Never self-comment.** No `tuicr review add` on your own patch unless the user asks for an
-   agent-authored review; then always pass `--username`.
+   user knows there's something new to review.
+3. **Poll for comments** at the same checkpoints: read `.review-comments.md` at the workspace root
+   (auto-updated by nvim on every add/delete, removed when empty) for local diffs, or
+   `gh api repos/OWNER/REPO/pulls/N/comments` for a PR. Diff against your last read to spot new
+   entries — see the `local-review` skill for exact locations and format.
+4. **Handle by type:** `ISSUE` → fix immediately, own commit; `SUGGESTION` → implement (own commit)
+   or reply in chat with a concrete reason why not; `NOTE`/`QUESTION` → answer in chat; `PRAISE` →
+   no action.
+5. **Drain before landing.** The comments file being absent/empty (or PR threads all addressed) is
+   a hard land gate, alongside green tests and explicit user validation.
+6. **Never self-comment.** Don't add your own review comments on your own patch unless the user
+   asks for an agent-authored review.
 
-If no session exists when you poll, say so and continue working — do not stall, and do not start one.
+If there's nothing to review yet when you poll, say so and continue working — do not stall.
 
 ## Zellij Integration
 
