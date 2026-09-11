@@ -20,6 +20,7 @@ return {
     'ReviewLoad',
     'ReviewSummary',
     'ReviewGoto',
+    'ReviewImport',
   },
   -- The raw storage_file (:ReviewSave/:ReviewLoad) only holds bufnr, not
   -- filename, so it can't be read from outside the nvim session that wrote
@@ -79,5 +80,123 @@ return {
         return unpack(result)
       end
     end
+
+    -- Split the `path:line` reference an exported comment carries back into a
+    -- path and a position. Four shapes exist, and they are ambiguous with each
+    -- other from the left, so they are matched longest-first.
+    ---@param ref string
+    ---@return string? file, integer? lnum, integer? end_lnum, integer? col, integer? end_col
+    local function parse_ref(ref)
+      local file, lnum, col, end_lnum, end_col = ref:match('^(.*):(%d+):(%d+)%-(%d+):(%d+)$')
+      if file then return file, tonumber(lnum), tonumber(end_lnum), tonumber(col), tonumber(end_col) end
+
+      file, lnum, col, end_col = ref:match('^(.*):(%d+):(%d+)%-(%d+)$')
+      if file then return file, tonumber(lnum), tonumber(lnum), tonumber(col), tonumber(end_col) end
+
+      file, lnum, end_lnum = ref:match('^(.*):(%d+)%-(%d+)$')
+      if file then return file, tonumber(lnum), tonumber(end_lnum), nil, nil end
+
+      file, lnum = ref:match('^(.*):(%d+)$')
+      if file then return file, tonumber(lnum), tonumber(lnum), nil, nil end
+
+      return nil
+    end
+
+    -- Rebuild the `[TYPE...]` prefix the plugin stores in the quickfix text, so
+    -- that a re-export of an imported comment is identical to the line it came
+    -- from.
+    ---@param kind string Upper-case comment type.
+    ---@param lnum integer
+    ---@param end_lnum integer
+    ---@param col integer?
+    ---@param end_col integer?
+    ---@param text string
+    ---@return string
+    local function qf_text(kind, lnum, end_lnum, col, end_col, text)
+      if col and end_col then
+        if lnum ~= end_lnum then
+          return string.format('[%s:L%d:%d-L%d:%d] %s', kind, lnum, col, end_lnum, end_col, text)
+        end
+        return string.format('[%s:L%d:%d-%d] %s', kind, lnum, col, end_col, text)
+      elseif lnum ~= end_lnum then
+        return string.format('[%s:L%d-%d] %s', kind, lnum, end_lnum, text)
+      end
+      return string.format('[%s] %s', kind, text)
+    end
+
+    -- Read the export file back into the quickfix list.
+    --
+    -- :ReviewLoad cannot do this: it reads the raw storage file, which records
+    -- buffer numbers rather than paths and so is meaningless outside the nvim
+    -- session that wrote it. The export file holds resolved `path:line`
+    -- references, which makes it the only form of a review that survives a
+    -- restart -- or that an agent can hand back.
+    --
+    -- Paths are resolved against the export file's directory, which is the
+    -- workspace root, rather than the cwd: the export wrote them relative to
+    -- wherever nvim happened to be.
+    vim.api.nvim_create_user_command('ReviewImport', function()
+      local path = require('quickfix-review.config').options.export_file
+      local f = path and io.open(path, 'r')
+      if not f then
+        vim.notify('No review comments at ' .. tostring(path), vim.log.levels.WARN)
+        return
+      end
+      local content = f:read('*a')
+      f:close()
+
+      local base = vim.fn.fnamemodify(path, ':h')
+      local items = {}
+      for line in content:gmatch('[^\n]+') do
+        local kind, ref, text = line:match('^%d+%.%s+%*%*%[(%u+)%]%*%*%s+`([^`]+)`%s+%-%s+(.*)$')
+        if kind then
+          local file, lnum, end_lnum, col, end_col = parse_ref(ref)
+          if file then
+            items[#items + 1] = {
+              filename = vim.fs.normalize(base .. '/' .. file),
+              lnum = lnum,
+              end_lnum = end_lnum,
+              col = col or 1,
+              end_col = end_col,
+              text = qf_text(kind, lnum, end_lnum, col, end_col, text),
+              type = kind:sub(1, 1),
+            }
+          end
+        end
+      end
+
+      if #items == 0 then
+        vim.notify('No comments parsed from ' .. path, vim.log.levels.WARN)
+        return
+      end
+
+      vim.fn.setqflist(items, 'r')
+      vim.fn.setqflist({}, 'a', { title = 'Code Review Comments' })
+
+      -- A comment anchors to a line number, so a file edited since the export
+      -- can leave one pointing past its end; placing a sign there throws. The
+      -- comment is still imported -- it is the user's, and only they can decide
+      -- where it now belongs -- but it is counted and reported, because a
+      -- silently sign-less comment reads as a lost one.
+      local utils = require('quickfix-review.utils')
+      local refreshed, stale = {}, 0
+      for _, item in ipairs(items) do
+        local bufnr = vim.fn.bufnr(item.filename)
+        if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
+          if item.lnum > vim.api.nvim_buf_line_count(bufnr) then
+            stale = stale + 1
+          elseif not refreshed[bufnr] then
+            refreshed[bufnr] = true
+            pcall(utils.refresh_buffer_signs, bufnr, item.filename)
+          end
+        end
+      end
+
+      local msg = string.format('Imported %d comments from %s', #items, path)
+      if stale > 0 then
+        msg = msg .. string.format(' (%d past the end of their file)', stale)
+      end
+      vim.notify(msg, stale > 0 and vim.log.levels.WARN or vim.log.levels.INFO)
+    end, { desc = 'Review: import comments from the export file' })
   end,
 }
