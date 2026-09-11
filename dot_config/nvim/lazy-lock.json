@@ -14,6 +14,7 @@
   "guess-indent.nvim": { "branch": "main", "commit": "84a4987ff36798c2fc1169cbaff67960aed9776f" },
   "hunk.nvim": { "branch": "master", "commit": "c8a8e7b6973576f63e5bf39aa8338d7f37f4dc53" },
   "jj-diffconflicts": { "branch": "main", "commit": "a2aa9a247b56d2c1a6f6be81bcf41c5450cc82ff" },
+  "jj.nvim": { "branch": "main", "commit": "cffc74128a80398469085e01ff2e4001e330b800" },
   "jupytext.nvim": { "branch": "main", "commit": "c8baf3ad344c59b3abd461ecc17fc16ec44d0f7b" },
   "lazy.nvim": { "branch": "main", "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" },
   "lazydev.nvim": { "branch": "main", "commit": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d" },
