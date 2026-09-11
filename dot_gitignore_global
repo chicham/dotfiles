@@ -322,3 +322,8 @@ $RECYCLE.BIN/
 # Python venvs (some projects use .venv, leave that to per-repo .gitignore)
 __pycache__/
 *.py[cod]
+
+### quickfix-review-nvim scratch ###
+# Review annotations are exported per working copy and drained before landing;
+# they describe a change under review, never part of it.
+.review-comments.md
