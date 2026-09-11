@@ -18,7 +18,7 @@ return {
 			-- diffs against `HEAD~0`, and the jj adapter reverse-applies `@`'s
 			-- own diff, yielding `@-`. So signs always show what the current
 			-- change introduces -- uncommitted work under git, the contents of
-			-- `@` under jj. ]r / [r walk the base further back on demand.
+			-- `@` under jj. ]b / [b walk the base further back on demand.
 			target_commit = 0,
 			signs = {
 				text = {
@@ -76,10 +76,14 @@ return {
 		-- Diff base selection: gitsigns had no equivalent. Under jj the base
 		-- worth seeing shifts as `tip-add` opens each new change, so walking it
 		-- interactively replaces a fixed "diff against last commit" mapping.
-		map("n", "]r", function()
+		--
+		-- ]b / [b rather than the upstream ]r / [r: quickfix-review binds that
+		-- pair to walk review comments, and matching <leader>hB keeps the two
+		-- base mappings on the same letter.
+		map("n", "]b", function()
 			actions.target_newer_commit(0, vim.v.count1)
 		end, "Diff base: newer commit")
-		map("n", "[r", function()
+		map("n", "[b", function()
 			actions.target_older_commit(0, vim.v.count1)
 		end, "Diff base: older commit")
 		map("n", "<leader>hB", function()
