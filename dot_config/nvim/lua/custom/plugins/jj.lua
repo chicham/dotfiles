@@ -147,10 +147,19 @@ return {
 				return
 			end
 
+			-- Entries are displayed relative to the cwd but previewed through an
+			-- absolute path, since the preview command inherits fzf's working
+			-- directory rather than the editor's.
 			require("fzf-lua").fzf_exec(vim.tbl_map(function(p)
 				return vim.fn.fnamemodify(p, ":.")
 			end, files), {
 				prompt = "Review " .. base:sub(1, 8) .. "..@> ",
+				preview = table.concat({
+					"jj", "-R", vim.fn.shellescape(root), "--no-pager", "diff",
+					"--color=always", "--git",
+					"--from", vim.fn.shellescape(base), "--to", "@",
+					"--", vim.fn.shellescape(root) .. "/{}",
+				}, " "),
 				actions = {
 					["default"] = function(selected)
 						for _, rel in ipairs(selected) do
