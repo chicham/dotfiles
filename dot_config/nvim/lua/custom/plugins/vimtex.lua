@@ -35,6 +35,53 @@ return {
     -- Avoid conflicts with existing keymaps
     vim.g.vimtex_mappings_disable = { ['n'] = {'K'} }
 
+    -- Make <C-o>/<C-i> read as browser back/forward while editing LaTeX.
+    --
+    -- Following an \input or \subfile chain several files deep is the case the
+    -- default jumplist handles worst: it drops every entry past the one jumped
+    -- back over, so <C-i> cannot return to where <C-o> came from. "stack" keeps
+    -- that forward half.
+    --
+    -- `jumpoptions` is a global option with no buffer-local form, so it is
+    -- swapped on entering a LaTeX buffer and put back on leaving one. The
+    -- option is read when a jump is taken rather than when the jumplist is
+    -- built, so this really does scope the behaviour: jumps made inside a
+    -- LaTeX buffer stack, jumps made anywhere else keep whatever is configured
+    -- globally. A value changed by hand while a LaTeX buffer is current is
+    -- overwritten on the way out.
+    local saved_jumpoptions
+
+    local function scope_jumpoptions()
+      if vim.bo.filetype == 'tex' then
+        if saved_jumpoptions == nil then
+          saved_jumpoptions = vim.o.jumpoptions
+          vim.o.jumpoptions = 'stack,clean'
+        end
+      elseif saved_jumpoptions ~= nil then
+        vim.o.jumpoptions = saved_jumpoptions
+        saved_jumpoptions = nil
+      end
+    end
+
+    local jump_group = vim.api.nvim_create_augroup('vimtex_jumpoptions', { clear = true })
+    vim.api.nvim_create_autocmd({ 'BufEnter', 'FileType' }, {
+      group = jump_group,
+      callback = scope_jumpoptions,
+    })
+    -- Restore before quitting so the value is not persisted anywhere by a
+    -- session plugin mid-swap, and apply once now: this file is loaded by the
+    -- LaTeX buffer that triggered it, whose BufEnter has already fired.
+    vim.api.nvim_create_autocmd('VimLeavePre', {
+      group = jump_group,
+      callback = function()
+        if saved_jumpoptions ~= nil then
+          vim.o.jumpoptions = saved_jumpoptions
+          saved_jumpoptions = nil
+        end
+      end,
+    })
+    scope_jumpoptions()
+
     -- Jump to any table-of-contents entry by fuzzy-matching its title.
     --
     -- The entries come from the same parser the `<localleader>lt` TOC window
