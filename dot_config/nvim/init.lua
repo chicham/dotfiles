@@ -99,6 +99,12 @@ vim.opt.linebreak = true
 -- Diff options for better visual diffs
 vim.opt.diffopt = "filler,internal,algorithm:histogram,indent-heuristic"
 
+-- Follow a \input/\subfile chain several files deep and the default jumplist
+-- drops every entry past the one jumped back over, so <C-i> cannot return to
+-- where <C-o> came from. "stack" keeps the forward half, making the pair read
+-- as browser back/forward; "clean" drops entries for unloaded buffers.
+vim.opt.jumpoptions = "stack,clean"
+
 -- File/Buffer Handling
 vim.opt.hidden = true -- Hide buffers when not in use instead of closing them
 vim.opt.swapfile = false -- Disable swap files
