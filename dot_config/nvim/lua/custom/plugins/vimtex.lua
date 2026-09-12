@@ -37,10 +37,12 @@ return {
 
     -- Make <C-o>/<C-i> read as browser back/forward while editing LaTeX.
     --
-    -- Following an \input or \subfile chain several files deep is the case the
-    -- default jumplist handles worst: it drops every entry past the one jumped
-    -- back over, so <C-i> cannot return to where <C-o> came from. "stack" keeps
-    -- that forward half.
+    -- Walking an \input or \subfile chain builds a long jumplist, and the
+    -- default keeps every entry: jumping somewhere new after <C-o> rotates the
+    -- entries that were skipped over to the end of the list rather than
+    -- dropping them, so position in the list stops corresponding to position in
+    -- the document. "stack" discards them instead, which is what a browser does
+    -- when you go back and then follow a new link.
     --
     -- `jumpoptions` is a global option with no buffer-local form, so it is
     -- swapped on entering a LaTeX buffer and put back on leaving one. The
