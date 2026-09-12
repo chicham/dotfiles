@@ -29,15 +29,45 @@ return {
   config = function()
     local qr = require('quickfix-review')
 
-    -- Nearest '.jj' or '.git' from the current buffer, not plain cwd: a jj
-    -- workspace (.workspaces/<name>) has its own '.jj' marker, so this lands
-    -- the file at the workspace root when reviewing inside one, and at the
-    -- main repo root otherwise -- correct in both layouts without needing to
-    -- know which one nvim was opened in.
-    local review_root = vim.fs.root(0, { '.jj', '.git' }) or vim.fn.getcwd()
+    -- Point `export_file` at the repo holding the file under review, and keep
+    -- it pointed there as the review moves between repos.
+    --
+    -- The root is the nearest '.jj' or '.git' rather than the cwd: a jj
+    -- workspace (.workspaces/<name>) carries its own '.jj' marker, so a review
+    -- taken inside one lands at the workspace root and one taken in the main
+    -- checkout lands at the repo root, without either layout having to be
+    -- declared. It is derived from the first comment in the list when there is
+    -- one -- that comment names the file the review is about -- and from the
+    -- current buffer otherwise, which is the file about to be commented on.
+    --
+    -- Resolving it per call rather than once is what makes that true. nvim
+    -- loads this plugin from whatever buffer first pressed a review key, which
+    -- need not be, and often is not, in the repo the user goes on to review;
+    -- a root frozen at load time silently exports every later comment into the
+    -- first repo, where the agent polling the workspace never sees it.
+    ---@return string
+    local function resolve_export_file()
+      local options = require('quickfix-review.config').options
+
+      local anchor
+      local first = vim.fn.getqflist()[1]
+      if first and first.bufnr and first.bufnr ~= 0 then
+        anchor = vim.api.nvim_buf_get_name(first.bufnr)
+      end
+      if not anchor or anchor == '' then
+        anchor = vim.api.nvim_buf_get_name(0)
+      end
+
+      local root = (anchor ~= '' and vim.fs.root(anchor, { '.jj', '.git' }))
+        or vim.fs.root(0, { '.jj', '.git' })
+        or vim.fn.getcwd()
+
+      options.export_file = root .. '/.review-comments.md'
+      return options.export_file
+    end
 
     qr.setup({
-      export_file = review_root .. '/.review-comments.md',
+      export_file = (vim.fs.root(0, { '.jj', '.git' }) or vim.fn.getcwd()) .. '/.review-comments.md',
       -- Default cycle_previous ('-') overwrites oil.nvim's global "open
       -- parent directory" map once this plugin's setup() runs; <leader>ca/cr
       -- freed up on the LSP side (init.lua keeps <space>ca/<space>rn there).
@@ -53,14 +83,17 @@ return {
     -- comment, so this writes the file directly instead of calling it.
     local function write_export_file()
       local qr_config = require('quickfix-review.config')
-      local path = qr_config.options.export_file
-      if not path then return end
 
+      -- An emptied list deletes the file that was last written, so the stale
+      -- path is the right one here; re-resolving would leave it behind and
+      -- delete nothing.
       local qf_list = vim.fn.getqflist()
       if #qf_list == 0 then
-        os.remove(path)
+        if qr_config.options.export_file then os.remove(qr_config.options.export_file) end
         return
       end
+
+      local path = resolve_export_file()
 
       local content = require('quickfix-review.export').to_markdown(qf_list, qr_config.options)
       if not content then return end
@@ -238,8 +271,8 @@ return {
     -- workspace root, rather than the cwd: the export wrote them relative to
     -- wherever nvim happened to be.
     vim.api.nvim_create_user_command('ReviewImport', function()
-      local path = require('quickfix-review.config').options.export_file
-      local f = path and io.open(path, 'r')
+      local path = resolve_export_file()
+      local f = io.open(path, 'r')
       if not f then
         vim.notify('No review comments at ' .. tostring(path), vim.log.levels.WARN)
         return
