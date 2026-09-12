@@ -25,6 +25,18 @@ return {
 	version = "*",
 	dependencies = { "algmyr/vcsigns.nvim", "ibhagwan/fzf-lua" },
 	cmd = { "J", "Jdiff", "Jvdiff", "Jhdiff", "Jbrowse", "Jread", "Jedit", "JjReview" },
+	-- <leader>j mirrors the shape of the CLI: what am I on, what changed,
+	-- what is the graph, and the review that reads all three. Everything
+	-- that rewrites history stays behind :J, where the subcommand has to
+	-- be typed out.
+	keys = {
+		{ "<leader>j", nil, desc = "Jujutsu" },
+		{ "<leader>js", "<cmd>J status<cr>", desc = "Status" },
+		{ "<leader>jl", "<cmd>J log<cr>", desc = "Log" },
+		{ "<leader>jd", "<cmd>Jdiff<cr>", desc = "Diff against @-" },
+		{ "<leader>jr", "<cmd>JjReview<cr>", desc = "Review this chain" },
+		{ "<leader>jb", "<cmd>Jbrowse<cr>", mode = { "n", "x" }, desc = "Open on remote" },
+	},
 	config = function()
 		require("jj").setup({})
 
