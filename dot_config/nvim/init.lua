@@ -170,7 +170,7 @@ vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 
 -- Macro helpers
 vim.keymap.set("n", "Q", "@@")
-vim.keymap.set("x", "Q", ":normal @@")
+vim.keymap.set("x", "Q", ":normal @@<CR>")
 
 -- Write buffer
 vim.keymap.set("n", "W", ":w<cr>", { silent = true })
