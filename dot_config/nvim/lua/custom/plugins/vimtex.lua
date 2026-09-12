@@ -1,6 +1,10 @@
 return {
   'lervag/vimtex',
   ft = { 'tex', 'bib' },
+  -- The TOC picker below is vimtex's own `vimtex.fzf-lua` module, which
+  -- `require`s fzf-lua at call time; declaring it here loads it with vimtex
+  -- rather than leaving the first <space>lj to fail on a lazy plugin.
+  dependencies = { 'ibhagwan/fzf-lua' },
   config = function()
     vim.g.vimtex_view_method = 'skim'
     vim.g.vimtex_compiler_method = 'latexmk'
@@ -33,49 +37,14 @@ return {
 
     -- Jump to any table-of-contents entry by fuzzy-matching its title.
     --
-    -- vimtex ships its own fzf bridge, but it calls `fzf#run()` from
-    -- junegunn/fzf.vim, which is not installed; fzf-lua is the picker here.
     -- The entries come from the same parser the `<localleader>lt` TOC window
-    -- uses, so a beamer frame arrives carrying its `\frametitle` -- which is
-    -- what makes this the missing motion in a large deck, where `]r` steps
-    -- frame by frame but cannot aim at one by name.
-    ---@param filter string? Entry types to keep, by first letter: `c` content
+    -- uses, so a beamer frame arrives carrying its `\frametitle`. That is what
+    -- makes this the missing motion in a large deck: `]r` steps frame by frame
+    -- but cannot aim at one by name.
+    ---@param layers string? Entry types to keep, by first letter: `c` content
     ---  (sections and frames), `t` todo, `l` label, `i` include. Default `ci`.
-    local function toc_fzf(filter)
-      filter = filter or 'ci'
-
-      -- Entries are only produced for a file vimtex has a project state for.
-      local ok, entries = pcall(vim.fn['vimtex#parser#toc'])
-      if not ok or vim.tbl_isempty(entries or {}) then
-        vim.notify('vimtex: no table of contents for this buffer', vim.log.levels.WARN)
-        return
-      end
-
-      -- fzf-lua matches on the whole displayed line, so the file:line prefix
-      -- has to stay out of it; the index into `entries` is carried instead and
-      -- stripped back off in the action.
-      local lines = {}
-      for i, e in ipairs(entries) do
-        if filter:find(e.type:sub(1, 1), 1, true) then
-          local indent = string.rep('  ', math.max(0, tonumber(e.level) or 0))
-          lines[#lines + 1] = string.format('%d\t%s%s', i, indent, e.title)
-        end
-      end
-
-      require('fzf-lua').fzf_exec(lines, {
-        prompt = 'TOC> ',
-        fzf_opts = { ['--with-nth'] = '2..', ['--delimiter'] = '\\t' },
-        actions = {
-          ['default'] = function(selected)
-            if not selected or not selected[1] then return end
-            local e = entries[tonumber(selected[1]:match('^(%d+)'))]
-            if not e then return end
-            vim.cmd.edit(vim.fn.fnameescape(e.file))
-            vim.api.nvim_win_set_cursor(0, { tonumber(e.line) or 1, 0 })
-            vim.cmd('normal! zz')
-          end,
-        },
-      })
+    local function toc_fzf(layers)
+      require('vimtex.fzf-lua').run({ layers = layers or 'ci' })
     end
 
     vim.api.nvim_create_user_command('VimtexTocFzf', function(opts)
