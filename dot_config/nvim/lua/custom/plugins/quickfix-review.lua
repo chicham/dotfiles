@@ -72,7 +72,9 @@ return {
       end
     end
 
-    for _, fn_name in ipairs({ 'add_comment', 'delete_comment', 'clear_review' }) do
+    -- add_comment is replaced outright further down and exports itself, so
+    -- it is not wrapped here.
+    for _, fn_name in ipairs({ 'delete_comment', 'clear_review' }) do
       local original = qr[fn_name]
       qr[fn_name] = function(...)
         local result = { original(...) }
@@ -122,6 +124,106 @@ return {
         return string.format('[%s:L%d-%d] %s', kind, lnum, end_lnum, text)
       end
       return string.format('[%s] %s', kind, text)
+    end
+
+    -- Ask for comment text in a floating scratch buffer rather than the
+    -- command line.
+    --
+    -- Upstream prompts with `vim.fn.input`, which is single-line, unstyled and
+    -- outside `vim.ui.input`, so no ui plugin can reach it. A scratch buffer
+    -- gives normal-mode editing, multi-line bodies and the buffer's own
+    -- completion; joining the lines with a space on submit keeps the exported
+    -- markdown one entry per line, which is the format agents parse.
+    ---@param title string Window title, e.g. "ISSUE comment (L12-14)".
+    ---@param on_submit fun(text: string)
+    local function prompt_float(title, on_submit)
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.bo[buf].bufhidden = 'wipe'
+      vim.bo[buf].filetype = 'markdown'
+
+      local width = math.min(80, math.floor(vim.o.columns * 0.8))
+      local win = vim.api.nvim_open_win(buf, true, {
+        relative = 'cursor',
+        row = 1,
+        col = 0,
+        width = width,
+        height = 5,
+        style = 'minimal',
+        border = 'rounded',
+        title = ' ' .. title .. ' ',
+        title_pos = 'center',
+        footer = ' <CR> submit  <Esc> cancel ',
+        footer_pos = 'center',
+      })
+      vim.wo[win].wrap = true
+
+      local function close()
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
+      end
+
+      local function submit()
+        local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+        close()
+        local text = vim.trim(table.concat(lines, ' '):gsub('%s+', ' '))
+        if text ~= '' then
+          on_submit(text)
+        end
+      end
+
+      vim.keymap.set('n', '<CR>', submit, { buffer = buf })
+      vim.keymap.set('i', '<C-s>', submit, { buffer = buf })
+      vim.keymap.set('n', '<Esc>', close, { buffer = buf })
+      vim.keymap.set('n', 'q', close, { buffer = buf })
+      vim.cmd.startinsert()
+    end
+
+    -- Replace the prompt half of add_comment, keeping its item shape. The range
+    -- argument carries the same four forms upstream accepts.
+    qr.add_comment = function(comment_type, range)
+      local qr_utils = require('quickfix-review.utils')
+      if not qr_utils.get_comment_type_config(comment_type) then
+        vim.notify('Unknown comment type: ' .. tostring(comment_type), vim.log.levels.ERROR)
+        return
+      end
+
+      local file = qr_utils.get_real_filepath()
+      local start_line, end_line, start_col, end_col
+      if range then
+        start_line, end_line, start_col, end_col = range[1], range[2], range[3], range[4]
+        if start_line > end_line then
+          start_line, end_line = end_line, start_line
+        end
+      else
+        start_line = vim.fn.line('.')
+        end_line = start_line
+      end
+
+      local kind = comment_type:upper()
+      local where = start_line == end_line and ('L' .. start_line)
+        or ('L' .. start_line .. '-' .. end_line)
+
+      prompt_float(kind .. ' ' .. where, function(text)
+        local items = vim.fn.getqflist()
+        items[#items + 1] = {
+          filename = file,
+          lnum = start_line,
+          end_lnum = end_line,
+          col = start_col or 1,
+          end_col = end_col,
+          text = qf_text(kind, start_line, end_line, start_col, end_col, text),
+          type = kind:sub(1, 1),
+        }
+        vim.fn.setqflist(items, 'r')
+        vim.fn.setqflist({}, 'a', { title = 'Code Review Comments' })
+
+        if not qr_utils.is_special_buffer() then
+          pcall(qr_utils.refresh_buffer_signs, vim.fn.bufnr(), file)
+        end
+        write_export_file()
+        vim.notify(kind .. ' added to ' .. vim.fn.fnamemodify(file, ':.') .. ':' .. start_line)
+      end)
     end
 
     -- Read the export file back into the quickfix list.
