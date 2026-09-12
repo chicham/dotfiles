@@ -23,9 +23,7 @@ return {
     {
       "<leader>nn",
       function()
-        if _G.ensure_daily_capture_targets then
-          _G.ensure_daily_capture_targets()
-        end
+        _G.org_roam_ensure_daily_file()
         require("orgmode").instance().capture:open_template_by_shortcut("o")
       end,
       desc = "Quick add [N]ote to today",
@@ -549,8 +547,7 @@ return {
         local time = os.time({ year = info.closed_year, month = info.closed_month, day = info.closed_day, hour = 12 })
 
         -- Ensure daily file exists
-        local daily_path = _G.ensure_daily_capture_targets and _G.ensure_daily_capture_targets(time)
-                           or _G.org_roam_ensure_daily_file(time)
+        local daily_path = _G.org_roam_ensure_daily_file(time)
 
         if not daily_path then
           table.insert(errors, info.title .. " (no daily)")
@@ -653,12 +650,7 @@ return {
       end
 
       -- Ensure daily file exists
-      local path = nil
-      if _G.ensure_daily_capture_targets then
-        path = _G.ensure_daily_capture_targets(time)
-      else
-        path = _G.org_roam_ensure_daily_file(time)
-      end
+      local path = _G.org_roam_ensure_daily_file(time)
       if not path then
         vim.notify("Unable to create daily note.", vim.log.levels.WARN)
         return
