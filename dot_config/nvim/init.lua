@@ -170,7 +170,7 @@ vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 
 -- Macro helpers
 vim.keymap.set("n", "Q", "@@")
-vim.keymap.set("v", "Q", ":normal @@")
+vim.keymap.set("x", "Q", ":normal @@")
 
 -- Write buffer
 vim.keymap.set("n", "W", ":w<cr>", { silent = true })
@@ -287,13 +287,13 @@ vim.keymap.set("n", "<leader>zo", function()
 end, { desc = "Fold: reset to outline" })
 
 -- Visual mode indent fix
-vim.keymap.set("v", "<", "<gv")
-vim.keymap.set("v", ">", ">gv")
+vim.keymap.set("x", "<", "<gv")
+vim.keymap.set("x", ">", ">gv")
 
 -- Move text up and down
-vim.keymap.set("v", "J", ":m .+1<CR>==", { silent = true })
-vim.keymap.set("v", "K", ":m .-2<CR>==", { silent = true })
-vim.keymap.set("v", "p", '"_dP', { silent = true }) -- Don't lose yanked text when pasting over selection
+vim.keymap.set("x", "J", ":m .+1<CR>==", { silent = true })
+vim.keymap.set("x", "K", ":m .-2<CR>==", { silent = true })
+vim.keymap.set("x", "p", '"_dP', { silent = true }) -- Don't lose yanked text when pasting over selection
 
 -- Keep cursor centered when jumping
 vim.keymap.set("n", "J", "mzJ`z", { silent = true })
