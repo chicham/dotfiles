@@ -5,10 +5,14 @@
 return {
   "chipsenkbeil/org-roam.nvim",
   tag = "0.2.0",
-  lazy = false, -- Ensure it loads so keymaps are available
-  dependencies = {
-    { "nvim-orgmode/orgmode", lazy = false },
-  },
+  -- VeryLazy rather than eager: org-roam walks the roam directory during
+  -- setup, and doing that before the first screen draw costs the whole scan up
+  -- front. Firing right after the draw keeps every keymap and command below
+  -- available by the time anything can be typed, and lets orgmode keep the
+  -- VeryLazy trigger its own spec asks for -- a `lazy = false` here overrides
+  -- that spec and drags orgmode into startup too.
+  event = "VeryLazy",
+  dependencies = { "nvim-orgmode/orgmode" },
   keys = {
     { "<leader>npr", function() _G.org_promote_reading_note() end, desc = "Promote [R]eading from inbox" },
     { "<leader>npi", function() _G.org_promote_inbox_note() end, desc = "Promote [I]dea/note from inbox" },
