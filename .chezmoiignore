@@ -7,6 +7,15 @@ tests/
 # App-managed: Claude Code rewrites autoMode/feedbackSurveyState in place,
 # so chezmoi tracking it would fight the app and delete that state on apply.
 .claude/settings.json
+.config/nvim/.claude/settings.local.json
+
+# Build artifacts and generated files that live inside the nvim config tree:
+# a python venv and ruff cache created by running tooling from that directory,
+# and the binary spell file, which vim regenerates from the .add wordlist that
+# is tracked beside it.
+.config/nvim/.venv/**
+.config/nvim/.ruff_cache/**
+.config/nvim/spell/*.spl
 
 {{- if ne .chezmoi.os "linux" }}
 .chezmoiexternal.toml
