@@ -8,8 +8,8 @@
 -- navic as the breadcrumb in the *statusline*. They complement rather than
 -- conflict; if the header feels redundant, drop one.
 return {
-  'SmiteshP/nvim-navic',
-  dependencies = { 'neovim/nvim-lspconfig' },
+  "SmiteshP/nvim-navic",
+  dependencies = { "neovim/nvim-lspconfig" },
   lazy = true, -- loaded as a lualine winbar component / on LspAttach
   opts = {
     -- Attach to any LSP client exposing documentSymbol, no per-server wiring.
@@ -17,6 +17,6 @@ return {
     -- Update context off the symbol cache rather than on every CursorMoved.
     lazy_update_context = true,
     highlight = true,
-    separator = '  ',
+    separator = "  ",
   },
 }

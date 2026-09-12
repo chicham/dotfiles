@@ -14,12 +14,48 @@ return {
   event = "VeryLazy",
   dependencies = { "nvim-orgmode/orgmode" },
   keys = {
-    { "<leader>npr", function() _G.org_promote_reading_note() end, desc = "Promote [R]eading from inbox" },
-    { "<leader>npi", function() _G.org_promote_inbox_note() end, desc = "Promote [I]dea/note from inbox" },
-    { "<leader>npe", function() _G.org_promote_experiment() end, desc = "Promote [E]xperiment from inbox" },
-    { "<leader>nph", function() _G.org_promote_headline_to_note() end, desc = "Promote [H]eadline to own note" },
-    { "<leader>nrc", function() _G.org_cleanup_done_tasks() end, desc = "[R]efile [C]ompleted tasks from inbox" },
-    { "<leader>nrT", function() _G.org_refile_manual_to_daily() end, desc = "Manual refile to [T]oday" },
+    {
+      "<leader>npr",
+      function()
+        _G.org_promote_reading_note()
+      end,
+      desc = "Promote [R]eading from inbox",
+    },
+    {
+      "<leader>npi",
+      function()
+        _G.org_promote_inbox_note()
+      end,
+      desc = "Promote [I]dea/note from inbox",
+    },
+    {
+      "<leader>npe",
+      function()
+        _G.org_promote_experiment()
+      end,
+      desc = "Promote [E]xperiment from inbox",
+    },
+    {
+      "<leader>nph",
+      function()
+        _G.org_promote_headline_to_note()
+      end,
+      desc = "Promote [H]eadline to own note",
+    },
+    {
+      "<leader>nrc",
+      function()
+        _G.org_cleanup_done_tasks()
+      end,
+      desc = "[R]efile [C]ompleted tasks from inbox",
+    },
+    {
+      "<leader>nrT",
+      function()
+        _G.org_refile_manual_to_daily()
+      end,
+      desc = "Manual refile to [T]oday",
+    },
     {
       "<leader>nn",
       function()
@@ -28,26 +64,48 @@ return {
       end,
       desc = "Quick add [N]ote to today",
     },
-    { "<leader>nss", function() _G.org_person_overview() end, desc = "[S]upervisee overview" },
-    { "<leader>nsa", function() _G.org_assign_person() end, desc = "[S]upervisee [A]ssign to headline" },
-    { "<leader>nsl", function() _G.org_insert_person_link() end, desc = "[S]upervisee [L]ink insert" },
+    {
+      "<leader>nss",
+      function()
+        _G.org_person_overview()
+      end,
+      desc = "[S]upervisee overview",
+    },
+    {
+      "<leader>nsa",
+      function()
+        _G.org_assign_person()
+      end,
+      desc = "[S]upervisee [A]ssign to headline",
+    },
+    {
+      "<leader>nsl",
+      function()
+        _G.org_insert_person_link()
+      end,
+      desc = "[S]upervisee [L]ink insert",
+    },
     {
       "<leader>nw",
       function()
         local roam = require("org-roam")
         local templates = roam.config.extensions.dailies.templates
         -- Pass only the "w" template so it opens directly without selection
-        roam.api.capture_node({
-          templates = { w = templates.w },
-        }):catch(function(err)
-          vim.notify("Weekly review capture failed: " .. tostring(err), vim.log.levels.ERROR)
-        end)
+        roam.api
+          .capture_node({
+            templates = { w = templates.w },
+          })
+          :catch(function(err)
+            vim.notify("Weekly review capture failed: " .. tostring(err), vim.log.levels.ERROR)
+          end)
       end,
       desc = "Create [W]eekly Review",
     },
     {
       "<leader>nW",
-      function() _G.org_weekly_review_view() end,
+      function()
+        _G.org_weekly_review_view()
+      end,
       desc = "[W]eekly Review View",
     },
   },
@@ -286,7 +344,12 @@ return {
       end
 
       if not has_valid_tag then
-        local tag_str = table.concat(vim.tbl_map(function(t) return ":" .. t .. ":" end, config.tags), " or ")
+        local tag_str = table.concat(
+          vim.tbl_map(function(t)
+            return ":" .. t .. ":"
+          end, config.tags),
+          " or "
+        )
         vim.notify("Headline is not tagged " .. tag_str, vim.log.levels.WARN)
         return
       end
@@ -348,28 +411,31 @@ return {
       end
 
       -- Use native org-roam capture API with modified template
-      roam.api.capture_node({
-        title = title,
-        origin = false,
-        templates = { [config.template] = template_config },
-      }):next(function(id)
-        if id then
-          -- Delete the original headline from inbox
-          remove_headline_from_source(source_file, item_range)
-          vim.notify("Promoted to roam note: " .. title, vim.log.levels.INFO)
+      roam.api
+        .capture_node({
+          title = title,
+          origin = false,
+          templates = { [config.template] = template_config },
+        })
+        :next(function(id)
+          if id then
+            -- Delete the original headline from inbox
+            remove_headline_from_source(source_file, item_range)
+            vim.notify("Promoted to roam note: " .. title, vim.log.levels.INFO)
 
-          -- Cleanup globals for reading promotion
-          if config.require_url then
-            _G.org_roam_capture_id = nil
-            _G.org_roam_capture_title = nil
-            _G.org_roam_capture_url = nil
+            -- Cleanup globals for reading promotion
+            if config.require_url then
+              _G.org_roam_capture_id = nil
+              _G.org_roam_capture_title = nil
+              _G.org_roam_capture_url = nil
+            end
+          else
+            vim.notify("Promotion cancelled or failed", vim.log.levels.WARN)
           end
-        else
-          vim.notify("Promotion cancelled or failed", vim.log.levels.WARN)
-        end
-      end):catch(function(err)
-        vim.notify("Error promoting: " .. tostring(err), vim.log.levels.ERROR)
-      end)
+        end)
+        :catch(function(err)
+          vim.notify("Error promoting: " .. tostring(err), vim.log.levels.ERROR)
+        end)
     end
 
     -- Promote reading list entry
@@ -508,14 +574,22 @@ return {
           local function traverse(headlines)
             for _, h in ipairs(headlines) do
               local closed = h:get_closed_date()
-              if h:is_done() and h:get_title() == title and closed
-                  and closed.year == y and closed.month == m and closed.day == d then
+              if
+                h:is_done()
+                and h:get_title() == title
+                and closed
+                and closed.year == y
+                and closed.month == m
+                and closed.day == d
+              then
                 return h
               end
               local children = h:get_child_headlines()
               if children and #children > 0 then
                 local found = traverse(children)
-                if found then return found end
+                if found then
+                  return found
+                end
               end
             end
             return nil
@@ -523,7 +597,8 @@ return {
           return traverse(file:get_headlines())
         end
 
-        local source_headline = find_headline(source_file, info.title, info.closed_year, info.closed_month, info.closed_day)
+        local source_headline =
+          find_headline(source_file, info.title, info.closed_year, info.closed_month, info.closed_day)
         if not source_headline then
           table.insert(errors, info.title .. " (not found)")
           goto continue
@@ -533,12 +608,12 @@ return {
         local parent_headline = source_headline:get_parent_headline()
         local parent_id = nil
         if parent_headline then
-          parent_id = parent_headline:get_property('ID', false)
-          if not parent_id or parent_id == '' then
+          parent_id = parent_headline:get_property("ID", false)
+          if not parent_id or parent_id == "" then
             local ok, id_mod = pcall(require, "orgmode.org.id")
             if ok then
               parent_id = id_mod.new()
-              parent_headline:set_property('ID', parent_id)
+              parent_headline:set_property("ID", parent_id)
             end
           end
         end
@@ -663,8 +738,8 @@ return {
       end
 
       local source_bufnr = source_headline.file and source_headline.file:bufnr()
-      if type(_G.org_refile_with_fzf) ~= 'function' then
-        vim.notify('Fzf refile helper not available.', vim.log.levels.WARN)
+      if type(_G.org_refile_with_fzf) ~= "function" then
+        vim.notify("Fzf refile helper not available.", vim.log.levels.WARN)
         return
       end
 
@@ -673,9 +748,9 @@ return {
         source_bufnr = source_bufnr,
         destination_path = path,
         ensure_path = path,
-        default_headline = 'Notes',
-        prompt = ('Daily Refile (%s)> '):format(os.date('%Y-%m-%d', time)),
-        message = ('Logged to Daily: %s'):format(os.date('%Y-%m-%d', time)),
+        default_headline = "Notes",
+        prompt = ("Daily Refile (%s)> "):format(os.date("%Y-%m-%d", time)),
+        message = ("Logged to Daily: %s"):format(os.date("%Y-%m-%d", time)),
       })
     end
 
@@ -814,14 +889,18 @@ return {
           if not is_person and line:match("^#+FILETAGS:.*:person:") then
             is_person = true
           end
-          if name and id and is_person then break end
+          if name and id and is_person then
+            break
+          end
         end
         if name and is_person then
           table.insert(people, { name = vim.trim(name), id = id or "", path = path })
         end
       end
 
-      table.sort(people, function(a, b) return a.name < b.name end)
+      table.sort(people, function(a, b)
+        return a.name < b.name
+      end)
       return people
     end
 
@@ -843,7 +922,9 @@ return {
       end
 
       local function on_select(choice)
-        if not choice then return end
+        if not choice then
+          return
+        end
         local person = display_map[choice]
         if person and callback then
           callback(person)

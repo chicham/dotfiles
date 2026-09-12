@@ -1,19 +1,19 @@
 return {
-  'lervag/vimtex',
-  ft = { 'tex', 'bib' },
+  "lervag/vimtex",
+  ft = { "tex", "bib" },
   -- The TOC picker below is vimtex's own `vimtex.fzf-lua` module, which
   -- `require`s fzf-lua at call time; declaring it here loads it with vimtex
   -- rather than leaving the first <space>lj to fail on a lazy plugin.
-  dependencies = { 'ibhagwan/fzf-lua' },
+  dependencies = { "ibhagwan/fzf-lua" },
   config = function()
-    vim.g.vimtex_view_method = 'skim'
-    vim.g.vimtex_compiler_method = 'latexmk'
+    vim.g.vimtex_view_method = "skim"
+    vim.g.vimtex_compiler_method = "latexmk"
     vim.g.vimtex_syntax_enabled = 0
     vim.g.vimtex_syntax_conceal_disable = 1
 
     -- Enable text objects (ic, ie, i$, etc.)
     vim.g.vimtex_text_obj_enabled = 1
-    vim.g.vimtex_text_obj_variant = 'auto'
+    vim.g.vimtex_text_obj_variant = "auto"
 
     -- Enable completion for commands and bibtex
     vim.g.vimtex_complete_enabled = 1
@@ -23,17 +23,17 @@ return {
     }
 
     -- Performance settings
-    vim.g.vimtex_parser_bib_backend = 'lua'
+    vim.g.vimtex_parser_bib_backend = "lua"
 
     -- Error handling
     vim.g.vimtex_quickfix_open_on_warning = 0
-    vim.g.vimtex_log_ignore = {'Underfull', 'Overfull'}
+    vim.g.vimtex_log_ignore = { "Underfull", "Overfull" }
 
     -- Disable insert mode mappings
     vim.g.vimtex_imaps_enabled = 0
 
     -- Avoid conflicts with existing keymaps
-    vim.g.vimtex_mappings_disable = { ['n'] = {'K'} }
+    vim.g.vimtex_mappings_disable = { ["n"] = { "K" } }
 
     -- Make <C-o>/<C-i> read as browser back/forward while editing LaTeX.
     --
@@ -54,10 +54,10 @@ return {
     local saved_jumpoptions
 
     local function scope_jumpoptions()
-      if vim.bo.filetype == 'tex' then
+      if vim.bo.filetype == "tex" then
         if saved_jumpoptions == nil then
           saved_jumpoptions = vim.o.jumpoptions
-          vim.o.jumpoptions = 'stack,clean'
+          vim.o.jumpoptions = "stack,clean"
         end
       elseif saved_jumpoptions ~= nil then
         vim.o.jumpoptions = saved_jumpoptions
@@ -65,15 +65,15 @@ return {
       end
     end
 
-    local jump_group = vim.api.nvim_create_augroup('vimtex_jumpoptions', { clear = true })
-    vim.api.nvim_create_autocmd({ 'BufEnter', 'FileType' }, {
+    local jump_group = vim.api.nvim_create_augroup("vimtex_jumpoptions", { clear = true })
+    vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
       group = jump_group,
       callback = scope_jumpoptions,
     })
     -- Restore before quitting so the value is not persisted anywhere by a
     -- session plugin mid-swap, and apply once now: this file is loaded by the
     -- LaTeX buffer that triggered it, whose BufEnter has already fired.
-    vim.api.nvim_create_autocmd('VimLeavePre', {
+    vim.api.nvim_create_autocmd("VimLeavePre", {
       group = jump_group,
       callback = function()
         if saved_jumpoptions ~= nil then
@@ -93,12 +93,12 @@ return {
     ---@param layers string? Entry types to keep, by first letter: `c` content
     ---  (sections and frames), `t` todo, `l` label, `i` include. Default `ci`.
     local function toc_fzf(layers)
-      require('vimtex.fzf-lua').run({ layers = layers or 'ci' })
+      require("vimtex.fzf-lua").run({ layers = layers or "ci" })
     end
 
-    vim.api.nvim_create_user_command('VimtexTocFzf', function(opts)
-      toc_fzf(opts.args ~= '' and opts.args or nil)
-    end, { nargs = '?', desc = 'VimTeX: jump to a TOC entry (fzf)' })
+    vim.api.nvim_create_user_command("VimtexTocFzf", function(opts)
+      toc_fzf(opts.args ~= "" and opts.args or nil)
+    end, { nargs = "?", desc = "VimTeX: jump to a TOC entry (fzf)" })
 
     -- Describe vimtex's own keymaps to which-key.
     --
@@ -114,87 +114,109 @@ return {
     -- buffer-local because none of these keys exist outside a LaTeX buffer.
     ---@param bufnr integer
     local function describe_keymaps(bufnr)
-      local ok, wk = pcall(require, 'which-key')
-      if not ok then return end
+      local ok, wk = pcall(require, "which-key")
+      if not ok then
+        return
+      end
 
       wk.add({
-        { '<leader>l', group = '[L]aTeX', buffer = bufnr },
-        { '<leader>ll', desc = 'Compile (continuous)', buffer = bufnr },
-        { '<leader>lS', desc = 'Compile once', buffer = bufnr },
-        { '<leader>lk', desc = 'Stop compiling', buffer = bufnr },
-        { '<leader>lv', desc = 'View PDF', buffer = bufnr },
-        { '<leader>le', desc = 'Errors (quickfix)', buffer = bufnr },
-        { '<leader>lo', desc = 'Compiler output', buffer = bufnr },
-        { '<leader>lq', desc = 'Compiler log', buffer = bufnr },
-        { '<leader>lt', desc = 'Table of contents (window)', buffer = bufnr },
-        { '<leader>lT', desc = 'Table of contents (toggle)', buffer = bufnr },
-        { '<leader>ls', desc = 'Toggle main file', buffer = bufnr },
-        { '<leader>li', desc = 'Project info', buffer = bufnr },
-        { '<leader>lc', desc = 'Clean aux files', buffer = bufnr },
-        { '<leader>lC', desc = 'Clean aux files and PDF', buffer = bufnr },
-        { '<leader>la', desc = 'Context menu (under cursor)', buffer = bufnr },
-        { '<leader>lx', desc = 'Reload vimtex', buffer = bufnr },
+        { "<leader>l", group = "[L]aTeX", buffer = bufnr },
+        { "<leader>ll", desc = "Compile (continuous)", buffer = bufnr },
+        { "<leader>lS", desc = "Compile once", buffer = bufnr },
+        { "<leader>lk", desc = "Stop compiling", buffer = bufnr },
+        { "<leader>lv", desc = "View PDF", buffer = bufnr },
+        { "<leader>le", desc = "Errors (quickfix)", buffer = bufnr },
+        { "<leader>lo", desc = "Compiler output", buffer = bufnr },
+        { "<leader>lq", desc = "Compiler log", buffer = bufnr },
+        { "<leader>lt", desc = "Table of contents (window)", buffer = bufnr },
+        { "<leader>lT", desc = "Table of contents (toggle)", buffer = bufnr },
+        { "<leader>ls", desc = "Toggle main file", buffer = bufnr },
+        { "<leader>li", desc = "Project info", buffer = bufnr },
+        { "<leader>lc", desc = "Clean aux files", buffer = bufnr },
+        { "<leader>lC", desc = "Clean aux files and PDF", buffer = bufnr },
+        { "<leader>la", desc = "Context menu (under cursor)", buffer = bufnr },
+        { "<leader>lx", desc = "Reload vimtex", buffer = bufnr },
 
         -- Navigation. `]r`/`[r` is the frame motion and the one worth
         -- remembering in a deck; `]m`/`[m` stops at every environment.
-        { ']r', desc = 'Next frame', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[r', desc = 'Prev frame', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { ']R', desc = 'Next frame end', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[R', desc = 'Prev frame end', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { ']]', desc = 'Next section', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[[', desc = 'Prev section', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '][', desc = 'Next section end', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[]', desc = 'Prev section end', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { ']m', desc = 'Next environment', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[m', desc = 'Prev environment', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { ']n', desc = 'Next math zone', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '[n', desc = 'Prev math zone', buffer = bufnr, mode = { 'n', 'x', 'o' } },
-        { '%', desc = 'Matching delimiter/environment', buffer = bufnr, mode = { 'n', 'x', 'o' } },
+        { "]r", desc = "Next frame", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[r", desc = "Prev frame", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "]R", desc = "Next frame end", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[R", desc = "Prev frame end", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "]]", desc = "Next section", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[[", desc = "Prev section", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "][", desc = "Next section end", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[]", desc = "Prev section end", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "]m", desc = "Next environment", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[m", desc = "Prev environment", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "]n", desc = "Next math zone", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "[n", desc = "Prev math zone", buffer = bufnr, mode = { "n", "x", "o" } },
+        { "%", desc = "Matching delimiter/environment", buffer = bufnr, mode = { "n", "x", "o" } },
 
         -- Surround-style edits, sharing the `s` prefix already grouped globally.
-        { 'cse', desc = 'Change environment', buffer = bufnr },
-        { 'csc', desc = 'Change command', buffer = bufnr },
-        { 'csd', desc = 'Change delimiter', buffer = bufnr },
-        { 'dse', desc = 'Delete environment', buffer = bufnr },
-        { 'dsc', desc = 'Delete command', buffer = bufnr },
-        { 'dsd', desc = 'Delete delimiter', buffer = bufnr },
-        { 'tse', desc = 'Toggle environment', buffer = bufnr },
-        { 'tsc', desc = 'Toggle command star', buffer = bufnr },
-        { 'tsf', desc = 'Toggle fraction', buffer = bufnr, mode = { 'n', 'x' } },
-        { 'tsd', desc = 'Toggle delimiter size', buffer = bufnr, mode = { 'n', 'x' } },
-        { 'ts$', desc = 'Toggle inline/display math', buffer = bufnr },
+        { "cse", desc = "Change environment", buffer = bufnr },
+        { "csc", desc = "Change command", buffer = bufnr },
+        { "csd", desc = "Change delimiter", buffer = bufnr },
+        { "dse", desc = "Delete environment", buffer = bufnr },
+        { "dsc", desc = "Delete command", buffer = bufnr },
+        { "dsd", desc = "Delete delimiter", buffer = bufnr },
+        { "tse", desc = "Toggle environment", buffer = bufnr },
+        { "tsc", desc = "Toggle command star", buffer = bufnr },
+        { "tsf", desc = "Toggle fraction", buffer = bufnr, mode = { "n", "x" } },
+        { "tsd", desc = "Toggle delimiter size", buffer = bufnr, mode = { "n", "x" } },
+        { "ts$", desc = "Toggle inline/display math", buffer = bufnr },
 
         -- Text objects, including the four rebound below.
-        { 'ic', desc = 'Inner command', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'ac', desc = 'Around command', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'im', desc = 'Inner item', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'am', desc = 'Around item', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'ie', desc = 'Inner environment', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'ae', desc = 'Around environment', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'id', desc = 'Inner delimiter', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'ad', desc = 'Around delimiter', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'i$', desc = 'Inner math zone', buffer = bufnr, mode = { 'x', 'o' } },
-        { 'a$', desc = 'Around math zone', buffer = bufnr, mode = { 'x', 'o' } },
+        { "ic", desc = "Inner command", buffer = bufnr, mode = { "x", "o" } },
+        { "ac", desc = "Around command", buffer = bufnr, mode = { "x", "o" } },
+        { "im", desc = "Inner item", buffer = bufnr, mode = { "x", "o" } },
+        { "am", desc = "Around item", buffer = bufnr, mode = { "x", "o" } },
+        { "ie", desc = "Inner environment", buffer = bufnr, mode = { "x", "o" } },
+        { "ae", desc = "Around environment", buffer = bufnr, mode = { "x", "o" } },
+        { "id", desc = "Inner delimiter", buffer = bufnr, mode = { "x", "o" } },
+        { "ad", desc = "Around delimiter", buffer = bufnr, mode = { "x", "o" } },
+        { "i$", desc = "Inner math zone", buffer = bufnr, mode = { "x", "o" } },
+        { "a$", desc = "Around math zone", buffer = bufnr, mode = { "x", "o" } },
       })
     end
 
     -- Create autocmd to prioritize vimtex text objects for tex/latex files
     vim.api.nvim_create_autocmd("FileType", {
-      pattern = {"tex", "latex"},
+      pattern = { "tex", "latex" },
       callback = function()
         -- Prioritize vimtex's command text objects over the global ic/ac (call) in tex
-        vim.keymap.set('o', 'ic', '<Plug>(vimtex-text-obj-command-i)', { buffer = true, desc = "VimTeX: Inner command" })
-        vim.keymap.set('x', 'ic', '<Plug>(vimtex-text-obj-command-i)', { buffer = true, desc = "VimTeX: Inner command" })
-        vim.keymap.set('o', 'ac', '<Plug>(vimtex-text-obj-command-a)', { buffer = true, desc = "VimTeX: Around command" })
-        vim.keymap.set('x', 'ac', '<Plug>(vimtex-text-obj-command-a)', { buffer = true, desc = "VimTeX: Around command" })
+        vim.keymap.set(
+          "o",
+          "ic",
+          "<Plug>(vimtex-text-obj-command-i)",
+          { buffer = true, desc = "VimTeX: Inner command" }
+        )
+        vim.keymap.set(
+          "x",
+          "ic",
+          "<Plug>(vimtex-text-obj-command-i)",
+          { buffer = true, desc = "VimTeX: Inner command" }
+        )
+        vim.keymap.set(
+          "o",
+          "ac",
+          "<Plug>(vimtex-text-obj-command-a)",
+          { buffer = true, desc = "VimTeX: Around command" }
+        )
+        vim.keymap.set(
+          "x",
+          "ac",
+          "<Plug>(vimtex-text-obj-command-a)",
+          { buffer = true, desc = "VimTeX: Around command" }
+        )
 
         -- Prioritize vimtex's item text objects over various-textobjs' chainMember
-        vim.keymap.set('o', 'im', '<Plug>(vimtex-text-obj-item-i)', { buffer = true, desc = "VimTeX: Inner item" })
-        vim.keymap.set('x', 'im', '<Plug>(vimtex-text-obj-item-i)', { buffer = true, desc = "VimTeX: Inner item" })
-        vim.keymap.set('o', 'am', '<Plug>(vimtex-text-obj-item-a)', { buffer = true, desc = "VimTeX: Around item" })
-        vim.keymap.set('x', 'am', '<Plug>(vimtex-text-obj-item-a)', { buffer = true, desc = "VimTeX: Around item" })
+        vim.keymap.set("o", "im", "<Plug>(vimtex-text-obj-item-i)", { buffer = true, desc = "VimTeX: Inner item" })
+        vim.keymap.set("x", "im", "<Plug>(vimtex-text-obj-item-i)", { buffer = true, desc = "VimTeX: Inner item" })
+        vim.keymap.set("o", "am", "<Plug>(vimtex-text-obj-item-a)", { buffer = true, desc = "VimTeX: Around item" })
+        vim.keymap.set("x", "am", "<Plug>(vimtex-text-obj-item-a)", { buffer = true, desc = "VimTeX: Around item" })
 
-        vim.keymap.set('n', '<leader>lj', toc_fzf, { buffer = true, desc = "VimTeX: TOC (fzf)" })
+        vim.keymap.set("n", "<leader>lj", toc_fzf, { buffer = true, desc = "VimTeX: TOC (fzf)" })
 
         describe_keymaps(vim.api.nvim_get_current_buf())
       end,

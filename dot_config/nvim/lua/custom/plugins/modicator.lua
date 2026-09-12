@@ -1,6 +1,6 @@
 return {
-  'mawkler/modicator.nvim',
-  event = 'ModeChanged',
+  "mawkler/modicator.nvim",
+  event = "ModeChanged",
   dependencies = {},
   init = function()
     -- These are required for Modicator to work

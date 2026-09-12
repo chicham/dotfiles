@@ -1,0 +1,15 @@
+# conform runs stylua on every lua write. Without this file stylua falls back to
+# its own defaults -- tabs, four wide -- so each save silently reindented
+# whichever file it touched and the tree drifted into two incompatible styles.
+# The values below are the majority style already in the tree and the one
+# init.lua's own modeline declares.
+#
+# `syntax` must be Lua52: stylua otherwise reads `::continue::` as Luau syntax
+# and refuses to parse the file at all, which is a formatter that silently skips
+# whichever files use goto.
+syntax = "Lua52"
+column_width = 120
+indent_type = "Spaces"
+indent_width = 2
+quote_style = "AutoPreferDouble"
+call_parentheses = "Always"

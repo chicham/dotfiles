@@ -1,8 +1,8 @@
 return {
-  'tpope/vim-abolish',
-  cmd = { 'Abolish', 'Subvert' },
+  "tpope/vim-abolish",
+  cmd = { "Abolish", "Subvert" },
   keys = {
-    { 'cr', mode = { 'n', 'v' }, desc = 'Coerce case' },
+    { "cr", mode = { "n", "v" }, desc = "Coerce case" },
   },
   -- vim-abolish's :S has no `inccommand` preview: it's a custom command and
   -- abolish registers no `-preview` callback, while Neovim only previews the
@@ -16,16 +16,16 @@ return {
   -- either the preview or the real run) triggers its cmd-based load.
   init = function()
     local function spec(o)
-      local range = ''
+      local range = ""
       if o.range == 2 then
-        range = o.line1 .. ',' .. o.line2
+        range = o.line1 .. "," .. o.line2
       elseif o.range == 1 then
         range = tostring(o.line1)
       end
-      return range .. 'Subvert' .. (o.bang and '!' or '') .. o.args
+      return range .. "Subvert" .. (o.bang and "!" or "") .. o.args
     end
 
-    vim.api.nvim_create_user_command('S', function(o)
+    vim.api.nvim_create_user_command("S", function(o)
       vim.cmd(spec(o))
     end, {
       nargs = 1,
@@ -34,12 +34,12 @@ return {
       preview = function(o, _ns, _buf)
         -- On the very first use abolish may not be loaded yet; load it and skip
         -- preview for this one keystroke rather than loading a plugin mid-edit.
-        if vim.fn.exists ':Subvert' ~= 2 then
-          pcall(require('lazy').load, { plugins = { 'vim-abolish' } })
+        if vim.fn.exists(":Subvert") ~= 2 then
+          pcall(require("lazy").load, { plugins = { "vim-abolish" } })
           return 0
         end
         pcall(function()
-          vim.cmd('silent ' .. spec(o))
+          vim.cmd("silent " .. spec(o))
         end)
         return 2
       end,

@@ -1,27 +1,27 @@
 return {
-  'chrisgrieser/nvim-various-textobjs',
+  "chrisgrieser/nvim-various-textobjs",
   opts = {
     keymaps = {
       useDefaults = false,
     },
   },
   keys = function()
-    local vt = require 'various-textobjs'
+    local vt = require("various-textobjs")
     return {
       -- Line-wise text objects
       {
-        'al',
+        "al",
         function()
-          vt.lineCharacterwise 'outer'
+          vt.lineCharacterwise("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'il',
+        "il",
         function()
-          vt.lineCharacterwise 'inner'
+          vt.lineCharacterwise("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
 
       -- NB: ai/ii (indentation) live on mini.indentscope now, so its scope
@@ -30,63 +30,63 @@ return {
 
       -- Subword text objects
       {
-        'az',
+        "az",
         function()
-          vt.subword 'outer'
+          vt.subword("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'iz',
+        "iz",
         function()
-          vt.subword 'inner'
+          vt.subword("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       -- Chain member text objects
       {
-        'am',
+        "am",
         function()
-          vt.chainMember 'outer'
+          vt.chainMember("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'im',
+        "im",
         function()
-          vt.chainMember 'inner'
+          vt.chainMember("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       -- Value text objects (for key-value pairs/assignments)
       {
-        'av',
+        "av",
         function()
-          vt.value 'outer'
+          vt.value("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'iv',
+        "iv",
         function()
-          vt.value 'inner'
+          vt.value("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       -- Key text objects (for key-value pairs/assignments)
       {
-        'ak',
+        "ak",
         function()
-          vt.key 'outer'
+          vt.key("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'ik',
+        "ik",
         function()
-          vt.key 'inner'
+          vt.key("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
 
       -- NB: ib/ab (any bracket / any quote) are NOT here. anyBracket uses
@@ -95,20 +95,19 @@ return {
       -- f-strings. They are now a treesitter-based object — see
       -- lua/custom/anyblock.lua (wired in init.lua).
       {
-        'iq',
+        "iq",
         function()
-          vt.anyQuote 'inner'
+          vt.anyQuote("inner")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
       {
-        'aq',
+        "aq",
         function()
-          vt.anyQuote 'outer'
+          vt.anyQuote("outer")
         end,
-        mode = { 'o', 'x' },
+        mode = { "o", "x" },
       },
-
     }
   end,
 }

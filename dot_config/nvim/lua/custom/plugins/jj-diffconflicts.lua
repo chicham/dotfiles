@@ -1,4 +1,4 @@
 return {
-	"rafikdraoui/jj-diffconflicts",
-	cmd = "JJDiffConflicts",
+  "rafikdraoui/jj-diffconflicts",
+  cmd = "JJDiffConflicts",
 }

@@ -1,4 +1,4 @@
 return {
   lazy = true,
-  'https://github.com/direnv/direnv.vim',
+  "https://github.com/direnv/direnv.vim",
 }

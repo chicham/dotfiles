@@ -13,10 +13,10 @@
 -- Every other snacks module stays disabled: the picker in particular would sit
 -- alongside fzf-lua and split the config across two finder UIs.
 return {
-	"folke/snacks.nvim",
-	priority = 1000,
-	lazy = false,
-	opts = {
-		input = { enabled = true },
-	},
+  "folke/snacks.nvim",
+  priority = 1000,
+  lazy = false,
+  opts = {
+    input = { enabled = true },
+  },
 }

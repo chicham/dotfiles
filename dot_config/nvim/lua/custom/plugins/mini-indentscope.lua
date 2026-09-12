@@ -16,40 +16,42 @@
 -- a given line may differ from what ibl showed for bracketed code.
 
 return {
-  'echasnovski/mini.indentscope',
+  "echasnovski/mini.indentscope",
   version = false,
-  event = { 'BufReadPost', 'BufNewFile' },
+  event = { "BufReadPost", "BufNewFile" },
   config = function()
-    local mi = require 'mini.indentscope'
+    local mi = require("mini.indentscope")
 
-    mi.setup {
-      symbol = '┊', -- same glyph as the ibl indent guides
+    mi.setup({
+      symbol = "┊", -- same glyph as the ibl indent guides
       -- Static (no growth animation), to match ibl's scope cue.
-      draw = { animation = function()
-        return 0
-      end },
+      draw = {
+        animation = function()
+          return 0
+        end,
+      },
       options = { try_as_border = true },
       mappings = {
-        object_scope = 'ii',
-        object_scope_with_border = 'ai',
+        object_scope = "ii",
+        object_scope_with_border = "ai",
         -- Disabled: keep [i/]i bound to the @conditional moves (init.lua).
-        goto_top = '',
-        goto_bottom = '',
+        goto_top = "",
+        goto_bottom = "",
       },
-    }
+    })
 
     -- Rainbow-by-depth: relink the scope symbol's highlight to a
     -- RainbowDelimiter* group based on the current scope's indentation depth.
     -- Extmarks resolve their highlight by name at redraw, so updating the link
     -- recolours the already-drawn line.
     local rainbow = {
-      'RainbowDelimiterRed',
-      'RainbowDelimiterYellow',
-      'RainbowDelimiterBlue',
-      'RainbowDelimiterOrange',
-      'RainbowDelimiterGreen',
-      'RainbowDelimiterViolet',
-      'RainbowDelimiterCyan',
+      "RainbowDelimiterRed",
+      "RainbowDelimiterYellow",
+      "RainbowDelimiterBlue",
+      "RainbowDelimiterOrange",
+      "RainbowDelimiterGreen",
+      "RainbowDelimiterViolet",
+      "RainbowDelimiterCyan",
     }
     local function update_hl()
       local ok, scope = pcall(mi.get_scope)
@@ -62,11 +64,11 @@ return {
       end
       local level = math.floor((scope.body.indent or 0) / sw)
       local idx = ((math.max(level, 1) - 1) % #rainbow) + 1
-      vim.api.nvim_set_hl(0, 'MiniIndentscopeSymbol', { link = rainbow[idx] })
+      vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = rainbow[idx] })
     end
 
-    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI', 'WinEnter' }, {
-      group = vim.api.nvim_create_augroup('MiniIndentscopeRainbow', { clear = true }),
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI", "WinEnter" }, {
+      group = vim.api.nvim_create_augroup("MiniIndentscopeRainbow", { clear = true }),
       callback = vim.schedule_wrap(update_hl),
     })
   end,

@@ -2,51 +2,55 @@
 -- See full documentation at: https://github.com/nvim-orgmode/orgmode/blob/master/README.org
 
 return {
-	"nvim-orgmode/orgmode",
-	event = "VeryLazy",
-	dependencies = {
-		"nvim-treesitter/nvim-treesitter",
-		"ibhagwan/fzf-lua", -- Ensure fzf-lua loads for UI selection
-	},
-	config = function()
-		local utils = require('orgmode.utils')
-		local fs = require('orgmode.utils.fs')
-		
-		-- Experiment-run capture: prompt once for the project whose tracking.org
-		-- receives the run, and reuse it for the target path.
-		_G.prompt_tracking_project = function()
-			if not _G._tracking_project then
-				local slug = vim.fn.input("Project slug (gtd/projects/<slug>/tracking.org): ")
-				_G._tracking_project = slug ~= "" and slug or "inbox"
-				vim.schedule(function() _G._tracking_project = nil end)
-			end
-			return _G._tracking_project
-		end
+  "nvim-orgmode/orgmode",
+  event = "VeryLazy",
+  dependencies = {
+    "nvim-treesitter/nvim-treesitter",
+    "ibhagwan/fzf-lua", -- Ensure fzf-lua loads for UI selection
+  },
+  config = function()
+    local utils = require("orgmode.utils")
+    local fs = require("orgmode.utils.fs")
 
-		-- Experiment title/slug helpers for filename
-		_G.prompt_experiment_title = function()
-			if not _G._experiment_title then
-				local title = vim.fn.input("Experiment Title: ")
-				_G._experiment_title = title ~= "" and title or "untitled"
-				_G._experiment_slug = _G._experiment_title:gsub("%s+", "-"):gsub("[^%w%-]", ""):lower()
-			end
-			return _G._experiment_title
-		end
+    -- Experiment-run capture: prompt once for the project whose tracking.org
+    -- receives the run, and reuse it for the target path.
+    _G.prompt_tracking_project = function()
+      if not _G._tracking_project then
+        local slug = vim.fn.input("Project slug (gtd/projects/<slug>/tracking.org): ")
+        _G._tracking_project = slug ~= "" and slug or "inbox"
+        vim.schedule(function()
+          _G._tracking_project = nil
+        end)
+      end
+      return _G._tracking_project
+    end
 
-		_G.get_experiment_slug = function()
-			if not _G._experiment_slug then _G.prompt_experiment_title() end
-			return _G._experiment_slug
-		end
+    -- Experiment title/slug helpers for filename
+    _G.prompt_experiment_title = function()
+      if not _G._experiment_title then
+        local title = vim.fn.input("Experiment Title: ")
+        _G._experiment_title = title ~= "" and title or "untitled"
+        _G._experiment_slug = _G._experiment_title:gsub("%s+", "-"):gsub("[^%w%-]", ""):lower()
+      end
+      return _G._experiment_title
+    end
 
-		-- Define experiment template generator (single source of truth)
-		-- This function is called by both capture template and promotion function
-		_G.get_experiment_template_sections = function()
-			-- Clear experiment title globals after template use
-			vim.schedule(function()
-				_G._experiment_title = nil
-				_G._experiment_slug = nil
-			end)
-			return [[** Question/Purpose
+    _G.get_experiment_slug = function()
+      if not _G._experiment_slug then
+        _G.prompt_experiment_title()
+      end
+      return _G._experiment_slug
+    end
+
+    -- Define experiment template generator (single source of truth)
+    -- This function is called by both capture template and promotion function
+    _G.get_experiment_template_sections = function()
+      -- Clear experiment title globals after template use
+      vim.schedule(function()
+        _G._experiment_title = nil
+        _G._experiment_slug = nil
+      end)
+      return [[** Question/Purpose
 
 
 ** Hypothesis
@@ -92,356 +96,356 @@ return {
 # Ideas for further study
 # Real-world applications
 ]]
-		end
-		
-		local orgfiles_base = vim.fn.expand("~/.orgfiles")
-		local org_dirs = {
-			gtd = orgfiles_base .. "/gtd",
-			gtd_projects = orgfiles_base .. "/gtd/projects",
-			research = orgfiles_base .. "/research",
-			roam = orgfiles_base .. "/roam",
-			roam_notes = orgfiles_base .. "/roam/notes",
-			roam_daily = orgfiles_base .. "/roam/daily",
-			experiments = orgfiles_base .. "/experiments",
-		}
+    end
 
-		local org_files = {
-			gtd_inbox = org_dirs.gtd .. "/inbox.org",
-			gtd_someday = org_dirs.gtd .. "/someday.org",
-			gtd_tickler = org_dirs.gtd .. "/tickler.org",
-			gtd_archive = org_dirs.gtd .. "/archive.org",
-		}
+    local orgfiles_base = vim.fn.expand("~/.orgfiles")
+    local org_dirs = {
+      gtd = orgfiles_base .. "/gtd",
+      gtd_projects = orgfiles_base .. "/gtd/projects",
+      research = orgfiles_base .. "/research",
+      roam = orgfiles_base .. "/roam",
+      roam_notes = orgfiles_base .. "/roam/notes",
+      roam_daily = orgfiles_base .. "/roam/daily",
+      experiments = orgfiles_base .. "/experiments",
+    }
 
-		for _, dir in ipairs({
-			org_dirs.gtd,
-			org_dirs.gtd_projects,
-			org_dirs.research,
-			org_dirs.roam,
-			org_dirs.roam_notes,
-			org_dirs.roam_daily,
-			org_dirs.experiments,
-		}) do
-			vim.fn.mkdir(vim.fn.expand(dir), "p")
-		end
+    local org_files = {
+      gtd_inbox = org_dirs.gtd .. "/inbox.org",
+      gtd_someday = org_dirs.gtd .. "/someday.org",
+      gtd_tickler = org_dirs.gtd .. "/tickler.org",
+      gtd_archive = org_dirs.gtd .. "/archive.org",
+    }
 
-		local function ensure_headlines(path, headlines)
-			local lines = {}
-			if vim.fn.filereadable(path) == 1 then
-				local ok, result = pcall(function()
-					return utils.readfile(path):wait()
-				end)
-				if ok and type(result) == 'table' then
-					lines = result
-				end
-			end
+    for _, dir in ipairs({
+      org_dirs.gtd,
+      org_dirs.gtd_projects,
+      org_dirs.research,
+      org_dirs.roam,
+      org_dirs.roam_notes,
+      org_dirs.roam_daily,
+      org_dirs.experiments,
+    }) do
+      vim.fn.mkdir(vim.fn.expand(dir), "p")
+    end
 
-			local existing = {}
-			for _, line in ipairs(lines) do
-				local headline = line:match("^%*+%s+(.+)$")
-				if headline then
-					existing[headline] = true
-				end
-			end
+    local function ensure_headlines(path, headlines)
+      local lines = {}
+      if vim.fn.filereadable(path) == 1 then
+        local ok, result = pcall(function()
+          return utils.readfile(path):wait()
+        end)
+        if ok and type(result) == "table" then
+          lines = result
+        end
+      end
 
-			local updated = false
-			for _, headline in ipairs(headlines) do
-				if not existing[headline] then
-					if lines[#lines] ~= "" then
-						table.insert(lines, "")
-					end
-					table.insert(lines, "* " .. headline)
-					table.insert(lines, "")
-					updated = true
-				end
-			end
+      local existing = {}
+      for _, line in ipairs(lines) do
+        local headline = line:match("^%*+%s+(.+)$")
+        if headline then
+          existing[headline] = true
+        end
+      end
 
-			if updated and #lines > 0 then
-				vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
-				utils.writefile(path, table.concat(lines, '\n')):wait()
-			end
-		end
+      local updated = false
+      for _, headline in ipairs(headlines) do
+        if not existing[headline] then
+          if lines[#lines] ~= "" then
+            table.insert(lines, "")
+          end
+          table.insert(lines, "* " .. headline)
+          table.insert(lines, "")
+          updated = true
+        end
+      end
 
-		local function ensure_inbox_headlines()
-			ensure_headlines(org_files.gtd_inbox, { "Tasks", "Notes", "Reading List", "Misc" })
-		end
+      if updated and #lines > 0 then
+        vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
+        utils.writefile(path, table.concat(lines, "\n")):wait()
+      end
+    end
 
-		_G.org_capture_git_root = function()
-			if utils.current_file_path() == '' then
-				return ''
-			end
-			local dir = fs.get_current_file_dir()
-			local result = vim.fn.systemlist({ 'git', '-C', dir, 'rev-parse', '--show-toplevel' })
-			if vim.v.shell_error ~= 0 or not result[1] or result[1] == '' then
-				return ''
-			end
-			return vim.trim(result[1])
-		end
+    local function ensure_inbox_headlines()
+      ensure_headlines(org_files.gtd_inbox, { "Tasks", "Notes", "Reading List", "Misc" })
+    end
 
-		_G.org_capture_display_path = function()
-			local path = utils.current_file_path()
-			if path == '' then
-				return 'capture'
-			end
-			path = vim.fn.fnamemodify(path, ':p')
-			local root = _G.org_capture_git_root()
-			if root ~= '' then
-				root = vim.fn.fnamemodify(root, ':p')
-				if vim.startswith(path, root .. '/') then
-					return path:sub(#root + 2)
-				end
-			end
-			local rel = vim.fn.fnamemodify(path, ':.')
-			if rel ~= '' and rel ~= path then
-				return rel
-			end
-			return vim.fn.fnamemodify(path, ':t')
-		end
+    _G.org_capture_git_root = function()
+      if utils.current_file_path() == "" then
+        return ""
+      end
+      local dir = fs.get_current_file_dir()
+      local result = vim.fn.systemlist({ "git", "-C", dir, "rev-parse", "--show-toplevel" })
+      if vim.v.shell_error ~= 0 or not result[1] or result[1] == "" then
+        return ""
+      end
+      return vim.trim(result[1])
+    end
 
-		_G.org_capture_default_title = function()
-			local path = utils.current_file_path()
-			if path == '' then
-				return 'capture'
-			end
-			local line_nr = vim.api.nvim_win_get_cursor(0)[1]
-			return _G.org_capture_display_path() .. ':' .. line_nr
-		end
+    _G.org_capture_display_path = function()
+      local path = utils.current_file_path()
+      if path == "" then
+        return "capture"
+      end
+      path = vim.fn.fnamemodify(path, ":p")
+      local root = _G.org_capture_git_root()
+      if root ~= "" then
+        root = vim.fn.fnamemodify(root, ":p")
+        if vim.startswith(path, root .. "/") then
+          return path:sub(#root + 2)
+        end
+      end
+      local rel = vim.fn.fnamemodify(path, ":.")
+      if rel ~= "" and rel ~= path then
+        return rel
+      end
+      return vim.fn.fnamemodify(path, ":t")
+    end
 
-		_G.org_capture_git_commit = function()
-			if utils.current_file_path() == '' then
-				return 'N/A'
-			end
-			local dir = fs.get_current_file_dir()
-			local result = vim.fn.systemlist({ 'git', '-C', dir, 'rev-parse', 'HEAD' })
-			if vim.v.shell_error ~= 0 or not result[1] or result[1] == '' then
-				return 'N/A'
-			end
-			return vim.trim(result[1])
-		end
+    _G.org_capture_default_title = function()
+      local path = utils.current_file_path()
+      if path == "" then
+        return "capture"
+      end
+      local line_nr = vim.api.nvim_win_get_cursor(0)[1]
+      return _G.org_capture_display_path() .. ":" .. line_nr
+    end
 
-		_G.org_capture_file_path = function()
-			local path = utils.current_file_path()
-			if path == '' then
-				return 'N/A'
-			end
-			return vim.fn.fnamemodify(path, ':p')
-		end
+    _G.org_capture_git_commit = function()
+      if utils.current_file_path() == "" then
+        return "N/A"
+      end
+      local dir = fs.get_current_file_dir()
+      local result = vim.fn.systemlist({ "git", "-C", dir, "rev-parse", "HEAD" })
+      if vim.v.shell_error ~= 0 or not result[1] or result[1] == "" then
+        return "N/A"
+      end
+      return vim.trim(result[1])
+    end
 
-		_G.org_capture_abs_link = function()
-			local path = utils.current_file_path()
-			if path == '' then
-				return ''
-			end
-			path = vim.fn.fnamemodify(path, ':p')
-			local line_nr = vim.api.nvim_win_get_cursor(0)[1]
-			local display = _G.org_capture_default_title()
-			return string.format('[[file:%s::%d][%s]]', path, line_nr, display)
-		end
+    _G.org_capture_file_path = function()
+      local path = utils.current_file_path()
+      if path == "" then
+        return "N/A"
+      end
+      return vim.fn.fnamemodify(path, ":p")
+    end
 
-		_G.org_capture_line_text = function()
-			local line = vim.api.nvim_get_current_line()
-			local max_len = 200
-			if #line > max_len then
-				line = line:sub(1, max_len - 3) .. '...'
-			end
-			return line
-		end
+    _G.org_capture_abs_link = function()
+      local path = utils.current_file_path()
+      if path == "" then
+        return ""
+      end
+      path = vim.fn.fnamemodify(path, ":p")
+      local line_nr = vim.api.nvim_win_get_cursor(0)[1]
+      local display = _G.org_capture_default_title()
+      return string.format("[[file:%s::%d][%s]]", path, line_nr, display)
+    end
 
-		local function org_experiment_log_today()
-			local bufnr = vim.api.nvim_get_current_buf()
-			local path = vim.api.nvim_buf_get_name(bufnr)
-			if path == '' then
-				vim.notify('No file path for current buffer.', vim.log.levels.WARN)
-				return
-			end
+    _G.org_capture_line_text = function()
+      local line = vim.api.nvim_get_current_line()
+      local max_len = 200
+      if #line > max_len then
+        line = line:sub(1, max_len - 3) .. "..."
+      end
+      return line
+    end
 
-			local experiments_root = vim.fn.fnamemodify(vim.fn.expand(org_dirs.experiments), ':p')
-			local file_path = vim.fn.fnamemodify(path, ':p')
-			if not vim.startswith(file_path, experiments_root .. '/') then
-				vim.notify('Not in an experiments file.', vim.log.levels.WARN)
-				return
-			end
+    local function org_experiment_log_today()
+      local bufnr = vim.api.nvim_get_current_buf()
+      local path = vim.api.nvim_buf_get_name(bufnr)
+      if path == "" then
+        vim.notify("No file path for current buffer.", vim.log.levels.WARN)
+        return
+      end
 
-			local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-			local log_line = nil
-			local log_level = nil
-			for i, line in ipairs(lines) do
-				local stars, title = line:match('^(%*+)%s+(.+)$')
-				if stars and title == 'Log' then
-					log_line = i
-					log_level = #stars
-					break
-				end
-			end
+      local experiments_root = vim.fn.fnamemodify(vim.fn.expand(org_dirs.experiments), ":p")
+      local file_path = vim.fn.fnamemodify(path, ":p")
+      if not vim.startswith(file_path, experiments_root .. "/") then
+        vim.notify("Not in an experiments file.", vim.log.levels.WARN)
+        return
+      end
 
-			local day_title = os.date('%Y-%m-%d %a')
-			local day_level = (log_level or 2) + 1
-			local day_heading = string.rep('*', day_level) .. ' ' .. day_title
+      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+      local log_line = nil
+      local log_level = nil
+      for i, line in ipairs(lines) do
+        local stars, title = line:match("^(%*+)%s+(.+)$")
+        if stars and title == "Log" then
+          log_line = i
+          log_level = #stars
+          break
+        end
+      end
 
-			if log_line then
-				local insert_at = #lines
-				for i = log_line + 1, #lines do
-					local stars, title = lines[i]:match('^(%*+)%s+(.+)$')
-					if stars then
-						if #stars <= log_level then
-							insert_at = i - 1
-							break
-						end
-						if #stars == log_level + 1 and title == day_title then
-							vim.api.nvim_win_set_cursor(0, { i, 0 })
-							return
-						end
-					end
-				end
+      local day_title = os.date("%Y-%m-%d %a")
+      local day_level = (log_level or 2) + 1
+      local day_heading = string.rep("*", day_level) .. " " .. day_title
 
-				vim.api.nvim_buf_set_lines(bufnr, insert_at, insert_at, false, { day_heading, '' })
-				vim.api.nvim_win_set_cursor(0, { insert_at + 1, 0 })
-				return
-			end
+      if log_line then
+        local insert_at = #lines
+        for i = log_line + 1, #lines do
+          local stars, title = lines[i]:match("^(%*+)%s+(.+)$")
+          if stars then
+            if #stars <= log_level then
+              insert_at = i - 1
+              break
+            end
+            if #stars == log_level + 1 and title == day_title then
+              vim.api.nvim_win_set_cursor(0, { i, 0 })
+              return
+            end
+          end
+        end
 
-			local insert_lines = {}
-			if #lines > 0 and lines[#lines] ~= '' then
-				table.insert(insert_lines, '')
-			end
-			table.insert(insert_lines, '** Log')
-			table.insert(insert_lines, day_heading)
-			table.insert(insert_lines, '')
-			vim.api.nvim_buf_set_lines(bufnr, #lines, #lines, false, insert_lines)
-			vim.api.nvim_win_set_cursor(0, { #lines + #insert_lines - 1, 0 })
-		end
+        vim.api.nvim_buf_set_lines(bufnr, insert_at, insert_at, false, { day_heading, "" })
+        vim.api.nvim_win_set_cursor(0, { insert_at + 1, 0 })
+        return
+      end
 
-		-- ensure_inbox_headlines() -- removed: inbox is for temporary tasks only
-		-- =============================================================================
-		-- HIGH-PERFORMANCE WORKFLOW DOCUMENTATION
-		-- =============================================================================
-		-- 1. CAPTURE (Anytime):
-		--    Use <Leader>oc to quickly dump ideas, tasks, or papers into the INBOX.
-		--    Don't think about organization yet; just get it out of your head.
-		--
-		-- 2. CLARIFY (Morning/Evening):
-		--    Open ~/.orgfiles/gtd/inbox.org.
-		--    For each item, decide its fate:
-		--    - Do it now (if < 2 mins).
-		--    - Refile (R) to a Project file (~/.orgfiles/gtd/projects.org).
-		--    - Refile (R) to Today's Daily Log if it's an execution priority.
-		--    - Move to Someday/Maybe (s) if not actionable yet.
-		--
-		-- 3. EXECUTE (During Work):
-		--    - Tasks live in the inbox and are scheduled there.
-		--    - Open Today's Daily Log for notes and completed work.
-		--    - Use Clock In (I) and Clock Out (O) to track advising vs. coding time.
-		--    - Use <Leader>oa to see the consolidated Agenda across all files.
-		-- =============================================================================
+      local insert_lines = {}
+      if #lines > 0 and lines[#lines] ~= "" then
+        table.insert(insert_lines, "")
+      end
+      table.insert(insert_lines, "** Log")
+      table.insert(insert_lines, day_heading)
+      table.insert(insert_lines, "")
+      vim.api.nvim_buf_set_lines(bufnr, #lines, #lines, false, insert_lines)
+      vim.api.nvim_win_set_cursor(0, { #lines + #insert_lines - 1, 0 })
+    end
 
-		-- Define agenda files in a variable so we can reuse them for refile targets
-		local agenda_globs = {
-			org_files.gtd_inbox,
-			org_dirs.gtd .. "/reading.org",
-			org_dirs.gtd_projects .. "/**/*.org",
-			org_files.gtd_someday,
-			org_files.gtd_tickler,
-			org_dirs.research .. "/*.org",
-			org_dirs.roam .. "/**/*.org",
-			org_dirs.experiments .. "/**/*.org",
-			orgfiles_base .. "/gcal.org",
-		}
+    -- ensure_inbox_headlines() -- removed: inbox is for temporary tasks only
+    -- =============================================================================
+    -- HIGH-PERFORMANCE WORKFLOW DOCUMENTATION
+    -- =============================================================================
+    -- 1. CAPTURE (Anytime):
+    --    Use <Leader>oc to quickly dump ideas, tasks, or papers into the INBOX.
+    --    Don't think about organization yet; just get it out of your head.
+    --
+    -- 2. CLARIFY (Morning/Evening):
+    --    Open ~/.orgfiles/gtd/inbox.org.
+    --    For each item, decide its fate:
+    --    - Do it now (if < 2 mins).
+    --    - Refile (R) to a Project file (~/.orgfiles/gtd/projects.org).
+    --    - Refile (R) to Today's Daily Log if it's an execution priority.
+    --    - Move to Someday/Maybe (s) if not actionable yet.
+    --
+    -- 3. EXECUTE (During Work):
+    --    - Tasks live in the inbox and are scheduled there.
+    --    - Open Today's Daily Log for notes and completed work.
+    --    - Use Clock In (I) and Clock Out (O) to track advising vs. coding time.
+    --    - Use <Leader>oa to see the consolidated Agenda across all files.
+    -- =============================================================================
 
-		-- Setup orgmode with GTD-focused research workflow
-		require("orgmode").setup({
-			-- File organization for GTD + research workflow
-			org_agenda_files = agenda_globs,
-			org_default_notes_file = org_files.gtd_inbox,
+    -- Define agenda files in a variable so we can reuse them for refile targets
+    local agenda_globs = {
+      org_files.gtd_inbox,
+      org_dirs.gtd .. "/reading.org",
+      org_dirs.gtd_projects .. "/**/*.org",
+      org_files.gtd_someday,
+      org_files.gtd_tickler,
+      org_dirs.research .. "/*.org",
+      org_dirs.roam .. "/**/*.org",
+      org_dirs.experiments .. "/**/*.org",
+      orgfiles_base .. "/gcal.org",
+    }
 
-			-- Enable automatic indentation for proper folding
-			org_startup_indented = true,
-			org_adapt_indentation = true,
+    -- Setup orgmode with GTD-focused research workflow
+    require("orgmode").setup({
+      -- File organization for GTD + research workflow
+      org_agenda_files = agenda_globs,
+      org_default_notes_file = org_files.gtd_inbox,
 
-			-- Work day time grid: 9:30 - 18:30
-			org_agenda_time_grid = {
-				type = { "daily", "today", "require-timed" },
-				times = { 930, 1030, 1130, 1230, 1330, 1430, 1530, 1630, 1730, 1830 },
-			},
+      -- Enable automatic indentation for proper folding
+      org_startup_indented = true,
+      org_adapt_indentation = true,
 
-			org_agenda_custom_commands = {
-				r = {
-					description = "Running experiments",
-					types = {
-						{
-							type = "tags_todo",
-							match = "experiment/WORKING",
-							org_agenda_overriding_header = "Running Experiments",
-						},
-						{
-							type = "tags_todo",
-							match = "experiment/WAITING",
-							org_agenda_overriding_header = "Waiting Experiments",
-						},
-						{
-							type = "tags_todo",
-							match = "experiment/TODO",
-							org_agenda_overriding_header = "Pending Experiments",
-						},
-					},
-				},
-				p = {
-					description = "People — milestones & deadlines",
-					types = {
-						{
-							type = "tags_todo",
-							match = "person",
-							org_agenda_overriding_header = "People — open items",
-						},
-					},
-				},
-				R = {
-					description = "Reading queue (generative-retrieval)",
-					types = {
-						{
-							type = "tags_todo",
-							match = "reading/WORKING",
-							org_agenda_overriding_header = "● Now reading (WORKING)",
-						},
-						{
-							type = "tags_todo",
-							match = "reading/NEXT",
-							org_agenda_overriding_header = "○ Sprint — NEXT (READ_ORDER 01-08)",
-						},
-						{
-							type = "tags_todo",
-							match = "reading-park/TODO",
-							org_agenda_overriding_header = "Backlog — TODO (by section; see :READ_ORDER:)",
-						},
-						{
-							type = "tags_todo",
-							match = "reading+park/TODO",
-							org_agenda_overriding_header = "Parked — low GR-relevance (skip unless needed)",
-						},
-					},
-				},
-			},
+      -- Work day time grid: 9:30 - 18:30
+      org_agenda_time_grid = {
+        type = { "daily", "today", "require-timed" },
+        times = { 930, 1030, 1130, 1230, 1330, 1430, 1530, 1630, 1730, 1830 },
+      },
 
-			-- Archive configuration
-			-- Move archived items to a central archive file under a headline matching the source file name
-			org_archive_location = vim.fn.expand(org_files.gtd_archive) .. "::* From %s",
+      org_agenda_custom_commands = {
+        r = {
+          description = "Running experiments",
+          types = {
+            {
+              type = "tags_todo",
+              match = "experiment/WORKING",
+              org_agenda_overriding_header = "Running Experiments",
+            },
+            {
+              type = "tags_todo",
+              match = "experiment/WAITING",
+              org_agenda_overriding_header = "Waiting Experiments",
+            },
+            {
+              type = "tags_todo",
+              match = "experiment/TODO",
+              org_agenda_overriding_header = "Pending Experiments",
+            },
+          },
+        },
+        p = {
+          description = "People — milestones & deadlines",
+          types = {
+            {
+              type = "tags_todo",
+              match = "person",
+              org_agenda_overriding_header = "People — open items",
+            },
+          },
+        },
+        R = {
+          description = "Reading queue (generative-retrieval)",
+          types = {
+            {
+              type = "tags_todo",
+              match = "reading/WORKING",
+              org_agenda_overriding_header = "● Now reading (WORKING)",
+            },
+            {
+              type = "tags_todo",
+              match = "reading/NEXT",
+              org_agenda_overriding_header = "○ Sprint — NEXT (READ_ORDER 01-08)",
+            },
+            {
+              type = "tags_todo",
+              match = "reading-park/TODO",
+              org_agenda_overriding_header = "Backlog — TODO (by section; see :READ_ORDER:)",
+            },
+            {
+              type = "tags_todo",
+              match = "reading+park/TODO",
+              org_agenda_overriding_header = "Parked — low GR-relevance (skip unless needed)",
+            },
+          },
+        },
+      },
 
-			-- Refile settings
-			-- Build a flat list of all headlines (Level 1-3) across all agenda files.
-			org_refile_targets = {
-				{ agenda_globs, maxlevel = 3 },
-			},
-			org_refile_use_outline_path = false,
+      -- Archive configuration
+      -- Move archived items to a central archive file under a headline matching the source file name
+      org_archive_location = vim.fn.expand(org_files.gtd_archive) .. "::* From %s",
 
-			-- Rationalized capture templates (core workflows only)
-			org_capture_templates = {
-				-- Inbox task (adds file link when available)
-				t = {
-					description = "Task (Inbox)",
-					template = "* TODO %?\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:\n%a",
-					target = org_files.gtd_inbox,
-					headline = "Tasks",
-				},
-				n = {
-					description = "Note",
-					template = [[:PROPERTIES:
+      -- Refile settings
+      -- Build a flat list of all headlines (Level 1-3) across all agenda files.
+      org_refile_targets = {
+        { agenda_globs, maxlevel = 3 },
+      },
+      org_refile_use_outline_path = false,
+
+      -- Rationalized capture templates (core workflows only)
+      org_capture_templates = {
+        -- Inbox task (adds file link when available)
+        t = {
+          description = "Task (Inbox)",
+          template = "* TODO %?\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:\n%a",
+          target = org_files.gtd_inbox,
+          headline = "Tasks",
+        },
+        n = {
+          description = "Note",
+          template = [[:PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
 :END:
@@ -450,12 +454,12 @@ return {
 
 * Notes
 %?]],
-					target = org_dirs.roam_notes .. "/note-%<%Y%m%d%H%M%S>.org",
-					whole_file = true,
-				},
-				m = {
-					description = "Meeting",
-					template = [[:PROPERTIES:
+          target = org_dirs.roam_notes .. "/note-%<%Y%m%d%H%M%S>.org",
+          whole_file = true,
+        },
+        m = {
+          description = "Meeting",
+          template = [[:PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
 :PERSON: %(return _G.org_prompt_person_for_capture())
@@ -475,13 +479,13 @@ return {
 * Action Items
 - [ ]
 ]],
-					target = org_dirs.roam_notes .. "/meeting-%<%Y%m%d%H%M%S>.org",
-					whole_file = true,
-				},
+          target = org_dirs.roam_notes .. "/meeting-%<%Y%m%d%H%M%S>.org",
+          whole_file = true,
+        },
 
-				e = {
-					description = "Experiment",
-					template = [[
+        e = {
+          description = "Experiment",
+          template = [[
 * %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return _G.prompt_experiment_title()) :experiment:
 :PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
@@ -489,27 +493,27 @@ return {
 :END:
 
 %(return _G.get_experiment_template_sections())%?]],
-					target = org_dirs.experiments .. "/%<%Y-%m-%d>-%(return _G.get_experiment_slug()).org",
-				},
+          target = org_dirs.experiments .. "/%<%Y-%m-%d>-%(return _G.get_experiment_slug()).org",
+        },
 
-				-- Reading (Quick Capture to Inbox: Blogs, Papers, etc.)
-				r = {
-					description = "Reading",
-					template = "* TODO %^{Title} :reading:\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:\n- Link: [[%^{URL}]]",
-					target = org_files.gtd_inbox,
-					headline = "Reading List",
-				},
+        -- Reading (Quick Capture to Inbox: Blogs, Papers, etc.)
+        r = {
+          description = "Reading",
+          template = "* TODO %^{Title} :reading:\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:\n- Link: [[%^{URL}]]",
+          target = org_files.gtd_inbox,
+          headline = "Reading List",
+        },
 
-				l = {
-					description = "Code TODO",
-					template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n%(return _G.org_capture_abs_link())",
-					target = org_files.gtd_inbox,
-					headline = "Tasks",
-				},
+        l = {
+          description = "Code TODO",
+          template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n%(return _G.org_capture_abs_link())",
+          target = org_files.gtd_inbox,
+          headline = "Tasks",
+        },
 
-				x = {
-					description = "Experiment run (tracking)",
-					template = [[
+        x = {
+          description = "Experiment run (tracking)",
+          template = [[
 * WAITING %^{Run label}
 SCHEDULED: <%<%Y-%m-%d %a>>
 :PROPERTIES:
@@ -523,459 +527,463 @@ SCHEDULED: <%<%Y-%m-%d %a>>
 :STEPS: %^{Step budget}
 :END:
 %?]],
-					target = org_dirs.gtd_projects .. "/%(return _G.prompt_tracking_project())/tracking.org",
-					headline = "Runs",
-				},
+          target = org_dirs.gtd_projects .. "/%(return _G.prompt_tracking_project())/tracking.org",
+          headline = "Runs",
+        },
 
-				-- Quick note to today's daily log
-				o = {
-					description = "Quick note (Today)",
-					template = "** %?\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:",
-					target = org_dirs.roam_daily .. "/%<%Y-%m-%d>.org",
-					headline = "Notes",
-				},
-			},
+        -- Quick note to today's daily log
+        o = {
+          description = "Quick note (Today)",
+          template = "** %?\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:END:",
+          target = org_dirs.roam_daily .. "/%<%Y-%m-%d>.org",
+          headline = "Notes",
+        },
+      },
 
-			-- GTD workflow states
-			org_todo_keywords = {
-				"TODO(t)",
-				"WORKING(w)",
-				"NEXT(n)",
-				"WAITING(p)",
-				"SOMEDAY(s)",
-				"|",
-				"DONE(d)",
-				"CANCELLED(c)",
-			},
-			org_todo_keyword_faces = {
-				WORKING = "foreground #FFA500",
-			},
+      -- GTD workflow states
+      org_todo_keywords = {
+        "TODO(t)",
+        "WORKING(w)",
+        "NEXT(n)",
+        "WAITING(p)",
+        "SOMEDAY(s)",
+        "|",
+        "DONE(d)",
+        "CANCELLED(c)",
+      },
+      org_todo_keyword_faces = {
+        WORKING = "foreground #FFA500",
+      },
 
-			-- Track completion time
-			org_log_done = "time",
-			org_log_into_drawer = "LOGBOOK",
+      -- Track completion time
+      org_log_done = "time",
+      org_log_into_drawer = "LOGBOOK",
 
-			-- Tags configuration
-			org_tags_exclude_from_inheritance = { "project" },
-			org_use_tag_inheritance = true,
+      -- Tags configuration
+      org_tags_exclude_from_inheritance = { "project" },
+      org_use_tag_inheritance = true,
 
-			-- Default priorities
-			org_priority_highest = "A",
-			org_priority_default = "C",
-			org_priority_lowest = "E",
+      -- Default priorities
+      org_priority_highest = "A",
+      org_priority_default = "C",
+      org_priority_lowest = "E",
 
-			-- User interface configuration (fzf-lua first, fallback to vim.ui.select)
-			ui = {
-				menu = {
-					handler = function(data)
-						local options = {}
-						local options_by_label = {}
+      -- User interface configuration (fzf-lua first, fallback to vim.ui.select)
+      ui = {
+        menu = {
+          handler = function(data)
+            local options = {}
+            local options_by_label = {}
 
-						for _, item in ipairs(data.items) do
-							if item.key and item.label:lower() ~= "quit" then
-								local display = string.format("[%s] %s", item.key, item.label)
-								table.insert(options, display)
-								options_by_label[display] = item
-							end
-						end
+            for _, item in ipairs(data.items) do
+              if item.key and item.label:lower() ~= "quit" then
+                local display = string.format("[%s] %s", item.key, item.label)
+                table.insert(options, display)
+                options_by_label[display] = item
+              end
+            end
 
-						local function select_item(choice)
-							if not choice then
-								return
-							end
-							local option = options_by_label[choice]
-							if option and option.action then
-								option.action()
-							end
-						end
+            local function select_item(choice)
+              if not choice then
+                return
+              end
+              local option = options_by_label[choice]
+              if option and option.action then
+                option.action()
+              end
+            end
 
-						local ok, fzf = pcall(require, "fzf-lua")
-						if ok then
-							fzf.fzf_exec(options, {
-								prompt = data.title .. " > ",
-								actions = {
-									["default"] = function(selected)
-										if selected and selected[1] then
-											select_item(selected[1])
-										end
-									end,
-								},
-								winopts = {
-									height = 0.6,
-									width = 0.8,
-								},
-							})
-						else
-							vim.ui.select(options, { prompt = data.title .. " > " }, select_item)
-						end
-					end,
-				},
-			},
+            local ok, fzf = pcall(require, "fzf-lua")
+            if ok then
+              fzf.fzf_exec(options, {
+                prompt = data.title .. " > ",
+                actions = {
+                  ["default"] = function(selected)
+                    if selected and selected[1] then
+                      select_item(selected[1])
+                    end
+                  end,
+                },
+                winopts = {
+                  height = 0.6,
+                  width = 0.8,
+                },
+              })
+            else
+              vim.ui.select(options, { prompt = data.title .. " > " }, select_item)
+            end
+          end,
+        },
+      },
 
-			-- Key mappings
-			mappings = {
-				global = {
-					org_agenda = "<Leader>oa",
-					org_capture = "<Leader>oc",
-					org_jump = "<Leader>oj", -- Jump to bookmarked location
-					org_clock_goto = "<Leader>ox", -- Go to currently clocked item
-				},
-				org = {
-					org_refile = "<Leader>oR", -- Native refile as fallback (R = fzf refile)
-					org_todo = "t",
-					org_toggle_checkbox = "<Leader>x",
-					org_priority_up = "]p",
-					org_priority_down = "[p",
-					org_timestamp_up = "]d",
-					org_timestamp_down = "[d",
-					org_clock_in = "I",
-					org_clock_out = "O",
-					org_clock_cancel = "X",
-					org_open_at_point = "<CR>",
-					org_cycle = "<Tab>",
-					org_global_cycle = "<S-Tab>",
-					org_archive_subtree = "<Leader>os", -- Archive Subtree under Leader-o
-					org_set_tags_command = "<Leader>ot", -- codespell:ignore ot
-					org_toggle_archive_tag = "<Leader>oA",
-					org_do_promote = "<<",
-					org_do_demote = ">>",
-				},
-				capture = {
-					org_capture_finalize = "<Leader>ow",
-					org_capture_refile = "<Leader>or",
-					org_capture_kill = "<Leader>ok",
-				},
-				agenda = {
-					org_agenda_later = "L",
-					org_agenda_earlier = "H",
-					org_agenda_goto = "<CR>",
-					org_agenda_day_view = "vd",
-					org_agenda_week_view = "vw",
-					org_agenda_month_view = "vm",
-					org_agenda_year_view = "vy",
-					org_agenda_quit = "q",
-				},
-			},
-		})
+      -- Key mappings
+      mappings = {
+        global = {
+          org_agenda = "<Leader>oa",
+          org_capture = "<Leader>oc",
+          org_jump = "<Leader>oj", -- Jump to bookmarked location
+          org_clock_goto = "<Leader>ox", -- Go to currently clocked item
+        },
+        org = {
+          org_refile = "<Leader>oR", -- Native refile as fallback (R = fzf refile)
+          org_todo = "t",
+          org_toggle_checkbox = "<Leader>x",
+          org_priority_up = "]p",
+          org_priority_down = "[p",
+          org_timestamp_up = "]d",
+          org_timestamp_down = "[d",
+          org_clock_in = "I",
+          org_clock_out = "O",
+          org_clock_cancel = "X",
+          org_open_at_point = "<CR>",
+          org_cycle = "<Tab>",
+          org_global_cycle = "<S-Tab>",
+          org_archive_subtree = "<Leader>os", -- Archive Subtree under Leader-o
+          org_set_tags_command = "<Leader>ot", -- codespell:ignore ot
+          org_toggle_archive_tag = "<Leader>oA",
+          org_do_promote = "<<",
+          org_do_demote = ">>",
+        },
+        capture = {
+          org_capture_finalize = "<Leader>ow",
+          org_capture_refile = "<Leader>or",
+          org_capture_kill = "<Leader>ok",
+        },
+        agenda = {
+          org_agenda_later = "L",
+          org_agenda_earlier = "H",
+          org_agenda_goto = "<CR>",
+          org_agenda_day_view = "vd",
+          org_agenda_week_view = "vw",
+          org_agenda_month_view = "vm",
+          org_agenda_year_view = "vy",
+          org_agenda_quit = "q",
+        },
+      },
+    })
 
-		-- Custom Command to Create a New Project File
-		vim.keymap.set("n", "<Leader>op", function()
-			local name = vim.fn.input("Project Name: ")
-			if name == "" then
-				return
-			end
+    -- Custom Command to Create a New Project File
+    vim.keymap.set("n", "<Leader>op", function()
+      local name = vim.fn.input("Project Name: ")
+      if name == "" then
+        return
+      end
 
-			local tags_input = vim.fn.input("Project Tags (space separated): ")
-			local tags = ":project:"
-			if tags_input ~= "" then
-				-- Clean up input: replace spaces with colons, remove non-alphanumeric (except -_@), ensure wrapped in colons
-				local clean_tags = tags_input:gsub("%s+", ":"):gsub("[^%w%-%_@:]", "")
-				if clean_tags ~= "" then
-					if not clean_tags:match("^:") then clean_tags = ":" .. clean_tags end
-					if not clean_tags:match(":$") then clean_tags = clean_tags .. ":" end
-					tags = tags .. clean_tags:sub(2) -- Avoid double colon
-				end
-			end
+      local tags_input = vim.fn.input("Project Tags (space separated): ")
+      local tags = ":project:"
+      if tags_input ~= "" then
+        -- Clean up input: replace spaces with colons, remove non-alphanumeric (except -_@), ensure wrapped in colons
+        local clean_tags = tags_input:gsub("%s+", ":"):gsub("[^%w%-%_@:]", "")
+        if clean_tags ~= "" then
+          if not clean_tags:match("^:") then
+            clean_tags = ":" .. clean_tags
+          end
+          if not clean_tags:match(":$") then
+            clean_tags = clean_tags .. ":"
+          end
+          tags = tags .. clean_tags:sub(2) -- Avoid double colon
+        end
+      end
 
-			-- Sanitize filename
-			local slug = name:gsub("%s+", "-"):gsub("[^%w%-]", ""):lower()
-			local path = vim.fn.expand(org_dirs.gtd_projects .. "/" .. slug .. ".org")
+      -- Sanitize filename
+      local slug = name:gsub("%s+", "-"):gsub("[^%w%-]", ""):lower()
+      local path = vim.fn.expand(org_dirs.gtd_projects .. "/" .. slug .. ".org")
 
-			-- Check if file exists to avoid overwriting
-			if vim.fn.filereadable(path) == 1 then
-				print("Project file already exists: " .. path)
-				vim.cmd("edit " .. path)
-				return
-			end
+      -- Check if file exists to avoid overwriting
+      if vim.fn.filereadable(path) == 1 then
+        print("Project file already exists: " .. path)
+        vim.cmd("edit " .. path)
+        return
+      end
 
-			-- Create file content
-			local content = {
-				"#+TITLE: " .. name,
-				"#+FILETAGS: " .. tags,
-				"#+CATEGORY: " .. name,
-				"",
-				"* Description",
-				"",
-				"* Tasks",
-				"",
-				"* Notes",
-				"",
-			}
+      -- Create file content
+      local content = {
+        "#+TITLE: " .. name,
+        "#+FILETAGS: " .. tags,
+        "#+CATEGORY: " .. name,
+        "",
+        "* Description",
+        "",
+        "* Tasks",
+        "",
+        "* Notes",
+        "",
+      }
 
-			-- Write file
-			local file = io.open(path, "w")
-			if file then
-				for _, line in ipairs(content) do
-					file:write(line .. "\n")
-				end
-				file:close()
-				print("Created new project: " .. path)
-				vim.cmd("edit " .. path)
-			else
-				print("Error creating file: " .. path)
-			end
-		end, { desc = "Create new [P]roject file" })
+      -- Write file
+      local file = io.open(path, "w")
+      if file then
+        for _, line in ipairs(content) do
+          file:write(line .. "\n")
+        end
+        file:close()
+        print("Created new project: " .. path)
+        vim.cmd("edit " .. path)
+      else
+        print("Error creating file: " .. path)
+      end
+    end, { desc = "Create new [P]roject file" })
 
-		-- Refile helper (fzf-lua first, fallback to vim.ui.select)
-		_G.org_refile_with_fzf = function(opts)
-			opts = opts or {}
-			local org = require("orgmode").instance()
-			local files = org.files
-			local capture = org.capture
+    -- Refile helper (fzf-lua first, fallback to vim.ui.select)
+    _G.org_refile_with_fzf = function(opts)
+      opts = opts or {}
+      local org = require("orgmode").instance()
+      local files = org.files
+      local capture = org.capture
 
-			local source_file = opts.source_file or files:get_current_file()
-			local source_headline = opts.source_headline or (source_file and source_file:get_closest_headline())
-			if not source_headline then
-				vim.notify("No headline found under cursor.", vim.log.levels.WARN)
-				return
-			end
+      local source_file = opts.source_file or files:get_current_file()
+      local source_headline = opts.source_headline or (source_file and source_file:get_closest_headline())
+      if not source_headline then
+        vim.notify("No headline found under cursor.", vim.log.levels.WARN)
+        return
+      end
 
-			local source_bufnr = opts.source_bufnr or (source_file and source_file:bufnr())
+      local source_bufnr = opts.source_bufnr or (source_file and source_file:bufnr())
 
-			if opts.ensure_path then
-				files:get(opts.ensure_path)
-			end
+      if opts.ensure_path then
+        files:get(opts.ensure_path)
+      end
 
-			local valid_destinations = capture:_get_autocompletion_files()
+      local valid_destinations = capture:_get_autocompletion_files()
 
-			-- Build items list with direct mapping
-			local items = {}
-			local item_map = {}
+      -- Build items list with direct mapping
+      local items = {}
+      local item_map = {}
 
-			-- Find the only_key if destination_path is specified
-			local only_key = opts.only_key
-			if opts.destination_path then
-				local target_path = vim.fn.fnamemodify(opts.destination_path, ':p')
-				for key, file in pairs(valid_destinations) do
-					local file_path = vim.fn.fnamemodify(file.filename, ':p')
-					if file_path == target_path then
-						only_key = key
-						break
-					end
-				end
-			end
+      -- Find the only_key if destination_path is specified
+      local only_key = opts.only_key
+      if opts.destination_path then
+        local target_path = vim.fn.fnamemodify(opts.destination_path, ":p")
+        for key, file in pairs(valid_destinations) do
+          local file_path = vim.fn.fnamemodify(file.filename, ":p")
+          if file_path == target_path then
+            only_key = key
+            break
+          end
+        end
+      end
 
-			local keys = vim.tbl_keys(valid_destinations)
-			table.sort(keys)
+      local keys = vim.tbl_keys(valid_destinations)
+      table.sort(keys)
 
-			for _, key in ipairs(keys) do
-				if not only_key or only_key == key then
-					if opts.include_file ~= false then
-						table.insert(items, key)
-						item_map[key] = { file = valid_destinations[key] }
-					end
+      for _, key in ipairs(keys) do
+        if not only_key or only_key == key then
+          if opts.include_file ~= false then
+            table.insert(items, key)
+            item_map[key] = { file = valid_destinations[key] }
+          end
 
-					local file = valid_destinations[key]
-					for _, headline in ipairs(file:get_opened_unfinished_headlines()) do
-						local title = headline:get_title()
-						if title and title ~= "" then
-							local display = key .. title
-							table.insert(items, display)
-							item_map[display] = { file = file, headline = headline }
-						end
-					end
-				end
-			end
+          local file = valid_destinations[key]
+          for _, headline in ipairs(file:get_opened_unfinished_headlines()) do
+            local title = headline:get_title()
+            if title and title ~= "" then
+              local display = key .. title
+              table.insert(items, display)
+              item_map[display] = { file = file, headline = headline }
+            end
+          end
+        end
+      end
 
-			-- Prioritize default headline if specified
-			if opts.default_headline and only_key then
-				local target = only_key .. opts.default_headline
-				for idx, value in ipairs(items) do
-					if value == target then
-						table.remove(items, idx)
-						table.insert(items, 1, value)
-						break
-					end
-				end
-			end
+      -- Prioritize default headline if specified
+      if opts.default_headline and only_key then
+        local target = only_key .. opts.default_headline
+        for idx, value in ipairs(items) do
+          if value == target then
+            table.remove(items, idx)
+            table.insert(items, 1, value)
+            break
+          end
+        end
+      end
 
-			if #items == 0 then
-				vim.notify("No refile targets found.", vim.log.levels.WARN)
-				return
-			end
+      if #items == 0 then
+        vim.notify("No refile targets found.", vim.log.levels.WARN)
+        return
+      end
 
-			local function select_item(choice)
-				if not choice then
-					return
-				end
+      local function select_item(choice)
+        if not choice then
+          return
+        end
 
-				local dest = item_map[choice]
-				if not dest then
-					vim.notify("Invalid destination.", vim.log.levels.ERROR)
-					return
-				end
+        local dest = item_map[choice]
+        if not dest then
+          vim.notify("Invalid destination.", vim.log.levels.ERROR)
+          return
+        end
 
-				local prev_bufnr = vim.api.nvim_get_current_buf()
-				if source_bufnr and vim.api.nvim_buf_is_valid(source_bufnr) then
-					vim.api.nvim_set_current_buf(source_bufnr)
-				end
+        local prev_bufnr = vim.api.nvim_get_current_buf()
+        if source_bufnr and vim.api.nvim_buf_is_valid(source_bufnr) then
+          vim.api.nvim_set_current_buf(source_bufnr)
+        end
 
-				capture:_refile_from_org_file({
-					source_headline = source_headline,
-					destination_file = dest.file,
-					destination_headline = dest.headline,
-					message = opts.message,
-				})
+        capture:_refile_from_org_file({
+          source_headline = source_headline,
+          destination_file = dest.file,
+          destination_headline = dest.headline,
+          message = opts.message,
+        })
 
-				if prev_bufnr and vim.api.nvim_buf_is_valid(prev_bufnr) then
-					vim.api.nvim_set_current_buf(prev_bufnr)
-				end
-			end
+        if prev_bufnr and vim.api.nvim_buf_is_valid(prev_bufnr) then
+          vim.api.nvim_set_current_buf(prev_bufnr)
+        end
+      end
 
-			local ok, fzf = pcall(require, "fzf-lua")
-			if ok then
-				fzf.fzf_exec(items, {
-					prompt = opts.prompt or "Refile to > ",
-					actions = {
-						["default"] = function(selected)
-							if selected and selected[1] then
-								select_item(selected[1])
-							end
-						end,
-					},
-					winopts = {
-						height = 0.6,
-						width = 0.8,
-					},
-				})
-			else
-				vim.ui.select(items, { prompt = opts.prompt or "Refile to > " }, select_item)
-			end
-		end
+      local ok, fzf = pcall(require, "fzf-lua")
+      if ok then
+        fzf.fzf_exec(items, {
+          prompt = opts.prompt or "Refile to > ",
+          actions = {
+            ["default"] = function(selected)
+              if selected and selected[1] then
+                select_item(selected[1])
+              end
+            end,
+          },
+          winopts = {
+            height = 0.6,
+            width = 0.8,
+          },
+        })
+      else
+        vim.ui.select(items, { prompt = opts.prompt or "Refile to > " }, select_item)
+      end
+    end
 
-		-- Insert stored links via fzf-lua (fallback to vim.ui.select)
-		_G.org_insert_link_fzf = function()
-			local org = require("orgmode")
-			local links = org.links
-			local stored = links and links.stored_links or {}
+    -- Insert stored links via fzf-lua (fallback to vim.ui.select)
+    _G.org_insert_link_fzf = function()
+      local org = require("orgmode")
+      local links = org.links
+      local stored = links and links.stored_links or {}
 
-			if type(stored) ~= "table" or vim.tbl_isempty(stored) then
-				return org.org_mappings:insert_link()
-			end
+      if type(stored) ~= "table" or vim.tbl_isempty(stored) then
+        return org.org_mappings:insert_link()
+      end
 
-			local items = {}
-			local item_map = {}
-			local manual_label = "[manual] Enter link"
+      local items = {}
+      local item_map = {}
+      local manual_label = "[manual] Enter link"
 
-			item_map[manual_label] = { manual = true }
-			table.insert(items, manual_label)
+      item_map[manual_label] = { manual = true }
+      table.insert(items, manual_label)
 
-			for link, title in pairs(stored) do
-				local display = string.format("%s :: %s", title, link)
-				table.insert(items, display)
-				item_map[display] = { link = link, title = title }
-			end
+      for link, title in pairs(stored) do
+        local display = string.format("%s :: %s", title, link)
+        table.insert(items, display)
+        item_map[display] = { link = link, title = title }
+      end
 
-			table.sort(items, function(a, b)
-				if a == manual_label then
-					return true
-				end
-				if b == manual_label then
-					return false
-				end
-				return a < b
-			end)
+      table.sort(items, function(a, b)
+        if a == manual_label then
+          return true
+        end
+        if b == manual_label then
+          return false
+        end
+        return a < b
+      end)
 
-			local function select_item(choice)
-				if not choice then
-					return
-				end
-				local item = item_map[choice]
-				if not item then
-					return
-				end
-				if item.manual then
-					return org.org_mappings:insert_link()
-				end
-				return links:insert_link(item.link, item.title)
-			end
+      local function select_item(choice)
+        if not choice then
+          return
+        end
+        local item = item_map[choice]
+        if not item then
+          return
+        end
+        if item.manual then
+          return org.org_mappings:insert_link()
+        end
+        return links:insert_link(item.link, item.title)
+      end
 
-			local ok, fzf = pcall(require, "fzf-lua")
-			if ok then
-				fzf.fzf_exec(items, {
-					prompt = "Links> ",
-					actions = {
-						["default"] = function(selected)
-							if selected and selected[1] then
-								select_item(selected[1])
-							end
-						end,
-					},
-					winopts = {
-						height = 0.6,
-						width = 0.8,
-					},
-				})
-			else
-				vim.ui.select(items, { prompt = "Links> " }, select_item)
-			end
-		end
+      local ok, fzf = pcall(require, "fzf-lua")
+      if ok then
+        fzf.fzf_exec(items, {
+          prompt = "Links> ",
+          actions = {
+            ["default"] = function(selected)
+              if selected and selected[1] then
+                select_item(selected[1])
+              end
+            end,
+          },
+          winopts = {
+            height = 0.6,
+            width = 0.8,
+          },
+        })
+      else
+        vim.ui.select(items, { prompt = "Links> " }, select_item)
+      end
+    end
 
-		local function org_todo_next_state_with_working()
-			local org = require("orgmode")
-			local files = org.instance().files
-			local headline = files:get_closest_headline()
+    local function org_todo_next_state_with_working()
+      local org = require("orgmode")
+      local files = org.instance().files
+      local headline = files:get_closest_headline()
 
-			if not headline then
-				vim.notify("No headline found under cursor.", vim.log.levels.WARN)
-				return
-			end
+      if not headline then
+        vim.notify("No headline found under cursor.", vim.log.levels.WARN)
+        return
+      end
 
-			local old_state = headline:get_todo()
-			org.action("org_mappings.todo_next_state")
+      local old_state = headline:get_todo()
+      org.action("org_mappings.todo_next_state")
 
-			local updated = files:get_closest_headline()
-			if not updated then
-				return
-			end
+      local updated = files:get_closest_headline()
+      if not updated then
+        return
+      end
 
-			local new_state = updated:get_todo()
-			if new_state == "WORKING" then
-				org.action("clock.org_clock_in")
-			elseif old_state == "WORKING" and new_state ~= "WORKING" then
-				org.action("clock.org_clock_out")
-			end
-		end
+      local new_state = updated:get_todo()
+      if new_state == "WORKING" then
+        org.action("clock.org_clock_in")
+      elseif old_state == "WORKING" and new_state ~= "WORKING" then
+        org.action("clock.org_clock_out")
+      end
+    end
 
-		vim.api.nvim_create_autocmd('FileType', {
-			pattern = 'org',
-			callback = function()
-				vim.schedule(function()
-					vim.keymap.set('n', 'R', function()
-						_G.org_refile_with_fzf()
-					end, { buffer = true, desc = 'Refile with Fzf' })
-					vim.keymap.set('n', 't', function()
-						org_todo_next_state_with_working()
-					end, { buffer = true, desc = 'TODO next state (clock WORKING)' })
-					vim.keymap.set({ 'n', 'v' }, '<Leader>oli', function()
-						_G.org_insert_link_fzf()
-					end, { buffer = true, desc = 'Insert link (fzf)' })
-					vim.keymap.set('n', '<Leader>oep', function()
-						local src = vim.api.nvim_buf_get_name(0)
-						if src == '' or vim.fn.filereadable(src) ~= 1 then
-							vim.notify('No org file to export.', vim.log.levels.WARN)
-							return
-						end
-						if vim.bo.modified then
-							vim.cmd('write')
-						end
-						local pdf = vim.fn.fnamemodify(src, ':r') .. '.pdf'
-						vim.notify('Exporting to PDF…', vim.log.levels.INFO)
-						vim.system(
-							{ 'pandoc', src, '-o', pdf },
-							{ text = true },
-							vim.schedule_wrap(function(obj)
-								if obj.code ~= 0 then
-									vim.notify('pandoc failed: ' .. (obj.stderr or ''), vim.log.levels.ERROR)
-									return
-								end
-								vim.system({ 'open', pdf }, { detach = true })
-								vim.notify('Opened ' .. pdf, vim.log.levels.INFO)
-							end)
-						)
-					end, { buffer = true, desc = 'Export to PDF (pandoc) and open' })
-				end)
-			end,
-		})
-	end,
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "org",
+      callback = function()
+        vim.schedule(function()
+          vim.keymap.set("n", "R", function()
+            _G.org_refile_with_fzf()
+          end, { buffer = true, desc = "Refile with Fzf" })
+          vim.keymap.set("n", "t", function()
+            org_todo_next_state_with_working()
+          end, { buffer = true, desc = "TODO next state (clock WORKING)" })
+          vim.keymap.set({ "n", "v" }, "<Leader>oli", function()
+            _G.org_insert_link_fzf()
+          end, { buffer = true, desc = "Insert link (fzf)" })
+          vim.keymap.set("n", "<Leader>oep", function()
+            local src = vim.api.nvim_buf_get_name(0)
+            if src == "" or vim.fn.filereadable(src) ~= 1 then
+              vim.notify("No org file to export.", vim.log.levels.WARN)
+              return
+            end
+            if vim.bo.modified then
+              vim.cmd("write")
+            end
+            local pdf = vim.fn.fnamemodify(src, ":r") .. ".pdf"
+            vim.notify("Exporting to PDF…", vim.log.levels.INFO)
+            vim.system(
+              { "pandoc", src, "-o", pdf },
+              { text = true },
+              vim.schedule_wrap(function(obj)
+                if obj.code ~= 0 then
+                  vim.notify("pandoc failed: " .. (obj.stderr or ""), vim.log.levels.ERROR)
+                  return
+                end
+                vim.system({ "open", pdf }, { detach = true })
+                vim.notify("Opened " .. pdf, vim.log.levels.INFO)
+              end)
+            )
+          end, { buffer = true, desc = "Export to PDF (pandoc) and open" })
+        end)
+      end,
+    })
+  end,
 }

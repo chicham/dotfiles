@@ -63,21 +63,31 @@ local outline_enabled = true
 -- default folds and are left out of the outline entirely.
 local function build_fold_query(lang)
   local ok, info = pcall(vim.treesitter.language.inspect, lang)
-  if not ok or type(info) ~= 'table' or type(info.symbols) ~= 'table' then return nil end
+  if not ok or type(info) ~= "table" or type(info.symbols) ~= "table" then
+    return nil
+  end
 
   local has_body_field = false
   for _, f in ipairs(info.fields or {}) do
-    if f == 'body' then has_body_field = true end
+    if f == "body" then
+      has_body_field = true
+    end
   end
 
   local fn_types, comment_types = {}, {}
   for name, named in pairs(info.symbols) do
-    if named and not name:find('parameter') and not name:find('argument') then
-      if name:find('func') or name:find('method') or name:find('constructor')
-        or name:find('lambda') or name:find('closure') or name:find('arrow') then
+    if named and not name:find("parameter") and not name:find("argument") then
+      if
+        name:find("func")
+        or name:find("method")
+        or name:find("constructor")
+        or name:find("lambda")
+        or name:find("closure")
+        or name:find("arrow")
+      then
         fn_types[#fn_types + 1] = name
       end
-      if name:find('comment') then
+      if name:find("comment") then
         comment_types[#comment_types + 1] = name
       end
     end
@@ -99,28 +109,36 @@ local function build_fold_query(lang)
       -- line showing its signature. Gated on has_body_field so we only fold
       -- function-likes that actually have a body (skips json/yaml etc.); a
       -- function whose body fits on one line simply won't fold (needs >=2 lines).
-      local pat = '(' .. t .. ') @fold'
-      if valid(pat) then patterns[#patterns + 1] = pat end
+      local pat = "(" .. t .. ") @fold"
+      if valid(pat) then
+        patterns[#patterns + 1] = pat
+      end
     end
   end
   if #comment_types > 0 then
     table.sort(comment_types)
     local alts = {}
     for _, c in ipairs(comment_types) do
-      alts[#alts + 1] = '(' .. c .. ')'
+      alts[#alts + 1] = "(" .. c .. ")"
     end
-    local pat = (#alts == 1 and alts[1] or ('[' .. table.concat(alts, ' ') .. ']')) .. '+ @fold'
-    if valid(pat) then patterns[#patterns + 1] = pat end
+    local pat = (#alts == 1 and alts[1] or ("[" .. table.concat(alts, " ") .. "]")) .. "+ @fold"
+    if valid(pat) then
+      patterns[#patterns + 1] = pat
+    end
   end
   -- Fold docstrings: a bare string statement (module/class/function docstring in
   -- Python, etc.). Strings aren't comment nodes, so they need their own pattern.
   do
-    local pat = '(expression_statement (string) @fold)'
-    if valid(pat) then patterns[#patterns + 1] = pat end
+    local pat = "(expression_statement (string) @fold)"
+    if valid(pat) then
+      patterns[#patterns + 1] = pat
+    end
   end
-  if #patterns == 0 then return nil end
+  if #patterns == 0 then
+    return nil
+  end
 
-  return table.concat(patterns, '\n')
+  return table.concat(patterns, "\n")
 end
 
 -- lang -> true (customized) / false (left on defaults). Caches so inspect +
@@ -129,7 +147,9 @@ local fold_query_done = {}
 local function ensure_fold_query(lang)
   if fold_query_done[lang] == nil then
     local query = build_fold_query(lang)
-    if query then pcall(vim.treesitter.query.set, lang, 'folds', query) end
+    if query then
+      pcall(vim.treesitter.query.set, lang, "folds", query)
+    end
     fold_query_done[lang] = query ~= nil
   end
   return fold_query_done[lang]
@@ -137,25 +157,33 @@ end
 
 local function buf_lang(buf)
   local ft = vim.bo[buf].filetype
-  if ft == '' or no_outline_ft[ft] then return nil end
+  if ft == "" or no_outline_ft[ft] then
+    return nil
+  end
   return vim.treesitter.language.get_lang(ft) or ft
 end
 
 -- Force Treesitter as the fold provider (over origami's LSP-folds preference) so
 -- our custom semantic query actually drives folding.
 local function force_treesitter_folds(buf)
-  if not outline_enabled then return end
+  if not outline_enabled then
+    return
+  end
   local lang = buf_lang(buf)
-  if not lang or not ensure_fold_query(lang) then return end
+  if not lang or not ensure_fold_query(lang) then
+    return
+  end
   local win = vim.fn.bufwinid(buf)
-  if win == -1 then return end
+  if win == -1 then
+    return
+  end
   vim.api.nvim_win_call(win, function()
-    if vim.wo.foldexpr ~= 'v:lua.vim.treesitter.foldexpr()' then
-      vim.wo.foldmethod = 'expr'
-      vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    if vim.wo.foldexpr ~= "v:lua.vim.treesitter.foldexpr()" then
+      vim.wo.foldmethod = "expr"
+      vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     end
   end)
-  vim.b[buf].origami_folding_provider = 'treesitter'
+  vim.b[buf].origami_folding_provider = "treesitter"
 end
 
 -- With the semantic query, function/method bodies and comment runs are the only
@@ -165,20 +193,30 @@ local OUTLINE_FOLDLEVEL = 0
 
 local function apply_outline(buf)
   buf = buf or vim.api.nvim_get_current_buf()
-  if not outline_enabled then return end
-  if not vim.api.nvim_buf_is_valid(buf) then return end
-  if vim.b[buf].origami_outlined then return end -- only on first open, never on re-entry
+  if not outline_enabled then
+    return
+  end
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
+  if vim.b[buf].origami_outlined then
+    return
+  end -- only on first open, never on re-entry
   local lang = buf_lang(buf)
-  if not lang or not ensure_fold_query(lang) then return end -- only code we customized
+  if not lang or not ensure_fold_query(lang) then
+    return
+  end -- only code we customized
   local win = vim.fn.bufwinid(buf)
-  if win == -1 then return end
+  if win == -1 then
+    return
+  end
   force_treesitter_folds(buf)
   vim.b[buf].origami_outlined = true
   vim.api.nvim_win_call(win, function()
     vim.wo[win].foldlevel = OUTLINE_FOLDLEVEL
     -- zx forces the foldexpr provider to (re)compute folds and re-applies
     -- foldlevel, which is what actually collapses the bodies on open.
-    pcall(vim.cmd, 'normal! zx')
+    pcall(vim.cmd, "normal! zx")
   end)
 end
 
@@ -193,15 +231,17 @@ function _G.OrigamiSigFoldtext()
   local buf = vim.api.nvim_get_current_buf()
   local fs, fe = vim.v.foldstart, vim.v.foldend
   local row = fs - 1
-  local first = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ''
-  local indent = first:match('^%s*') or ''
+  local first = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ""
+  local indent = first:match("^%s*") or ""
   local text = vim.trim(first)
 
   local ok, node = pcall(vim.treesitter.get_node, { bufnr = buf, pos = { row, #indent } })
   if ok and node then
     while node do
       if node:start() == row then
-        local bok, bf = pcall(function() return node:field('body') end)
+        local bok, bf = pcall(function()
+          return node:field("body")
+        end)
         if bok and bf and bf[1] then
           local brow, bcol = bf[1]:start()
           if brow > row then
@@ -216,9 +256,11 @@ function _G.OrigamiSigFoldtext()
             local parts = {}
             for _, sl in ipairs(lines) do
               local t = vim.trim(sl)
-              if t ~= '' then parts[#parts + 1] = t end
+              if t ~= "" then
+                parts[#parts + 1] = t
+              end
             end
-            text = table.concat(parts, ' ')
+            text = table.concat(parts, " ")
             break
           end
         end
@@ -229,19 +271,19 @@ function _G.OrigamiSigFoldtext()
 
   -- Cosmetic: tidy the spacing that line-joining leaves around brackets/commas,
   -- and drop a trailing body-opening brace (the single-line-signature fallback).
-  text = text:gsub('%(%s+', '('):gsub('%s+%)', ')'):gsub('%s+,', ','):gsub(',%s*%)', ')')
-  text = text:gsub('%s*{%s*$', '')
+  text = text:gsub("%(%s+", "("):gsub("%s+%)", ")"):gsub("%s+,", ","):gsub(",%s*%)", ")")
+  text = text:gsub("%s*{%s*$", "")
 
   return {
     { indent .. text },
-    { '  ' },
-    { '󰁂 ' .. (fe - fs + 1) .. ' lines', 'Comment' },
+    { "  " },
+    { "󰁂 " .. (fe - fs + 1) .. " lines", "Comment" },
   }
 end
 
 return {
-  'chrisgrieser/nvim-origami',
-  event = 'VeryLazy',
+  "chrisgrieser/nvim-origami",
+  event = "VeryLazy",
 
   -- Windows start fully expanded; apply_outline collapses code buffers.
   init = function()
@@ -262,17 +304,17 @@ return {
   },
 
   config = function(_, opts)
-    require('origami').setup(opts)
+    require("origami").setup(opts)
 
     -- Reconstruct full (possibly multi-line) signatures in folded outlines.
-    vim.o.foldtext = 'v:lua.OrigamiSigFoldtext()'
+    vim.o.foldtext = "v:lua.OrigamiSigFoldtext()"
 
-    local grp = vim.api.nvim_create_augroup('origami-auto-outline', { clear = true })
+    local grp = vim.api.nvim_create_augroup("origami-auto-outline", { clear = true })
 
     -- Toggle the auto-outline at runtime. When turning off, open every fold so
     -- nothing is left collapsed; when turning on, clear the per-buffer "already
     -- outlined" guard and re-outline every listed buffer.
-    vim.api.nvim_create_user_command('OrigamiToggle', function()
+    vim.api.nvim_create_user_command("OrigamiToggle", function()
       outline_enabled = not outline_enabled
       if outline_enabled then
         for _, b in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
@@ -281,29 +323,35 @@ return {
         end
       else
         for _, win in ipairs(vim.api.nvim_list_wins()) do
-          vim.api.nvim_win_call(win, function() pcall(vim.cmd, 'normal! zR') end)
+          vim.api.nvim_win_call(win, function()
+            pcall(vim.cmd, "normal! zR")
+          end)
         end
       end
-      vim.notify('Origami auto-outline ' .. (outline_enabled and 'enabled' or 'disabled'))
-    end, { desc = 'Toggle origami auto-outline' })
+      vim.notify("Origami auto-outline " .. (outline_enabled and "enabled" or "disabled"))
+    end, { desc = "Toggle origami auto-outline" })
 
     -- Keep Treesitter as the fold provider for code languages. Runs after
     -- origami's own FileType/LspAttach handlers (registered above in setup), so
     -- it wins even when an LSP attaches and tries to take over folding.
-    vim.api.nvim_create_autocmd({ 'FileType', 'LspAttach' }, {
+    vim.api.nvim_create_autocmd({ "FileType", "LspAttach" }, {
       group = grp,
       callback = function(ev)
         vim.schedule(function()
-          if vim.api.nvim_buf_is_valid(ev.buf) then force_treesitter_folds(ev.buf) end
+          if vim.api.nvim_buf_is_valid(ev.buf) then
+            force_treesitter_folds(ev.buf)
+          end
         end)
       end,
     })
 
     -- Collapse to the outline when a code buffer is first read.
-    vim.api.nvim_create_autocmd({ 'FileType', 'BufReadPost' }, {
+    vim.api.nvim_create_autocmd({ "FileType", "BufReadPost" }, {
       group = grp,
       callback = function(ev)
-        vim.schedule(function() apply_outline(ev.buf) end)
+        vim.schedule(function()
+          apply_outline(ev.buf)
+        end)
       end,
     })
 

@@ -1,7 +1,7 @@
 return {
-  'sondalex/mystnb.nvim',
-  ft = { 'markdown', 'myst' },
+  "sondalex/mystnb.nvim",
+  ft = { "markdown", "myst" },
   config = function()
-    require('mystnb').setup()
+    require("mystnb").setup()
   end,
 }

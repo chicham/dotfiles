@@ -1,37 +1,37 @@
 return {
-  'stevearc/quicker.nvim',
-  event = 'FileType qf',
+  "stevearc/quicker.nvim",
+  event = "FileType qf",
   keys = {
     {
-      '<leader>qq',
+      "<leader>qq",
       function()
-        require('quicker').toggle()
+        require("quicker").toggle()
       end,
-      desc = 'Toggle quickfix'
+      desc = "Toggle quickfix",
     },
     {
-      '<leader>ql',
+      "<leader>ql",
       function()
-        require('quicker').toggle { loclist = true }
+        require("quicker").toggle({ loclist = true })
       end,
-      desc = 'Toggle loclist',
+      desc = "Toggle loclist",
     },
   },
   opts = {
     keys = {
       {
-        '>',
+        ">",
         function()
-          require('quicker').expand { before = 2, after = 2, add_to_existing = true }
+          require("quicker").expand({ before = 2, after = 2, add_to_existing = true })
         end,
-        desc = 'Expand quickfix context',
+        desc = "Expand quickfix context",
       },
       {
-        '<',
+        "<",
         function()
-          require('quicker').collapse()
+          require("quicker").collapse()
         end,
-        desc = 'Collapse quickfix context',
+        desc = "Collapse quickfix context",
       },
     },
   },

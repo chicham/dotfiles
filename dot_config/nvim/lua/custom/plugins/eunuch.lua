@@ -1,7 +1,16 @@
 return {
-  'tpope/vim-eunuch',
+  "tpope/vim-eunuch",
   cmd = {
-    'Remove', 'Delete', 'Move', 'Chmod', 'Mkdir', 'Cfind', 'Clocate',
-    'Lfind', 'Wall', 'SudoWrite', 'SudoEdit'
+    "Remove",
+    "Delete",
+    "Move",
+    "Chmod",
+    "Mkdir",
+    "Cfind",
+    "Clocate",
+    "Lfind",
+    "Wall",
+    "SudoWrite",
+    "SudoEdit",
   },
 }

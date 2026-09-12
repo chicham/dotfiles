@@ -1,6 +1,6 @@
 return {
-  'coffebar/transfer.nvim',
+  "coffebar/transfer.nvim",
   lazy = true,
-  cmd = { 'TransferInit', 'DiffRemote', 'TransferUpload', 'TransferDownload', 'TransferDirDiff', 'TransferRepeat' },
+  cmd = { "TransferInit", "DiffRemote", "TransferUpload", "TransferDownload", "TransferDirDiff", "TransferRepeat" },
   opts = {},
 }
