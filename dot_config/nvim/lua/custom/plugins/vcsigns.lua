@@ -86,8 +86,47 @@ return {
 		map("n", "[b", function()
 			actions.target_older_commit(0, vim.v.count1)
 		end, "Diff base: older commit")
+		-- Picking beats typing here: the useful bases are commits that already
+		-- exist, and a list of them with their diffs previewed answers "which
+		-- one" far better than recalling a change id. Selecting the first
+		-- entry clears the revset and restores the default offset base;
+		-- <Esc> leaves the base where it was.
 		map("n", "<leader>hB", function()
-			actions.target_revset(0, vim.fn.input("Diff base revset: "))
-		end, "Diff base: revset")
+			local root = vim.fs.root(0, { ".jj" })
+			if not root then
+				vim.notify("No jj workspace above this buffer", vim.log.levels.ERROR)
+				return
+			end
+
+			local log = vim.system({
+				"jj", "-R", root, "--no-pager", "log", "-r", "::@", "--limit", "50",
+				"--no-graph", "-T",
+				'commit_id.short() ++ " " ++ if(description, description.first_line(), "(no description)") ++ "\n"',
+			}, { text = true }):wait()
+			if log.code ~= 0 then
+				vim.notify("jj log failed: " .. vim.trim(log.stderr), vim.log.levels.ERROR)
+				return
+			end
+
+			local entries = { "(default base)" }
+			for line in log.stdout:gmatch("[^\n]+") do
+				entries[#entries + 1] = line
+			end
+
+			require("fzf-lua").fzf_exec(entries, {
+				prompt = "Diff base> ",
+				preview = "jj -R " .. vim.fn.shellescape(root)
+					.. " --no-pager show --color=always --git {1}",
+				actions = {
+					["default"] = function(selected)
+						local choice = selected and selected[1]
+						if not choice then
+							return
+						end
+						actions.target_revset(0, choice:match("^%x+") or "")
+					end,
+				},
+			})
+		end, "Diff base: pick commit")
 	end,
 }
