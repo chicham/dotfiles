@@ -430,6 +430,7 @@ require("lazy").setup({
         { "<leader>w", group = "[W]indow" },
         { "<leader>o", group = "[O]rgmode" },
         { "<leader>n", group = "[N]otes (Roam)" },
+        { "<leader>r", group = "[R]efactor" },
         { "<leader>z", group = "[Z] Folds" },
         -- Prefixes introduced by the plugin changes (surround, motions).
         { "s", group = "Surround", mode = { "n", "x" } },
@@ -900,10 +901,12 @@ require("lazy").setup({
           map("K", vim.lsp.buf.hover, "Hover Documentation")
           map("gK", vim.lsp.buf.signature_help, "Signature Documentation")
           map("<space>D", vim.lsp.buf.type_definition, "Type Definition")
-          map("<leader>cr", vim.lsp.buf.rename, "[C]ode [R]ename")
-          map("<space>rn", vim.lsp.buf.rename, "Rename")
-          map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
-          map("<space>ca", vim.lsp.buf.code_action, "Code Action")
+          -- Rename and code action live under <leader>r, not <leader>c: the
+          -- whole <leader>c space belongs to quickfix-review, whose maps are
+          -- global while these are buffer-local, so an LSP buffer would
+          -- silently shadow the review commands wherever the two overlap.
+          map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
+          map("<leader>ra", vim.lsp.buf.code_action, "[R]efactor [A]ction")
           -- Better diagnostic navigation
           vim.keymap.set("n", "[d", function()
             vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })

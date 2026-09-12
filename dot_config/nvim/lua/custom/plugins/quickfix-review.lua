@@ -4,6 +4,12 @@ return {
   -- Comment list goes through fzf-lua instead of native :copen; the review
   -- comments still live in the real quickfix list underneath, so this just
   -- needs the list populated, not the plugin itself loaded.
+  -- setup() is what installs the review maps, and setup() only runs once the
+  -- plugin is loaded, so before the first load the keys do nothing and
+  -- which-key has no descriptions to show under <leader>c. These entries give
+  -- which-key the descriptions up front; the ones with no right-hand side let
+  -- the first press load the plugin and then replay into the plugin's own map,
+  -- so the behaviour stays owned upstream.
   keys = {
     {
       "<leader>co",
@@ -12,14 +18,29 @@ return {
       end,
       desc = "Review: comment list (fzf)",
     },
+    { "<leader>ca", mode = { "n", "x" }, desc = "Review: add comment (current type)" },
+    { "<leader>ci", mode = { "n", "x" }, desc = "Review: add issue" },
+    { "<leader>cs", mode = { "n", "x" }, desc = "Review: add suggestion" },
+    { "<leader>cn", mode = { "n", "x" }, desc = "Review: add note" },
+    { "<leader>cp", mode = { "n", "x" }, desc = "Review: add praise" },
+    { "<leader>cq", mode = { "n", "x" }, desc = "Review: add question" },
+    { "<leader>ck", mode = { "n", "x" }, desc = "Review: add insight" },
+    { "<leader>cd", mode = { "n", "x" }, desc = "Review: delete comment" },
+    { "<leader>cv", desc = "Review: view comment" },
+    { "<leader>cg", desc = "Review: go to real file" },
+    { "<leader>ce", desc = "Review: export to clipboard" },
+    { "<leader>cS", desc = "Review: summary" },
+    { "<leader>cc", desc = "Review: clear all" },
+    { "<leader>cw", desc = "Review: save session" },
+    { "<leader>cr", desc = "Review: load session" },
+    { "]r", desc = "Next review comment" },
+    { "[r", desc = "Prev review comment" },
   },
   cmd = {
     "ReviewAddIssue",
     "ReviewAddSuggestion",
     "ReviewAddNote",
     "ReviewAddPraise",
-    "ReviewDelete",
-    "ReviewView",
     "ReviewExport",
     "ReviewClear",
     "ReviewSave",
@@ -75,8 +96,7 @@ return {
     qr.setup({
       export_file = (vim.fs.root(0, { ".jj", ".git" }) or vim.fn.getcwd()) .. "/.review-comments.md",
       -- Default cycle_previous ('-') overwrites oil.nvim's global "open
-      -- parent directory" map once this plugin's setup() runs; <leader>ca/cr
-      -- freed up on the LSP side (init.lua keeps <space>ca/<space>rn there).
+      -- parent directory" map once this plugin's setup() runs.
       keymaps = {
         cycle_previous = "_",
         open_list = false, -- superseded by the fzf-lua `keys` binding above
