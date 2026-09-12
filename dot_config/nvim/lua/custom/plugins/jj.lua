@@ -96,6 +96,58 @@ return {
 			return files, nil
 		end
 
+		-- Complete the first argument as a revset and the rest as paths. The
+		-- revset candidates come from the repo itself -- its bookmarks and the
+		-- revset aliases defined in jj's config -- so the names offered are the
+		-- ones this repo actually understands rather than a hardcoded list.
+		--
+		-- Neovim exposes this through `getcompletion()`, which is what blink's
+		-- cmdline source reads, so the popup fills in with no further wiring.
+		---@param arglead string
+		---@param cmdline string
+		---@return string[]
+		local function complete(arglead, cmdline)
+			-- `:JjReview` itself is the first word; a trailing space means the
+			-- next argument has been started but is still empty.
+			local words = vim.split(vim.trim(cmdline), "%s+")
+			local position = #words - 1 + (cmdline:match("%s$") and 1 or 0)
+
+			if position > 1 then
+				return vim.fn.getcompletion(arglead, "file")
+			end
+
+			local root = vim.fs.root(0, { ".jj" })
+			if not root then
+				return {}
+			end
+
+			-- A revset alias is listed once per arity, and a bookmark can repeat
+			-- across remotes, so collect through a set before filtering.
+			local seen, candidates = {}, {}
+			local function offer(candidate)
+				if candidate ~= "" and not seen[candidate] then
+					seen[candidate] = true
+					candidates[#candidates + 1] = candidate
+				end
+			end
+
+			for _, builtin in ipairs({ "@", "chain(@)", "mine()", "pending()", "main::@" }) do
+				offer(builtin)
+			end
+			local bookmarks = jj(root, { "bookmark", "list", "-T", 'name ++ "\n"' })
+			for name in (bookmarks or ""):gmatch("[^\n]+") do
+				offer(name)
+			end
+			local aliases = jj(root, { "config", "list", "--include-defaults", "revset-aliases" })
+			for name in (aliases or ""):gmatch('revset%-aliases%.[\"\']?([%w_]+)') do
+				offer(name .. "()")
+			end
+
+			return vim.tbl_filter(function(candidate)
+				return candidate:sub(1, #arglead) == arglead
+			end, candidates)
+		end
+
 		-- Review a jj chain: pick among the files it changed, and diff each one
 		-- against the commit the chain starts from.
 		--
@@ -170,7 +222,7 @@ return {
 			})
 		end, {
 			nargs = "*",
-			complete = "file",
+			complete = complete,
 			desc = "Review a jj chain against its base, file by file",
 		})
 	end,
