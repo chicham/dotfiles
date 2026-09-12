@@ -2,6 +2,12 @@
 -- PKM (Personal Knowledge Management) and Journaling System
 -- See full documentation at: https://github.com/chipsenkbeil/org-roam.nvim
 
+-- The commands the `keys` table below binds. They are filled in by config(),
+-- which is the only place that can build them, but the `keys` table is
+-- evaluated before config() runs and so cannot see its locals -- this table is
+-- the handle both halves share.
+local api = {}
+
 return {
   "chipsenkbeil/org-roam.nvim",
   tag = "0.2.0",
@@ -17,49 +23,49 @@ return {
     {
       "<leader>npr",
       function()
-        _G.org_promote_reading_note()
+        api.promote_reading_note()
       end,
       desc = "Promote [R]eading from inbox",
     },
     {
       "<leader>npi",
       function()
-        _G.org_promote_inbox_note()
+        api.promote_inbox_note()
       end,
       desc = "Promote [I]dea/note from inbox",
     },
     {
       "<leader>npe",
       function()
-        _G.org_promote_experiment()
+        api.promote_experiment()
       end,
       desc = "Promote [E]xperiment from inbox",
     },
     {
       "<leader>nph",
       function()
-        _G.org_promote_headline_to_note()
+        api.promote_headline_to_note()
       end,
       desc = "Promote [H]eadline to own note",
     },
     {
       "<leader>nrc",
       function()
-        _G.org_cleanup_done_tasks()
+        api.cleanup_done_tasks()
       end,
       desc = "[R]efile [C]ompleted tasks from inbox",
     },
     {
       "<leader>nrT",
       function()
-        _G.org_refile_manual_to_daily()
+        api.refile_manual_to_daily()
       end,
       desc = "Manual refile to [T]oday",
     },
     {
       "<leader>nn",
       function()
-        _G.org_roam_ensure_daily_file()
+        api.ensure_daily_file()
         require("orgmode").instance().capture:open_template_by_shortcut("o")
       end,
       desc = "Quick add [N]ote to today",
@@ -67,21 +73,21 @@ return {
     {
       "<leader>nss",
       function()
-        _G.org_person_overview()
+        api.person_overview()
       end,
       desc = "[S]upervisee overview",
     },
     {
       "<leader>nsa",
       function()
-        _G.org_assign_person()
+        api.assign_person()
       end,
       desc = "[S]upervisee [A]ssign to headline",
     },
     {
       "<leader>nsl",
       function()
-        _G.org_insert_person_link()
+        api.insert_person_link()
       end,
       desc = "[S]upervisee [L]ink insert",
     },
@@ -104,12 +110,16 @@ return {
     {
       "<leader>nW",
       function()
-        _G.org_weekly_review_view()
+        api.weekly_review_view()
       end,
       desc = "[W]eekly Review View",
     },
   },
   config = function()
+    -- Scratch values a promotion collects for the capture template it is
+    -- about to open, aliased from the module the templates read them from.
+    local org_capture = require("custom.org").capture
+
     local orgfiles_base = vim.fn.expand("~/.orgfiles")
     require("org-roam").setup({
       -- Main directory for org-roam files
@@ -221,7 +231,7 @@ return {
           description = "Reading/Literature",
           template = [=[
 :PROPERTIES:
-:ID: %(return _G.org_roam_capture_id or require('orgmode.org.id').new())
+:ID: %(return require('custom.org').capture.roam_id or require('orgmode.org.id').new())
 :CREATED: %U
 :DATE_READ: %u
 :AUTHOR: %(return vim.fn.input("Author(s): "))
@@ -230,7 +240,7 @@ return {
 :DOI: %(return vim.fn.input("DOI (optional): "))
 :KEYWORDS: %(return vim.fn.input("Keywords (comma separated): "))
 :END:
-#+TITLE: [[%(return (_G.org_roam_capture_url and _G.org_roam_capture_url ~= "" and _G.org_roam_capture_url) or vim.fn.input("URL: "))][%(return (_G.org_roam_capture_title and _G.org_roam_capture_title ~= "" and _G.org_roam_capture_title) or vim.fn.input("Title: "))]]
+#+TITLE: [[%(return (require('custom.org').capture.roam_url and require('custom.org').capture.roam_url ~= "" and require('custom.org').capture.roam_url) or vim.fn.input("URL: "))][%(return (require('custom.org').capture.roam_title and require('custom.org').capture.roam_title ~= "" and require('custom.org').capture.roam_title) or vim.fn.input("Title: "))]]
 #+FILETAGS: :reading:research:
 
 * Hypothesis/Claim
@@ -274,14 +284,14 @@ return {
         e = {
           description = "Experiment",
           template = [[
-* %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return _G.prompt_experiment_title()) :experiment:
+* %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return require('custom.org').prompt_experiment_title()) :experiment:
 :PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
 :END:
 
-%(return _G.get_experiment_template_sections())%?]],
-          target = "../experiments/%<%Y-%m-%d>-%(return _G.get_experiment_slug()).org",
+%(return require('custom.org').get_experiment_template_sections())%?]],
+          target = "../experiments/%<%Y-%m-%d>-%(return require('custom.org').get_experiment_slug()).org",
         },
       },
 
@@ -371,12 +381,12 @@ return {
           return
         end
 
-        _G.org_roam_capture_id = org_id_module.new()
-        _G.org_roam_capture_title = title
-        _G.org_roam_capture_url = get_first_link(source_headline)
+        org_capture.roam_id = org_id_module.new()
+        org_capture.roam_title = title
+        org_capture.roam_url = get_first_link(source_headline)
 
-        if not _G.org_roam_capture_url or _G.org_roam_capture_url == "" then
-          _G.org_roam_capture_url = vim.fn.input("URL: ")
+        if not org_capture.roam_url or org_capture.roam_url == "" then
+          org_capture.roam_url = vim.fn.input("URL: ")
         end
       end
 
@@ -425,9 +435,9 @@ return {
 
             -- Cleanup globals for reading promotion
             if config.require_url then
-              _G.org_roam_capture_id = nil
-              _G.org_roam_capture_title = nil
-              _G.org_roam_capture_url = nil
+              org_capture.roam_id = nil
+              org_capture.roam_title = nil
+              org_capture.roam_url = nil
             end
           else
             vim.notify("Promotion cancelled or failed", vim.log.levels.WARN)
@@ -439,27 +449,27 @@ return {
     end
 
     -- Promote reading list entry
-    _G.org_promote_reading_note = function()
+    function api.promote_reading_note()
       promote_headline({ tags = { "reading" }, template = "p", require_url = true, check_existing_by_title = true })
     end
 
     -- Promote note or idea
-    _G.org_promote_inbox_note = function()
+    function api.promote_inbox_note()
       promote_headline({ tags = { "note", "idea" }, template = "n" })
     end
 
     -- Promote any headline to its own note (no tag restriction)
-    _G.org_promote_headline_to_note = function()
+    function api.promote_headline_to_note()
       promote_headline({ tags = {}, template = "n" })
     end
 
     -- Promote any headline to its own experiment file
-    _G.org_promote_experiment = function()
+    function api.promote_experiment()
       promote_headline({ tags = {}, template = "e" })
     end
 
     -- Ensure daily file exists (creates from template if missing)
-    _G.org_roam_ensure_daily_file = function(time)
+    function api.ensure_daily_file(time)
       local roam = require("org-roam")
       local base_dir = vim.fn.expand(roam.config.directory)
       local daily_dir = roam.config.extensions.dailies.directory or "daily"
@@ -622,7 +632,7 @@ return {
         local time = os.time({ year = info.closed_year, month = info.closed_month, day = info.closed_day, hour = 12 })
 
         -- Ensure daily file exists
-        local daily_path = _G.org_roam_ensure_daily_file(time)
+        local daily_path = api.ensure_daily_file(time)
 
         if not daily_path then
           table.insert(errors, info.title .. " (no daily)")
@@ -725,7 +735,7 @@ return {
       end
 
       -- Ensure daily file exists
-      local path = _G.org_roam_ensure_daily_file(time)
+      local path = api.ensure_daily_file(time)
       if not path then
         vim.notify("Unable to create daily note.", vim.log.levels.WARN)
         return
@@ -738,12 +748,8 @@ return {
       end
 
       local source_bufnr = source_headline.file and source_headline.file:bufnr()
-      if type(_G.org_refile_with_fzf) ~= "function" then
-        vim.notify("Fzf refile helper not available.", vim.log.levels.WARN)
-        return
-      end
 
-      _G.org_refile_with_fzf({
+      require("custom.org").refile_with_fzf({
         source_headline = source_headline,
         source_bufnr = source_bufnr,
         destination_path = path,
@@ -755,19 +761,19 @@ return {
     end
 
     -- Cleanup: auto-refile completed tasks from inbox to their respective daily notes
-    _G.org_cleanup_done_tasks = function(source_path, tag_filter)
+    function api.cleanup_done_tasks(source_path, tag_filter)
       -- Default to inbox if no source specified
       local path = source_path or vim.fn.expand("~/.orgfiles/gtd/inbox.org")
       cleanup_done_tasks(path, tag_filter)
     end
 
     -- Manual refile current headline to today's daily
-    _G.org_refile_manual_to_daily = function()
+    function api.refile_manual_to_daily()
       refile_headline_to_daily(os.time())
     end
 
     -- Weekly review view: show all tasks and notes from the past 7 days
-    _G.org_weekly_review_view = function()
+    function api.weekly_review_view()
       local roam = require("org-roam")
       local base_dir = vim.fn.expand(roam.config.directory)
       local daily_dir = roam.config.extensions.dailies.directory or "daily"
@@ -869,96 +875,16 @@ return {
     -- People tracking helpers
     -- =========================================================================
 
-    -- Scan roam/people/**/*.org for person files (tagged :person:)
-    local function scan_people_files()
-      local people_dir = vim.fn.expand(orgfiles_base .. "/roam/people")
-      -- Match both roam/people/*.org and roam/people/*/*.org
-      local files = vim.fn.glob(people_dir .. "/**/*.org", false, true)
-      local people = {}
-
-      for _, path in ipairs(files) do
-        local lines = vim.fn.readfile(path, "", 20)
-        local name, id, is_person
-        for _, line in ipairs(lines) do
-          if not name then
-            name = line:match("^#+TITLE:%s*(.+)$")
-          end
-          if not id then
-            id = line:match("^:ID:%s*(.+)$")
-          end
-          if not is_person and line:match("^#+FILETAGS:.*:person:") then
-            is_person = true
-          end
-          if name and id and is_person then
-            break
-          end
-        end
-        if name and is_person then
-          table.insert(people, { name = vim.trim(name), id = id or "", path = path })
-        end
-      end
-
-      table.sort(people, function(a, b)
-        return a.name < b.name
-      end)
-      return people
-    end
-
-    -- fzf picker: select a person, call callback({name, id, path})
-    _G.org_select_person = function(opts, callback)
-      opts = opts or {}
-      local people = scan_people_files()
-
-      if #people == 0 then
-        vim.notify("No people found in roam/people/. Create person files first.", vim.log.levels.WARN)
-        return
-      end
-
-      local displays = {}
-      local display_map = {}
-      for _, p in ipairs(people) do
-        table.insert(displays, p.name)
-        display_map[p.name] = p
-      end
-
-      local function on_select(choice)
-        if not choice then
-          return
-        end
-        local person = display_map[choice]
-        if person and callback then
-          callback(person)
-        end
-      end
-
-      local ok, fzf = pcall(require, "fzf-lua")
-      if ok then
-        fzf.fzf_exec(displays, {
-          prompt = opts.prompt or "Person > ",
-          actions = {
-            ["default"] = function(selected)
-              if selected and selected[1] then
-                on_select(selected[1])
-              end
-            end,
-          },
-          winopts = { height = 0.4, width = 0.5 },
-        })
-      else
-        vim.ui.select(displays, { prompt = opts.prompt or "Person > " }, on_select)
-      end
-    end
-
     -- Open a person's file (dashboard). Use <Leader>nl for backlinks.
-    _G.org_person_overview = function()
-      _G.org_select_person({ prompt = "Open person > " }, function(person)
+    function api.person_overview()
+      require("custom.org").select_person({ prompt = "Open person > " }, function(person)
         vim.cmd("edit " .. vim.fn.fnameescape(person.path))
       end)
     end
 
     -- Assign :PERSON: property to the headline under cursor
-    _G.org_assign_person = function()
-      _G.org_select_person({ prompt = "Assign person > " }, function(person)
+    function api.assign_person()
+      require("custom.org").select_person({ prompt = "Assign person > " }, function(person)
         local org = require("orgmode")
         local headline = org.instance().files:get_current_file():get_closest_headline()
         if not headline then
@@ -971,8 +897,8 @@ return {
     end
 
     -- Insert [[id:UUID][Name]] link to a person at cursor position
-    _G.org_insert_person_link = function()
-      _G.org_select_person({ prompt = "Link person > " }, function(person)
+    function api.insert_person_link()
+      require("custom.org").select_person({ prompt = "Link person > " }, function(person)
         if not person.id or person.id == "" then
           vim.notify("Person has no :ID: property: " .. person.name, vim.log.levels.WARN)
           return
@@ -984,27 +910,6 @@ return {
         vim.api.nvim_set_current_line(new_line)
         vim.api.nvim_win_set_cursor(0, { row, col + #link })
       end)
-    end
-
-    -- For capture templates: synchronous person prompt with completion
-    _G._person_complete = function(arg_lead, _, _)
-      local people = scan_people_files()
-      local matches = {}
-      for _, p in ipairs(people) do
-        if p.name:lower():find(arg_lead:lower(), 1, true) then
-          table.insert(matches, p.name)
-        end
-      end
-      return matches
-    end
-
-    _G.org_prompt_person_for_capture = function()
-      local input = vim.fn.input({
-        prompt = "Person: ",
-        completion = "customlist,v:lua._person_complete",
-      })
-      _G._capture_person_name = input
-      return input
     end
 
     -- Keymaps are defined in the lazy.nvim keys table.

@@ -10,93 +10,6 @@ return {
   },
   config = function()
     local utils = require("orgmode.utils")
-    local fs = require("orgmode.utils.fs")
-
-    -- Experiment-run capture: prompt once for the project whose tracking.org
-    -- receives the run, and reuse it for the target path.
-    _G.prompt_tracking_project = function()
-      if not _G._tracking_project then
-        local slug = vim.fn.input("Project slug (gtd/projects/<slug>/tracking.org): ")
-        _G._tracking_project = slug ~= "" and slug or "inbox"
-        vim.schedule(function()
-          _G._tracking_project = nil
-        end)
-      end
-      return _G._tracking_project
-    end
-
-    -- Experiment title/slug helpers for filename
-    _G.prompt_experiment_title = function()
-      if not _G._experiment_title then
-        local title = vim.fn.input("Experiment Title: ")
-        _G._experiment_title = title ~= "" and title or "untitled"
-        _G._experiment_slug = _G._experiment_title:gsub("%s+", "-"):gsub("[^%w%-]", ""):lower()
-      end
-      return _G._experiment_title
-    end
-
-    _G.get_experiment_slug = function()
-      if not _G._experiment_slug then
-        _G.prompt_experiment_title()
-      end
-      return _G._experiment_slug
-    end
-
-    -- Define experiment template generator (single source of truth)
-    -- This function is called by both capture template and promotion function
-    _G.get_experiment_template_sections = function()
-      -- Clear experiment title globals after template use
-      vim.schedule(function()
-        _G._experiment_title = nil
-        _G._experiment_slug = nil
-      end)
-      return [[** Question/Purpose
-
-
-** Hypothesis
-# What do you think the results will be based on your research?
-
-** Background Research
-# What have you learned from books, papers, articles about this topic?
-# Keep track of sources for your bibliography
-
-** Materials
-# List everything needed: equipment, tools, quantities
-# Be very specific with details
-
-** Variables
-# - Controlled variables (what stays the same):
-# - Manipulated variable (what you change):
-# - Responding variable (what you measure):
-
-** Procedure
-# Step-by-step instructions to repeat your experiment
-# If you make changes, document them here with reasons
-
-** Log
-*** ]] .. os.date("%Y-%m-%d %a") .. [[
-
-- Notes:
-
-** Data/Observations
-# Record all measurements and raw data
-# Use tables, charts, pictures
-
-** Results
-# Analyze your data
-# What patterns do you see?
-# Any problems during testing?
-
-** Conclusions
-# Was your hypothesis correct? Why or why not?
-# What did you learn?
-
-** Next Steps/Applications
-# Recommendations for improving the experiment
-# Ideas for further study
-# Real-world applications
-]]
-    end
 
     local orgfiles_base = vim.fn.expand("~/.orgfiles")
     local org_dirs = {
@@ -167,87 +80,6 @@ return {
 
     local function ensure_inbox_headlines()
       ensure_headlines(org_files.gtd_inbox, { "Tasks", "Notes", "Reading List", "Misc" })
-    end
-
-    _G.org_capture_git_root = function()
-      if utils.current_file_path() == "" then
-        return ""
-      end
-      local dir = fs.get_current_file_dir()
-      local result = vim.fn.systemlist({ "git", "-C", dir, "rev-parse", "--show-toplevel" })
-      if vim.v.shell_error ~= 0 or not result[1] or result[1] == "" then
-        return ""
-      end
-      return vim.trim(result[1])
-    end
-
-    _G.org_capture_display_path = function()
-      local path = utils.current_file_path()
-      if path == "" then
-        return "capture"
-      end
-      path = vim.fn.fnamemodify(path, ":p")
-      local root = _G.org_capture_git_root()
-      if root ~= "" then
-        root = vim.fn.fnamemodify(root, ":p")
-        if vim.startswith(path, root .. "/") then
-          return path:sub(#root + 2)
-        end
-      end
-      local rel = vim.fn.fnamemodify(path, ":.")
-      if rel ~= "" and rel ~= path then
-        return rel
-      end
-      return vim.fn.fnamemodify(path, ":t")
-    end
-
-    _G.org_capture_default_title = function()
-      local path = utils.current_file_path()
-      if path == "" then
-        return "capture"
-      end
-      local line_nr = vim.api.nvim_win_get_cursor(0)[1]
-      return _G.org_capture_display_path() .. ":" .. line_nr
-    end
-
-    _G.org_capture_git_commit = function()
-      if utils.current_file_path() == "" then
-        return "N/A"
-      end
-      local dir = fs.get_current_file_dir()
-      local result = vim.fn.systemlist({ "git", "-C", dir, "rev-parse", "HEAD" })
-      if vim.v.shell_error ~= 0 or not result[1] or result[1] == "" then
-        return "N/A"
-      end
-      return vim.trim(result[1])
-    end
-
-    _G.org_capture_file_path = function()
-      local path = utils.current_file_path()
-      if path == "" then
-        return "N/A"
-      end
-      return vim.fn.fnamemodify(path, ":p")
-    end
-
-    _G.org_capture_abs_link = function()
-      local path = utils.current_file_path()
-      if path == "" then
-        return ""
-      end
-      path = vim.fn.fnamemodify(path, ":p")
-      local line_nr = vim.api.nvim_win_get_cursor(0)[1]
-      local display = _G.org_capture_default_title()
-      return string.format("[[file:%s::%d][%s]]", path, line_nr, display)
-    end
-
-    _G.org_capture_line_text = function()
-      local line = vim.api.nvim_get_current_line()
-      local max_len = 200
-      if #line > max_len then
-        line = line:sub(1, max_len - 3) .. "..."
-      end
-      return line
     end
 
     local function org_experiment_log_today()
@@ -462,14 +294,14 @@ return {
           template = [[:PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
-:PERSON: %(return _G.org_prompt_person_for_capture())
+:PERSON: %(return require('custom.org').prompt_person_for_capture())
 :END:
 #+TITLE: %^{Meeting Title}
 #+FILETAGS: :meeting:
 #+DATE: %<%Y-%m-%d %a>
 
 * Attendees
-- %(return _G._capture_person_name or "")
+- %(return require('custom.org').capture.person_name or "")
 - %?
 
 * Agenda
@@ -486,14 +318,14 @@ return {
         e = {
           description = "Experiment",
           template = [[
-* %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return _G.prompt_experiment_title()) :experiment:
+* %^{Status|TODO|WORKING|WAITING|DONE|CANCELLED} %(return require('custom.org').prompt_experiment_title()) :experiment:
 :PROPERTIES:
 :ID: %(return require('orgmode.org.id').new())
 :CREATED: %U
 :END:
 
-%(return _G.get_experiment_template_sections())%?]],
-          target = org_dirs.experiments .. "/%<%Y-%m-%d>-%(return _G.get_experiment_slug()).org",
+%(return require('custom.org').get_experiment_template_sections())%?]],
+          target = org_dirs.experiments .. "/%<%Y-%m-%d>-%(return require('custom.org').get_experiment_slug()).org",
         },
 
         -- Reading (Quick Capture to Inbox: Blogs, Papers, etc.)
@@ -506,7 +338,7 @@ return {
 
         l = {
           description = "Code TODO",
-          template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return _G.org_capture_git_commit())\n:END:\n%(return _G.org_capture_abs_link())",
+          template = "* TODO %^{Message}\n:PROPERTIES:\n:ID: %(return require('orgmode.org.id').new())\n:CREATED: %U\n:COMMIT: %(return require('custom.org').capture_git_commit())\n:END:\n%(return require('custom.org').capture_abs_link())",
           target = org_files.gtd_inbox,
           headline = "Tasks",
         },
@@ -527,7 +359,7 @@ SCHEDULED: <%<%Y-%m-%d %a>>
 :STEPS: %^{Step budget}
 :END:
 %?]],
-          target = org_dirs.gtd_projects .. "/%(return _G.prompt_tracking_project())/tracking.org",
+          target = org_dirs.gtd_projects .. "/%(return require('custom.org').prompt_tracking_project())/tracking.org",
           headline = "Runs",
         },
 
@@ -724,135 +556,8 @@ SCHEDULED: <%<%Y-%m-%d %a>>
       end
     end, { desc = "Create new [P]roject file" })
 
-    -- Refile helper (fzf-lua first, fallback to vim.ui.select)
-    _G.org_refile_with_fzf = function(opts)
-      opts = opts or {}
-      local org = require("orgmode").instance()
-      local files = org.files
-      local capture = org.capture
-
-      local source_file = opts.source_file or files:get_current_file()
-      local source_headline = opts.source_headline or (source_file and source_file:get_closest_headline())
-      if not source_headline then
-        vim.notify("No headline found under cursor.", vim.log.levels.WARN)
-        return
-      end
-
-      local source_bufnr = opts.source_bufnr or (source_file and source_file:bufnr())
-
-      if opts.ensure_path then
-        files:get(opts.ensure_path)
-      end
-
-      local valid_destinations = capture:_get_autocompletion_files()
-
-      -- Build items list with direct mapping
-      local items = {}
-      local item_map = {}
-
-      -- Find the only_key if destination_path is specified
-      local only_key = opts.only_key
-      if opts.destination_path then
-        local target_path = vim.fn.fnamemodify(opts.destination_path, ":p")
-        for key, file in pairs(valid_destinations) do
-          local file_path = vim.fn.fnamemodify(file.filename, ":p")
-          if file_path == target_path then
-            only_key = key
-            break
-          end
-        end
-      end
-
-      local keys = vim.tbl_keys(valid_destinations)
-      table.sort(keys)
-
-      for _, key in ipairs(keys) do
-        if not only_key or only_key == key then
-          if opts.include_file ~= false then
-            table.insert(items, key)
-            item_map[key] = { file = valid_destinations[key] }
-          end
-
-          local file = valid_destinations[key]
-          for _, headline in ipairs(file:get_opened_unfinished_headlines()) do
-            local title = headline:get_title()
-            if title and title ~= "" then
-              local display = key .. title
-              table.insert(items, display)
-              item_map[display] = { file = file, headline = headline }
-            end
-          end
-        end
-      end
-
-      -- Prioritize default headline if specified
-      if opts.default_headline and only_key then
-        local target = only_key .. opts.default_headline
-        for idx, value in ipairs(items) do
-          if value == target then
-            table.remove(items, idx)
-            table.insert(items, 1, value)
-            break
-          end
-        end
-      end
-
-      if #items == 0 then
-        vim.notify("No refile targets found.", vim.log.levels.WARN)
-        return
-      end
-
-      local function select_item(choice)
-        if not choice then
-          return
-        end
-
-        local dest = item_map[choice]
-        if not dest then
-          vim.notify("Invalid destination.", vim.log.levels.ERROR)
-          return
-        end
-
-        local prev_bufnr = vim.api.nvim_get_current_buf()
-        if source_bufnr and vim.api.nvim_buf_is_valid(source_bufnr) then
-          vim.api.nvim_set_current_buf(source_bufnr)
-        end
-
-        capture:_refile_from_org_file({
-          source_headline = source_headline,
-          destination_file = dest.file,
-          destination_headline = dest.headline,
-          message = opts.message,
-        })
-
-        if prev_bufnr and vim.api.nvim_buf_is_valid(prev_bufnr) then
-          vim.api.nvim_set_current_buf(prev_bufnr)
-        end
-      end
-
-      local ok, fzf = pcall(require, "fzf-lua")
-      if ok then
-        fzf.fzf_exec(items, {
-          prompt = opts.prompt or "Refile to > ",
-          actions = {
-            ["default"] = function(selected)
-              if selected and selected[1] then
-                select_item(selected[1])
-              end
-            end,
-          },
-          winopts = {
-            height = 0.6,
-            width = 0.8,
-          },
-        })
-      else
-        vim.ui.select(items, { prompt = opts.prompt or "Refile to > " }, select_item)
-      end
-    end
-
     -- Insert stored links via fzf-lua (fallback to vim.ui.select)
-    _G.org_insert_link_fzf = function()
+    local function org_insert_link_fzf()
       local org = require("orgmode")
       local links = org.links
       local stored = links and links.stored_links or {}
@@ -950,13 +655,13 @@ SCHEDULED: <%<%Y-%m-%d %a>>
       callback = function()
         vim.schedule(function()
           vim.keymap.set("n", "R", function()
-            _G.org_refile_with_fzf()
+            require("custom.org").refile_with_fzf()
           end, { buffer = true, desc = "Refile with Fzf" })
           vim.keymap.set("n", "t", function()
             org_todo_next_state_with_working()
           end, { buffer = true, desc = "TODO next state (clock WORKING)" })
           vim.keymap.set({ "n", "v" }, "<Leader>oli", function()
-            _G.org_insert_link_fzf()
+            org_insert_link_fzf()
           end, { buffer = true, desc = "Insert link (fzf)" })
           vim.keymap.set("n", "<Leader>oep", function()
             local src = vim.api.nvim_buf_get_name(0)
