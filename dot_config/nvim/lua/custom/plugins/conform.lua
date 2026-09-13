@@ -1,16 +1,20 @@
--- Formatting on write, and the `<leader>cf` manual format.
+-- Formatting on write, and the `<leader>bf` manual format.
+--
+-- `<leader>b` rather than `<leader>c`: `<leader>c` belongs to
+-- quickfix-review's comment maps, which is where the fingers go during a
+-- review, and a format is a buffer-wide action rather than a comment.
 return {
   "stevearc/conform.nvim",
   event = { "BufWritePre" },
   cmd = { "ConformInfo" },
   keys = {
     {
-      "<leader>cf",
+      "<leader>bf",
       function()
         require("conform").format({ async = true, lsp_format = "fallback" })
       end,
       mode = "",
-      desc = "[C]ode [F]ormat",
+      desc = "[B]uffer [F]ormat",
     },
   },
   opts = {

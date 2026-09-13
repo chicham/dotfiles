@@ -35,7 +35,7 @@ return {
 
         -- LSP keymaps
         -- Note: the goto pickers live on <leader>g*, handled by fzf-lua
-        -- Note: <leader>cf (format) is handled by conform.nvim, see its keys spec
+        -- Note: <leader>bf (format) is handled by conform.nvim, see its keys spec
         map("K", vim.lsp.buf.hover, "Hover Documentation")
         map("gK", vim.lsp.buf.signature_help, "Signature Documentation")
         map("<space>D", vim.lsp.buf.type_definition, "Type Definition")
@@ -77,9 +77,12 @@ return {
 
         -- Inlay hints toggle keymap
         if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-          map("<leader>ch", function()
+          -- Under <leader>r with rename and code-action: all three change how
+          -- the code reads rather than what it says, and <leader>c is
+          -- quickfix-review's.
+          map("<leader>ri", function()
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-          end, "Code Toggle Inlay [H]ints")
+          end, "Toggle [I]nlay hints")
         end
       end,
     })
