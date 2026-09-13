@@ -80,6 +80,11 @@ vim.opt.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 vim.opt.confirm = true
 
+-- Default border for every floating window that does not set its own, so
+-- hover, signature help, diagnostics and plugin floats match without each
+-- being configured separately.
+vim.opt.winborder = "rounded"
+
 -- completion menu behaviour
 vim.opt.completeopt = "menu,menuone,noselect,noinsert"
 
