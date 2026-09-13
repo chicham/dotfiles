@@ -58,8 +58,15 @@ return {
             vim.diagnostic.jump({ count = count, severity = severity, float = true })
           end
         end
-        map("[d", jump(-1, vim.diagnostic.severity.ERROR), "Previous error")
-        map("]d", jump(1, vim.diagnostic.severity.ERROR), "Next error")
+        -- `]d` / `[d` are orgmode's timestamp increment/decrement in an org
+        -- buffer, and copilot attaches there like it does everywhere else.
+        -- LspAttach runs after FileType, so an unconditional map here takes the
+        -- key back from orgmode; the severity filter is worth less in an org
+        -- file than the timestamps are.
+        if vim.bo[event.buf].filetype ~= "org" then
+          map("[d", jump(-1, vim.diagnostic.severity.ERROR), "Previous error")
+          map("]d", jump(1, vim.diagnostic.severity.ERROR), "Next error")
+        end
         map("[w", jump(-1, vim.diagnostic.severity.WARN), "Previous warning")
         map("]w", jump(1, vim.diagnostic.severity.WARN), "Next warning")
 
