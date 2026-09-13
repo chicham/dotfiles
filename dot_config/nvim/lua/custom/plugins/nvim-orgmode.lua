@@ -3,7 +3,27 @@
 
 return {
   "nvim-orgmode/orgmode",
-  event = "VeryLazy",
+  -- Nothing outside an org file needs orgmode loaded, and setup() is not
+  -- cheap: it creates seven directories and builds the agenda file list. The
+  -- triggers below are the complete set of ways in -- an org buffer, the `:Org`
+  -- command, or one of the global maps that setup() would otherwise have to be
+  -- running to install. The `keys` entries carry no right-hand side on purpose:
+  -- the first press loads the plugin and replays into the mapping setup() just
+  -- created, so the binding stays owned by the `mappings.global` table below.
+  --
+  -- The blink source is part of this: `orgmode.org.autocompletion.blink`
+  -- requires orgmode at module scope, so listing it in blink's `sources.default`
+  -- would load orgmode from the first completion in any buffer. It is declared
+  -- per-filetype instead (see blink-cmp.lua).
+  ft = "org",
+  cmd = "Org",
+  keys = {
+    { "<Leader>oa", desc = "Org agenda" },
+    { "<Leader>oc", desc = "Org capture" },
+    { "<Leader>oj", desc = "Org jump to bookmark" },
+    { "<Leader>ox", desc = "Org goto clocked item" },
+    { "<Leader>op", desc = "New org project file" },
+  },
   dependencies = {
     "ibhagwan/fzf-lua", -- Ensure fzf-lua loads for UI selection
   },

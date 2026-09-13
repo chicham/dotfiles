@@ -52,7 +52,13 @@ return {
     },
 
     sources = {
-      default = { "copilot", "lsp", "path", "snippets", "lazydev", "buffer", "orgmode" },
+      default = { "copilot", "lsp", "path", "snippets", "lazydev", "buffer" },
+      -- orgmode only, and only in org files: its blink source `require`s
+      -- orgmode at module scope, so leaving it in `default` loads the whole
+      -- plugin from the first completion in any buffer and defeats the `ft`
+      -- trigger on its spec. `inherit_defaults` is required -- a per-filetype
+      -- list replaces `default` rather than extending it.
+      per_filetype = { org = { inherit_defaults = true, "orgmode" } },
       providers = {
         lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
         copilot = {
