@@ -5,7 +5,6 @@ return {
   "nvim-orgmode/orgmode",
   event = "VeryLazy",
   dependencies = {
-    "nvim-treesitter/nvim-treesitter",
     "ibhagwan/fzf-lua", -- Ensure fzf-lua loads for UI selection
   },
   config = function()
