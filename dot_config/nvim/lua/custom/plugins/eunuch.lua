@@ -5,17 +5,26 @@
 -- a path that no longer exists.
 return {
   "tpope/vim-eunuch",
+  -- Every command the plugin defines, because `cmd` is also the load trigger:
+  -- one left out is one that errors as unknown until something else happens to
+  -- pull the plugin in.
   cmd = {
-    "Remove",
-    "Delete",
-    "Move",
-    "Chmod",
-    "Mkdir",
     "Cfind",
+    "Chmod",
     "Clocate",
+    "Copy",
+    "Delete",
+    "Duplicate",
     "Lfind",
-    "Wall",
-    "SudoWrite",
+    "Llocate",
+    "Mkdir",
+    "Move",
+    "Remove",
+    "Rename",
     "SudoEdit",
+    "SudoWrite",
+    "Unlink",
+    "W",
+    "Wall",
   },
 }
