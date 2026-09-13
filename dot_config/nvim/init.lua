@@ -771,7 +771,11 @@ require("lazy").setup({
   -- Autocompletion
   {
     "saghen/blink.cmp",
-    event = "VimEnter",
+    -- Completion cannot be needed before there is an insert or a command line.
+    -- Opening a file still loads it earlier than this, via nvim-lspconfig's
+    -- dependency on it for get_lsp_capabilities() -- which is what keeps the
+    -- capabilities correct -- so this only matters to sessions that never edit.
+    event = { "InsertEnter", "CmdlineEnter" },
     version = "1.*",
     dependencies = {
       -- Snippet Engine
