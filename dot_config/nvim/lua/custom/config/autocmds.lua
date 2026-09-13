@@ -22,9 +22,18 @@ local skip_cursor_restore = {
   gitrebase = true,
   jjdescription = true,
 }
-vim.api.nvim_create_autocmd("BufReadPost", {
+--
+-- On `BufWinEnter` rather than `BufReadPost`: `filetype` is still empty at
+-- BufReadPost -- FileType fires after it -- so an exclusion list read there
+-- never matches anything. BufWinEnter runs once the buffer is in a window and
+-- detected, and the buffer flag keeps it to the first time.
+vim.api.nvim_create_autocmd("BufWinEnter", {
   pattern = "*",
   callback = function(args)
+    if vim.b[args.buf].cursor_restored then
+      return
+    end
+    vim.b[args.buf].cursor_restored = true
     if vim.bo[args.buf].buftype ~= "" or skip_cursor_restore[vim.bo[args.buf].filetype] then
       return
     end
