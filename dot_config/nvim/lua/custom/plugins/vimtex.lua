@@ -14,6 +14,34 @@ return {
   dependencies = { "ibhagwan/fzf-lua" },
   config = function()
     vim.g.vimtex_view_method = "skim"
+
+    -- SyncTeX, both directions.
+    --
+    -- Forward (tex -> pdf) is these three options. `sync` makes every
+    -- successful compile move Skim to the line the cursor is on, so in the
+    -- continuous mode `<localleader>ll` starts, the PDF follows the edit
+    -- without asking; `<localleader>lv` does the same jump on demand.
+    -- `reading_bar` draws the horizontal band Skim uses to mark a synced line,
+    -- which is what makes the jump visible when the target is a whole
+    -- paragraph rather than a word.
+    --
+    -- `activate` stays off deliberately: it gives Skim keyboard focus, and the
+    -- callback fires on every compile. Skim is raised to the foreground on the
+    -- first one either way, which is the part worth having.
+    --
+    -- Inverse (pdf -> tex) is Shift-Cmd-click in Skim, and is configured in
+    -- Skim's own Sync preferences, not here -- it runs
+    -- `nvim --headless -c "VimtexInverseSearch %line '%file'"`, which relays
+    -- the position over RPC to the instance holding the file. The `cmd` entry
+    -- on this spec is what lets that headless instance find the command.
+    --
+    -- Both directions need the `.synctex.gz` that `-synctex=1` produces; it is
+    -- already in vimtex's default latexmk options, which this config does not
+    -- override.
+    vim.g.vimtex_view_skim_sync = 1
+    vim.g.vimtex_view_skim_reading_bar = 1
+    vim.g.vimtex_view_skim_activate = 0
+
     vim.g.vimtex_compiler_method = "latexmk"
     vim.g.vimtex_syntax_enabled = 0
     vim.g.vimtex_syntax_conceal_disable = 1
