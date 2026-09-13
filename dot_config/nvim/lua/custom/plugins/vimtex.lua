@@ -1,6 +1,13 @@
 return {
   "lervag/vimtex",
   ft = { "tex", "bib" },
+  -- Skim runs inverse search by starting a *new* `nvim --headless` and having
+  -- it call `:VimtexInverseSearch`, which relays the position over RPC to
+  -- whichever instance is editing the file. That instance opens no `.tex` of
+  -- its own, so the `ft` trigger never fires there and the command does not
+  -- exist -- `E492`, and the click does nothing. Naming it here gives lazy a
+  -- stub that loads vimtex and re-runs it.
+  cmd = { "VimtexInverseSearch" },
   -- The TOC picker below is vimtex's own `vimtex.fzf-lua` module, which
   -- `require`s fzf-lua at call time; declaring it here loads it with vimtex
   -- rather than leaving the first <space>lj to fail on a lazy plugin.
