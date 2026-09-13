@@ -1,6 +1,6 @@
 return {
   "stevearc/oil.nvim",
-  dependencies = { "nvim-tree/nvim-web-devicons" },
+  dependencies = { "nvim-mini/mini.icons" },
   opts = {
     keymaps = {
       ["g?"] = "actions.show_help",

@@ -2,7 +2,7 @@ return {
   "pwntester/octo.nvim",
   dependencies = {
     "nvim-lua/plenary.nvim",
-    "nvim-tree/nvim-web-devicons",
+    "nvim-mini/mini.icons",
     "ibhagwan/fzf-lua",
   },
   cmd = "Octo",

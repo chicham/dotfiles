@@ -9,7 +9,7 @@ return {
   event = "VeryLazy",
   cmd = "FzfLua",
   dependencies = {
-    "nvim-tree/nvim-web-devicons", -- Optional for file icons
+    "nvim-mini/mini.icons", -- Optional for file icons
   },
   config = function()
     local fzf = require("fzf-lua")

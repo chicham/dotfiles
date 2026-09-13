@@ -233,4 +233,28 @@ return {
       })
     end,
   },
+
+  -- File/filetype icons (replaces nvim-tree/nvim-web-devicons). oil, fzf-lua
+  -- and octo ask for the devicons module by name, so mock_nvim_web_devicons()
+  -- registers a shim under that name backed by MiniIcons; all fourteen
+  -- functions those plugins reach for resolve through it.
+  --
+  -- Icon highlight groups are colour-named (MiniIconsGreen, ...) rather than
+  -- type-named (DevIconLua, ...). Nothing in this config references a DevIcon*
+  -- group, so the rename is invisible here -- but a colorscheme override that
+  -- targeted one would need updating.
+  {
+    "nvim-mini/mini.icons",
+    version = false,
+    lazy = true,
+    opts = {},
+    init = function()
+      -- The shim has to exist before any consumer requires "nvim-web-devicons",
+      -- and requiring it is itself what loads this spec.
+      package.preload["nvim-web-devicons"] = function()
+        require("mini.icons").mock_nvim_web_devicons()
+        return package.loaded["nvim-web-devicons"]
+      end
+    end,
+  },
 }
