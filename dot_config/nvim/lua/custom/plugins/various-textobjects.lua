@@ -26,7 +26,7 @@ return {
 
       -- NB: ai/ii (indentation) live on mini.indentscope now, so its scope
       -- highlight and the ii/ai text objects are computed identically — see
-      -- lua/custom/plugins/mini-indentscope.lua.
+      -- the mini.indentscope spec in lua/custom/plugins/mini.lua.
 
       -- Subword text objects
       {
