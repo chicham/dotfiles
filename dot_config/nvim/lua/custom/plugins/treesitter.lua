@@ -198,9 +198,10 @@ return {
     end
 
     -- Movement (normal + visual + operator-pending).
-    -- Note: @loop (]l) and @block (]b) moves are intentionally omitted so
-    -- unimpaired.nvim keeps loclist (]l) and buffer (]b) navigation. The
-    -- @block / @parameter *text objects* (a}/i}, aa/ia) are unaffected.
+    -- Note: the @loop move (]l) is intentionally omitted so unimpaired.nvim
+    -- keeps loclist navigation, and @block (]b) so vcsigns keeps the diff-base
+    -- walk. The @block / @parameter *text objects* (a}/i}, aa/ia) are
+    -- unaffected.
     local moves = {
       goto_next_start = {
         ["]f"] = "@function.outer",
