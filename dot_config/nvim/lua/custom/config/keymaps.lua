@@ -56,8 +56,10 @@ vim.keymap.set("x", "Q", ":normal @@<CR>")
 -- Write buffer
 vim.keymap.set("n", "W", ":w<cr>", { silent = true })
 
--- Utility shortcuts
-vim.keymap.set("n", "<leader>q", ":q<CR>", { silent = true }) -- Quick quit
+-- Utility shortcuts.
+-- No <leader>q: it is the prefix of quicker.nvim's <leader>qq / <leader>ql,
+-- so binding it would make every quit wait out `timeoutlen`. `:q` is one
+-- keystroke longer and unambiguous.
 vim.keymap.set("n", "<leader>Q", ":qa!<CR>", { silent = true }) -- Force quit all
 
 -- Tab controls

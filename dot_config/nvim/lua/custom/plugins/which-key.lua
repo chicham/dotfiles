@@ -56,6 +56,7 @@ return {
       { "<leader>t", group = "[T]abs" },
       { "<leader>w", group = "[W]indow" },
       { "<leader>o", group = "[O]rgmode" },
+      { "<leader>q", group = "[Q]uickfix" },
       { "<leader>n", group = "[N]otes (Roam)" },
       { "<leader>r", group = "[R]efactor" },
       { "<leader>S", group = "[S]ession" },
