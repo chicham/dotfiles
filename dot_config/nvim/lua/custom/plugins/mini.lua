@@ -190,4 +190,47 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     opts = {},
   },
+
+  -- Split/join argument lists (replaces Wansmer/treesj), on gJ.
+  --
+  -- The hooks below are what make the output match the surrounding style, and
+  -- they are language-aware because the conventions are. Splitting adds a
+  -- trailing separator inside braces only; joining removes it from every
+  -- bracket type, since a hand-written `f(x, y,)` should join to `f(x, y)`.
+  -- Padding the braces to `{ a = 1 }` is a Lua convention -- Python writes
+  -- `{"a": 1}` -- so it is applied per filetype rather than globally.
+  {
+    "nvim-mini/mini.splitjoin",
+    version = false,
+    keys = {
+      {
+        "gJ",
+        function()
+          require("mini.splitjoin").toggle()
+        end,
+        desc = "Split/Join Block",
+      },
+    },
+    config = function()
+      local sj = require("mini.splitjoin")
+      local gen = sj.gen_hook
+      local curly = { brackets = { "%b{}" } }
+      local all = { brackets = { "%b()", "%b[]", "%b{}" } }
+
+      local pad_curly = gen.pad_brackets(curly)
+      local function pad_if_lua(positions)
+        if vim.bo.filetype ~= "lua" then
+          return positions
+        end
+        return pad_curly(positions)
+      end
+
+      sj.setup({
+        -- gJ above is the only entry point; leave mini's own keys unmapped.
+        mappings = { toggle = "", split = "", join = "" },
+        split = { hooks_post = { gen.add_trailing_separator(curly) } },
+        join = { hooks_post = { gen.del_trailing_separator(all), pad_if_lua } },
+      })
+    end,
+  },
 }
