@@ -69,7 +69,7 @@ return {
     --    Open ~/.orgfiles/gtd/inbox.org.
     --    For each item, decide its fate:
     --    - Do it now (if < 2 mins).
-    --    - Refile (R) to a Project file (~/.orgfiles/gtd/projects.org).
+    --    - Refile (R) to a project file under ~/.orgfiles/gtd/projects/.
     --    - Refile (R) to Today's Daily Log if it's an execution priority.
     --    - Move to Someday/Maybe (s) if not actionable yet.
     --
@@ -80,7 +80,7 @@ return {
     --    - Use <Leader>oa to see the consolidated Agenda across all files.
     -- =============================================================================
 
-    -- Define agenda files in a variable so we can reuse them for refile targets
+    -- The agenda file list.
     local agenda_globs = {
       org_files.gtd_inbox,
       org_dirs.gtd .. "/reading.org",

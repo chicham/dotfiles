@@ -11,14 +11,16 @@ local api = {}
 return {
   "chipsenkbeil/org-roam.nvim",
   tag = "0.2.0",
-  -- setup() walks the whole roam directory to build its database, which is by
-  -- far the most expensive load in this config. Nothing outside an org buffer
-  -- needs it: the capture templates reach their helpers through
+  -- setup() loads the persisted database from disk (`persist` defaults to true)
+  -- and pulls in a large module tree on the way; a directory rescan only
+  -- happens on :RoamUpdate. It is still by far the most expensive load in this
+  -- config -- around 370 ms of the ~540 ms an org file costs. Nothing outside
+  -- an org buffer needs it: the capture templates reach their helpers through
   -- `require("custom.org")` rather than through this spec, and the autocmds
   -- org-roam installs (update-on-save, persist-on-exit) are all scoped to
   -- `*.org`. So the triggers below are the complete set of ways in -- opening
   -- an org file, one of the plugin's own commands, or one of the `<leader>n`
-  -- maps -- and a session that touches no org file never pays for the scan.
+  -- maps -- and a session that touches no org file never pays for the load.
   ft = "org",
   cmd = {
     "RoamAddAlias",
@@ -410,10 +412,8 @@ return {
         target = target:gsub("%%<([^>]+)>", function(fmt)
           return os.date(fmt)
         end)
-        -- Create slug from title
-        local slug = require("org-roam.utils").title_to_slug(title)
-        target = target:gsub("%%[slug]", slug)
-        -- Make absolute path
+        -- `%[slug]` is left in place: org-roam expands it itself once the
+        -- capture runs (api/node.lua's target-expansion keys).
         template_config.target = vim.fs.joinpath(vim.fn.expand(roam.config.directory), target)
       end
 

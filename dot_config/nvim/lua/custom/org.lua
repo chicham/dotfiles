@@ -20,10 +20,11 @@ local orgfiles_base = vim.fn.expand("~/.orgfiles")
 -- Values a prompt collects for the template expansion that follows it. They are
 -- fields rather than upvalues because the template strings read them directly.
 --
--- Each is cleared on the next tick by the helper that set it. Template
--- expansion is synchronous, so every reader below the prompt in the same
--- template still sees the value, while the next capture starts from an empty
--- table instead of inheriting the previous one's answers.
+-- Each is cleared on the next tick, by the prompt that set it or by the helper
+-- that consumes it -- whichever is last in the template. Template expansion is
+-- synchronous, so every reader below the prompt in the same template still sees
+-- the value, while the next capture starts from an empty table instead of
+-- inheriting the previous one's answers.
 M.capture = {}
 
 -- Pick one of `items` and hand it to `on_choice`, through fzf-lua when it is

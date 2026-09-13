@@ -161,7 +161,8 @@ return {
         { "[n", desc = "Prev math zone", buffer = bufnr, mode = { "n", "x", "o" } },
         { "%", desc = "Matching delimiter/environment", buffer = bufnr, mode = { "n", "x", "o" } },
 
-        -- Surround-style edits, sharing the `s` prefix already grouped globally.
+        -- Surround-style edits. These are vimtex's own cs/ds/ts trio, buffer
+        -- local to a LaTeX buffer; they do not go through mini.surround.
         { "cse", desc = "Change environment", buffer = bufnr },
         { "csc", desc = "Change command", buffer = bufnr },
         { "csd", desc = "Change delimiter", buffer = bufnr },
