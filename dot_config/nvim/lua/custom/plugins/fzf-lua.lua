@@ -41,19 +41,22 @@ return {
       },
     })
 
-    -- g-mappings: Replace nvim goto commands with fzf (lowercase=document, uppercase=workspace)
-    vim.keymap.set("n", "gd", fzf.lsp_definitions, { desc = "Go to definitions" })
-    vim.keymap.set("n", "gr", fzf.lsp_references, { desc = "Go to references" })
-    vim.keymap.set("n", "gD", fzf.lsp_declarations, { desc = "Go to declarations" })
-    vim.keymap.set("n", "gi", fzf.lsp_implementations, { desc = "Go to implementations" })
-    vim.keymap.set("n", "gy", fzf.lsp_typedefs, { desc = "Go to type definitions" })
-    vim.keymap.set("n", "gb", fzf.buffers, { desc = "Go to buffer" })
-    vim.keymap.set("n", "gs", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
-    vim.keymap.set("n", "gS", fzf.lsp_live_workspace_symbols, { desc = "Go to symbol (workspace)" })
+    -- <leader>g: the goto pickers (lowercase=document, uppercase=workspace).
+    -- Under a leader prefix rather than bare `g` because the g namespace is
+    -- shared: Neovim owns grn/gra/grr/gri/grt/grx, mini.operators owns the
+    -- gR/gs/g= operators, and a two-key `g?` map turns every one of them into
+    -- an ambiguous prefix that waits out `timeoutlen`.
+    vim.keymap.set("n", "<leader>gd", fzf.lsp_definitions, { desc = "Go to definitions" })
+    vim.keymap.set("n", "<leader>gr", fzf.lsp_references, { desc = "Go to references" })
+    vim.keymap.set("n", "<leader>gD", fzf.lsp_declarations, { desc = "Go to declarations" })
+    vim.keymap.set("n", "<leader>gi", fzf.lsp_implementations, { desc = "Go to implementations" })
+    vim.keymap.set("n", "<leader>gy", fzf.lsp_typedefs, { desc = "Go to type definitions" })
+    vim.keymap.set("n", "<leader>gb", fzf.buffers, { desc = "Go to buffer" })
+    vim.keymap.set("n", "<leader>gs", fzf.lsp_document_symbols, { desc = "Go to symbol (document)" })
+    vim.keymap.set("n", "<leader>gS", fzf.lsp_live_workspace_symbols, { desc = "Go to symbol (workspace)" })
 
     -- <leader>f: All fzf operations
     -- Files & navigation
-    vim.keymap.set("n", "<leader>ff", fzf.lsp_document_symbols, { desc = "Find symbols (document)" })
     vim.keymap.set("n", "<leader>fe", function()
       -- Use git_files with fallback to regular files if not in git repo
       fzf.git_files({
@@ -133,9 +136,9 @@ return {
     vim.keymap.set("n", "<leader>fD", fzf.diagnostics_workspace, { desc = "Find diagnostics (workspace)" })
 
     -- code-preview: jump to a pending diff tab. Each agent-edited file opens
-    -- its own diff tab; `gt` is remapped to LSP typedefs above, so this picker
-    -- is the way to switch between them. Lists pending files (with change
-    -- status) and switches to the selected file's tab on <CR>.
+    -- its own diff tab, and `gt`/`gT` only walk them in order, so this picker
+    -- is the way to switch between them directly. Lists pending files (with
+    -- change status) and switches to the selected file's tab on <CR>.
     vim.keymap.set("n", "<leader>fp", function()
       local ok, diff = pcall(require, "code-preview.diff")
       if not ok then

@@ -34,7 +34,7 @@ return {
         end
 
         -- LSP keymaps
-        -- Note: gd, gD, gi, gr, gy, gs are handled by fzf-lua for fuzzy finding
+        -- Note: the goto pickers live on <leader>g*, handled by fzf-lua
         -- Note: <leader>cf (format) is handled by conform.nvim, see its keys spec
         map("K", vim.lsp.buf.hover, "Hover Documentation")
         map("gK", vim.lsp.buf.signature_help, "Signature Documentation")
