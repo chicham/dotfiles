@@ -57,6 +57,7 @@ return {
       { "<leader>o", group = "[O]rgmode" },
       { "<leader>n", group = "[N]otes (Roam)" },
       { "<leader>r", group = "[R]efactor" },
+      { "<leader>S", group = "[S]ession" },
       { "<leader>z", group = "[Z] Folds" },
       -- Prefixes introduced by the plugin changes (surround, motions).
       { "s", group = "Surround", mode = { "n", "x" } },
