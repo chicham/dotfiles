@@ -15,6 +15,13 @@
 -- reach quickfix-review's comment box or anything else built on `vim.fn.input`,
 -- which no ui plugin can intercept.
 --
+-- `words` highlights every reference to the symbol under the cursor and moves
+-- between them with `]]`/`[[`. It replaces the kickstart CursorHold autocmds
+-- that used to live in init.lua: same `vim.lsp.buf.document_highlight` call
+-- underneath, but triggered on CursorMoved with a debounce rather than after
+-- `updatetime`, and it adds the navigation. vimtex binds `]]`/`[[` too, but
+-- buffer-locally in tex buffers, so those win where they apply.
+--
 -- `dim` is the focus/spotlight: it dims code outside the cursor's treesitter
 -- scope, keeping it visible (unlike origami's folds) but low-contrast. It is a
 -- library module -- listed in `opts` only so the settings below are picked up
@@ -25,6 +32,22 @@ return {
   priority = 1000,
   lazy = false,
   keys = {
+    {
+      "]]",
+      function()
+        Snacks.words.jump(vim.v.count1)
+      end,
+      desc = "Next reference",
+      mode = { "n", "t" },
+    },
+    {
+      "[[",
+      function()
+        Snacks.words.jump(-vim.v.count1)
+      end,
+      desc = "Prev reference",
+      mode = { "n", "t" },
+    },
     {
       "<leader>zf",
       function()
@@ -39,6 +62,7 @@ return {
   },
   opts = {
     input = { enabled = true },
+    words = { enabled = true },
 
     dim = {
       scope = {
