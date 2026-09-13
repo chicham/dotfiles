@@ -264,14 +264,12 @@ return {
   --
   -- The keyword list is the union of todo-comments' seven defaults and their
   -- thirteen aliases, because hipatterns has no built-in set -- every pattern here is
-  -- one that used to be recognised. `%f[%w]...%f[%W]` are frontier patterns:
-  -- they anchor the match to a word boundary so TODO matches in `TODO:` and
-  -- `TODO(name):` but not inside `TODOS`.
+  -- one that used to be recognised.
   --
-  -- Two differences from todo-comments are deliberate and accepted: only the
-  -- keyword is coloured, not the text following it; and matching is not
-  -- restricted to comments, so a keyword inside a string literal highlights
-  -- too.
+  -- Three differences from todo-comments are deliberate and accepted: only the
+  -- keyword is coloured, not the text following it; matching is not restricted
+  -- to comments, so `-- TODO:` inside a string literal highlights too; and a
+  -- bare keyword with no `:` or `(...)` after it is not a match at all.
   {
     "nvim-mini/mini.hipatterns",
     version = false,
@@ -279,10 +277,17 @@ return {
     config = function()
       local hipatterns = require("mini.hipatterns")
 
+      -- `%f[%w]...%f[%W]` are frontier patterns anchoring the match to a word
+      -- boundary, and the trailing `[%(:]` requires the punctuation a note
+      -- actually carries -- `TODO:` or `PERF(name):`. Without it every
+      -- `vim.log.levels.WARN` in this config reads as a note; the short
+      -- keywords (WARN, INFO, PERF, TEST) are ordinary identifiers elsewhere.
+      -- The `()` captures keep the highlight on the keyword, so the colon is
+      -- required but not coloured.
       local function words(group, list)
         local out = {}
         for _, word in ipairs(list) do
-          out[word] = { pattern = "%f[%w]()" .. word .. "()%f[%W]", group = group }
+          out[word] = { pattern = "%f[%w]()" .. word .. "()%f[%W][%(:]", group = group }
         end
         return out
       end
