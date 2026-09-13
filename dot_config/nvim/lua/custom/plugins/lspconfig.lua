@@ -104,18 +104,6 @@ return {
         },
       },
       rust_analyzer = {},
-      -- basedpyright = {
-      -- 	settings = {
-      -- 		basedpyright = {
-      -- 			disableOrganizeImports = true,
-      -- 			analysis = {
-      -- 				ignore = { "*" },
-      -- 				diagnosticMode = "openFilesOnly",
-      -- 				typeCheckingMode = "strict",
-      -- 			},
-      -- 		},
-      -- 	},
-      -- },
       ty = {},
       texlab = {
         settings = {

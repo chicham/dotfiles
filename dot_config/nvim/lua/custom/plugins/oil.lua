@@ -20,6 +20,8 @@ return {
       ["g."] = "actions.toggle_hidden",
     },
   },
+  -- The `keymaps` above are buffer-local to an oil buffer; this is the global
+  -- one that opens the parent directory from an ordinary file.
   keys = {
     { "-", "<CMD>Oil<CR>", desc = "Open parent directory" },
   },
