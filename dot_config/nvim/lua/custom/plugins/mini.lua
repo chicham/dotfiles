@@ -178,4 +178,16 @@ return {
       })
     end,
   },
+
+  -- Trailing-whitespace highlight (replaces ntpeters/vim-better-whitespace).
+  -- Highlight only: nothing strips on save, and trimming is explicit via
+  -- MiniTrailspace.trim(). Unlike better-whitespace it also stops highlighting
+  -- in Insert mode and in the window you have left, so the marks only show
+  -- where you are not currently typing.
+  {
+    "nvim-mini/mini.trailspace",
+    version = false,
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+  },
 }
