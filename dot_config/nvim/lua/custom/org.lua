@@ -26,6 +26,39 @@ local orgfiles_base = vim.fn.expand("~/.orgfiles")
 -- table instead of inheriting the previous one's answers.
 M.capture = {}
 
+-- Pick one of `items` and hand it to `on_choice`, through fzf-lua when it is
+-- available and `vim.ui.select` when it is not.
+--
+-- fzf-lua is preferred because these lists are long and unsorted -- stored
+-- links, refile targets, agenda menus -- and `vim.ui.select` offers no fuzzy
+-- matching over them. It is not a hard dependency of this module, though, so
+-- the fallback is a real path rather than a guard: `custom.org` is reachable
+-- from a capture template fired before any plugin's config() has run.
+--
+-- `on_choice` is called with nil on cancel, matching `vim.ui.select`.
+---@param items string[]
+---@param opts { prompt?: string, height?: number, width?: number }
+---@param on_choice fun(choice: string?)
+function M.pick(items, opts, on_choice)
+  opts = opts or {}
+  local prompt = opts.prompt or "Select > "
+
+  local ok, fzf = pcall(require, "fzf-lua")
+  if not ok then
+    return vim.ui.select(items, { prompt = prompt }, on_choice)
+  end
+
+  fzf.fzf_exec(items, {
+    prompt = prompt,
+    actions = {
+      ["default"] = function(selected)
+        on_choice(selected and selected[1] or nil)
+      end,
+    },
+    winopts = { height = opts.height or 0.6, width = opts.width or 0.8 },
+  })
+end
+
 -- Experiment-run capture: prompt once for the project whose tracking.org
 -- receives the run, and reuse it for the target path.
 function M.prompt_tracking_project()
@@ -246,22 +279,7 @@ function M.select_person(opts, callback)
     end
   end
 
-  local ok, fzf = pcall(require, "fzf-lua")
-  if ok then
-    fzf.fzf_exec(displays, {
-      prompt = opts.prompt or "Person > ",
-      actions = {
-        ["default"] = function(selected)
-          if selected and selected[1] then
-            on_select(selected[1])
-          end
-        end,
-      },
-      winopts = { height = 0.4, width = 0.5 },
-    })
-  else
-    vim.ui.select(displays, { prompt = opts.prompt or "Person > " }, on_select)
-  end
+  M.pick(displays, { prompt = opts.prompt or "Person > ", height = 0.4, width = 0.5 }, on_select)
 end
 
 -- For capture templates: synchronous person prompt with completion
@@ -396,25 +414,7 @@ function M.refile_with_fzf(opts)
     end
   end
 
-  local ok, fzf = pcall(require, "fzf-lua")
-  if ok then
-    fzf.fzf_exec(items, {
-      prompt = opts.prompt or "Refile to > ",
-      actions = {
-        ["default"] = function(selected)
-          if selected and selected[1] then
-            select_item(selected[1])
-          end
-        end,
-      },
-      winopts = {
-        height = 0.6,
-        width = 0.8,
-      },
-    })
-  else
-    vim.ui.select(items, { prompt = opts.prompt or "Refile to > " }, select_item)
-  end
+  M.pick(items, { prompt = opts.prompt or "Refile to > " }, select_item)
 end
 
 return M

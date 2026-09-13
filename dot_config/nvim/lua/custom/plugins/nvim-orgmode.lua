@@ -305,7 +305,7 @@ SCHEDULED: <%<%Y-%m-%d %a>>
       org_priority_default = "C",
       org_priority_lowest = "E",
 
-      -- User interface configuration (fzf-lua first, fallback to vim.ui.select)
+      -- User interface configuration (see custom.org.pick)
       ui = {
         menu = {
           handler = function(data)
@@ -330,25 +330,7 @@ SCHEDULED: <%<%Y-%m-%d %a>>
               end
             end
 
-            local ok, fzf = pcall(require, "fzf-lua")
-            if ok then
-              fzf.fzf_exec(options, {
-                prompt = data.title .. " > ",
-                actions = {
-                  ["default"] = function(selected)
-                    if selected and selected[1] then
-                      select_item(selected[1])
-                    end
-                  end,
-                },
-                winopts = {
-                  height = 0.6,
-                  width = 0.8,
-                },
-              })
-            else
-              vim.ui.select(options, { prompt = data.title .. " > " }, select_item)
-            end
+            require("custom.org").pick(options, { prompt = data.title .. " > " }, select_item)
           end,
         },
       },
@@ -474,7 +456,7 @@ SCHEDULED: <%<%Y-%m-%d %a>>
       end)
     end, { desc = "Create new [P]roject file" })
 
-    -- Insert stored links via fzf-lua (fallback to vim.ui.select)
+    -- Insert stored links, plus a "type it yourself" entry.
     local function org_insert_link_fzf()
       local org = require("orgmode")
       local links = org.links
@@ -521,25 +503,7 @@ SCHEDULED: <%<%Y-%m-%d %a>>
         return links:insert_link(item.link, item.title)
       end
 
-      local ok, fzf = pcall(require, "fzf-lua")
-      if ok then
-        fzf.fzf_exec(items, {
-          prompt = "Links> ",
-          actions = {
-            ["default"] = function(selected)
-              if selected and selected[1] then
-                select_item(selected[1])
-              end
-            end,
-          },
-          winopts = {
-            height = 0.6,
-            width = 0.8,
-          },
-        })
-      else
-        vim.ui.select(items, { prompt = "Links> " }, select_item)
-      end
+      require("custom.org").pick(items, { prompt = "Links> " }, select_item)
     end
 
     local function org_todo_next_state_with_working()
