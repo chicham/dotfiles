@@ -25,7 +25,6 @@ return {
     },
     "folke/lazydev.nvim",
     "fang2hou/blink-copilot",
-    { "saghen/blink.compat", opts = {} },
   },
   --- @module 'blink.cmp'
   --- @type blink.cmp.Config
@@ -62,9 +61,12 @@ return {
           score_offset = 100,
           async = true,
         },
+        -- orgmode ships a blink source of its own, so it plugs in directly;
+        -- routing it through blink.compat would add a plugin to translate an
+        -- nvim-cmp source that this one is not.
         orgmode = {
           name = "orgmode",
-          module = "blink.compat.source",
+          module = "orgmode.org.autocompletion.blink",
         },
       },
     },
