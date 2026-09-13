@@ -18,11 +18,13 @@ return {
   "coder/claudecode.nvim",
   opts = {
     terminal = {
-      -- snacks.nvim is not part of this config, so the built-in terminal
-      -- is the only provider that can host the CLI in-editor. It is also
-      -- what `send_to_terminal` requires: the "external"/"none" providers
-      -- leave nothing to type into.
-      provider = "native",
+      -- snacks is eager here, and `Snacks.terminal` is a library module that
+      -- needs no `opts` entry of its own, so the provider's availability test
+      -- (`Snacks.terminal ~= nil`) always passes. It gives the CLI a real
+      -- window with position and size honoured, which the built-in provider
+      -- does not. The "external"/"none" providers are the ones to avoid: they
+      -- leave nothing for `send_to_terminal` to type into.
+      provider = "snacks",
     },
   },
   keys = {
