@@ -375,8 +375,8 @@ vim.opt.rtp:prepend(lazypath)
 -- Plugins are organized by category for better readability and management.
 
 -- Plugin definitions
--- lazy.nvim's setup function loads and configures all specified plugins.
--- The `ui` table customizes the appearance of lazy.nvim's interface.
+-- lazy.nvim's setup function loads and configures all specified plugins. The
+-- second argument, at the end of the list, holds lazy's own options.
 require("lazy").setup({
   "NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
 
@@ -1053,6 +1053,26 @@ require("lazy").setup({
       vim.cmd.colorscheme("catppuccin")
     end,
   },
+}, {
+  performance = {
+    rtp = {
+      -- Shipped plugins nothing here uses. `matchit` is deliberately absent:
+      -- vim-matchup already sets g:loaded_matchit itself, so listing it would
+      -- only duplicate that.
+      disabled_plugins = {
+        "gzip",
+        "netrwPlugin", -- oil.nvim is the file explorer, and loads eagerly to be it
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
+  -- lazy watches the config files and announces edits. This config lives in a
+  -- chezmoi source tree and is applied in place, so those notifications fire on
+  -- every apply and say nothing useful; the check itself stays on.
+  change_detection = { notify = false },
 })
 
 -- Treesitter-based "any block" text object (ib / ab) — matches any bracket
