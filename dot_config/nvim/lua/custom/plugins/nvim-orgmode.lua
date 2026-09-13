@@ -151,13 +151,6 @@ return {
       -- Move archived items to a central archive file under a headline matching the source file name
       org_archive_location = vim.fn.expand(org_files.gtd_archive) .. "::* From %s",
 
-      -- Refile settings
-      -- Build a flat list of all headlines (Level 1-3) across all agenda files.
-      org_refile_targets = {
-        { agenda_globs, maxlevel = 3 },
-      },
-      org_refile_use_outline_path = false,
-
       -- Rationalized capture templates (core workflows only)
       org_capture_templates = {
         -- Inbox task (adds file link when available)
@@ -350,7 +343,10 @@ SCHEDULED: <%<%Y-%m-%d %a>>
         },
         org = {
           org_refile = "<Leader>oR", -- Native refile as fallback (R = fzf refile)
-          org_todo = "t",
+          -- No org_todo here: the FileType autocmd below binds `t` to a
+          -- wrapper that also drives the clock, and it wins because it runs
+          -- later. Leaving orgmode's default `cit` in place means the plain
+          -- state change is still reachable when the wrapper is not wanted.
           org_toggle_checkbox = "<Leader>x",
           org_priority_up = "]p",
           org_priority_down = "[p",
