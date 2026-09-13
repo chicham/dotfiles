@@ -177,7 +177,10 @@ function M.capture_abs_link()
   return string.format("[[file:%s::%d][%s]]", path, line_nr, display)
 end
 
--- Scan roam/people/**/*.org for person files (tagged :person:)
+-- Scan roam/people/**/*.org for the file that *is* a person: tagged `:person:`
+-- and not `:meetings:`. Both tags sit on the per-person meeting log next to the
+-- person's own file, and every caller here wants the person -- a `:PERSON:`
+-- property or an id link naming "Charlotte -- Meetings" is not a person.
 local function scan_people_files()
   local people_dir = vim.fn.expand(orgfiles_base .. "/roam/people")
   -- Match both roam/people/*.org and roam/people/*/*.org
@@ -186,22 +189,26 @@ local function scan_people_files()
 
   for _, path in ipairs(files) do
     local lines = vim.fn.readfile(path, "", 20)
-    local name, id, is_person
+    local name, id, is_person, is_meetings
     for _, line in ipairs(lines) do
+      -- `%+` is literal: an unescaped `#+` is the pattern "one or more #",
+      -- which never matches an org keyword line.
       if not name then
-        name = line:match("^#+TITLE:%s*(.+)$")
+        name = line:match("^#%+TITLE:%s*(.+)$")
       end
       if not id then
         id = line:match("^:ID:%s*(.+)$")
       end
-      if not is_person and line:match("^#+FILETAGS:.*:person:") then
-        is_person = true
+      local filetags = line:match("^#%+FILETAGS:(.*)$")
+      if filetags then
+        is_person = filetags:find(":person:", 1, true) ~= nil
+        is_meetings = filetags:find(":meetings:", 1, true) ~= nil
       end
-      if name and id and is_person then
+      if name and id and filetags then
         break
       end
     end
-    if name and is_person then
+    if name and is_person and not is_meetings then
       table.insert(people, { name = vim.trim(name), id = id or "", path = path })
     end
   end
