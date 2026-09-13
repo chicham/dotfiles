@@ -66,7 +66,14 @@ return {
     map("n", "<leader>hp", function()
       actions.toggle_hunk_diff(0)
     end, "Toggle inline hunk diff")
+    -- vcsigns fills its file list with `setqflist({}, "r", { nr = "$" })`:
+    -- it *replaces* the newest list in the quickfix stack rather than pushing
+    -- its own. During a review that newest list is quickfix-review's comment
+    -- list, and opening the diff view empties it. Pushing an empty list first
+    -- gives vcsigns a list of its own to overwrite and leaves the comments one
+    -- level down, reachable with `:colder`.
     map("n", "<leader>hd", function()
+      vim.fn.setqflist({}, " ", { title = "VCSigns diff" })
       actions.diffview(0)
     end, "Side-by-side diff view")
     map("n", "<leader>hf", function()

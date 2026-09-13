@@ -13,10 +13,11 @@
 --   * jj.nvim's `diffview`/`codediff` backends render both sides into scratch
 --     buffers, so neither side is commentable.
 --   * vcsigns' own `diffview` (`<leader>hd`) keeps the real buffer, but drives
---     its file list through the quickfix list, which is where quickfix-review
---     keeps comments; opening it replaces them. It also builds that list from
---     the commit-offset base, ignoring a revset set via `target_revset`, so
---     under a chain base the list and the diffs would disagree.
+--     its file list through the quickfix list -- the same list quickfix-review
+--     keeps comments in, so the two surfaces cannot both be open on one list.
+--     It also builds that list from the commit-offset base, ignoring a revset
+--     set via `target_revset`, so under a chain base the list and the diffs
+--     would disagree.
 --
 -- The `native` backend has neither problem: it splits the revision in beside
 -- the current buffer and leaves the quickfix list alone.
