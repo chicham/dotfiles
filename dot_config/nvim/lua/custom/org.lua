@@ -18,8 +18,14 @@ local M = {}
 local orgfiles_base = vim.fn.expand("~/.orgfiles")
 
 -- Values a prompt collects for the template expansion that follows it. They are
--- fields rather than upvalues because the template strings read them directly,
--- and each is cleared by whichever helper consumes it.
+-- fields rather than upvalues because the template strings read them directly.
+--
+-- Most are cleared on the next tick by the helper that set them, so the
+-- following capture prompts again. `person_name` is the exception: nothing
+-- clears it, and it stays readable until the next capture that prompts for a
+-- person overwrites it. That is only safe because its one reader sits below the
+-- prompt in the same template -- a new reader has to call
+-- `prompt_person_for_capture()` itself rather than trust the field.
 M.capture = {}
 
 -- Experiment-run capture: prompt once for the project whose tracking.org
