@@ -20,7 +20,4 @@ return {
       separator = nil, -- Separator between context and content. Should be a single character string, like '-'.
     })
   end,
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-  },
 }

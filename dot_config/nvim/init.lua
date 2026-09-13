@@ -728,9 +728,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Plenary - utilities library
-  { "nvim-lua/plenary.nvim" },
-
   -- Chezmoi integration
   {
     "andre-kotake/nvim-chezmoi",
