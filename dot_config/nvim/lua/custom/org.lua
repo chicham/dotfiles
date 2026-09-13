@@ -20,12 +20,10 @@ local orgfiles_base = vim.fn.expand("~/.orgfiles")
 -- Values a prompt collects for the template expansion that follows it. They are
 -- fields rather than upvalues because the template strings read them directly.
 --
--- Most are cleared on the next tick by the helper that set them, so the
--- following capture prompts again. `person_name` is the exception: nothing
--- clears it, and it stays readable until the next capture that prompts for a
--- person overwrites it. That is only safe because its one reader sits below the
--- prompt in the same template -- a new reader has to call
--- `prompt_person_for_capture()` itself rather than trust the field.
+-- Each is cleared on the next tick by the helper that set it. Template
+-- expansion is synchronous, so every reader below the prompt in the same
+-- template still sees the value, while the next capture starts from an empty
+-- table instead of inheriting the previous one's answers.
 M.capture = {}
 
 -- Experiment-run capture: prompt once for the project whose tracking.org
@@ -279,6 +277,9 @@ function M.prompt_person_for_capture()
     completion = "customlist,v:lua.require'custom.org'.person_complete",
   })
   M.capture.person_name = input
+  vim.schedule(function()
+    M.capture.person_name = nil
+  end)
   return input
 end
 
