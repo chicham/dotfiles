@@ -355,7 +355,12 @@ end
 
 return {
   "chrisgrieser/nvim-origami",
-  event = "VeryLazy",
+  -- There is nothing to fold until a buffer exists, so the buffer events are
+  -- the trigger that actually describes what this plugin needs -- VeryLazy
+  -- only says "after startup". The autocommands below cover every later
+  -- buffer; the immediate pass at the end of config() covers the one that
+  -- triggered the load.
+  event = { "BufReadPost", "BufNewFile" },
 
   keys = {
     {
@@ -476,7 +481,7 @@ return {
       end,
     })
 
-    -- Cover the buffer already open when origami lazy-loads (VeryLazy).
+    -- Cover the buffer already open when origami lazy-loads.
     for _, b in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
       apply_outline(b.bufnr)
     end
