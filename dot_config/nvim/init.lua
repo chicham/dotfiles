@@ -728,28 +728,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Chezmoi integration
-  {
-    "andre-kotake/nvim-chezmoi",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    config = function()
-      require("nvim-chezmoi").setup({
-        edit = {
-          apply_on_save = "never", -- Options: "auto", "confirm", "never"
-        },
-        window = {
-          execute_template = {
-            relative = "editor",
-            style = "minimal",
-            border = "single",
-          },
-        },
-      })
-    end,
-  },
-
   -- Code formatting
   {
     "stevearc/conform.nvim",
