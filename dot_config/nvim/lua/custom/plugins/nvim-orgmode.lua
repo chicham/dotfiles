@@ -403,13 +403,14 @@ SCHEDULED: <%<%Y-%m-%d %a>>
     })
 
     -- Custom Command to Create a New Project File
-    vim.keymap.set("n", "<Leader>op", function()
-      local name = vim.fn.input("Project Name: ")
-      if name == "" then
-        return
-      end
-
-      local tags_input = vim.fn.input("Project Tags (space separated): ")
+    --
+    -- Nothing here runs inside a capture-template expansion, so the prompts go
+    -- through `vim.ui.input` -- asynchronous, and routed to whatever input UI
+    -- is configured -- rather than the blocking `vim.fn.input` the templates
+    -- are stuck with.
+    ---@param name string
+    ---@param tags_input string
+    local function create_project_file(name, tags_input)
       local tags = ":project:"
       if tags_input ~= "" then
         -- Clean up input: replace spaces with colons, remove non-alphanumeric (except -_@), ensure wrapped in colons
@@ -431,12 +432,11 @@ SCHEDULED: <%<%Y-%m-%d %a>>
 
       -- Check if file exists to avoid overwriting
       if vim.fn.filereadable(path) == 1 then
-        print("Project file already exists: " .. path)
-        vim.cmd("edit " .. path)
+        vim.notify("Project file already exists: " .. path, vim.log.levels.WARN)
+        vim.cmd("edit " .. vim.fn.fnameescape(path))
         return
       end
 
-      -- Create file content
       local content = {
         "#+TITLE: " .. name,
         "#+FILETAGS: " .. tags,
@@ -450,18 +450,28 @@ SCHEDULED: <%<%Y-%m-%d %a>>
         "",
       }
 
-      -- Write file
       local file = io.open(path, "w")
-      if file then
-        for _, line in ipairs(content) do
-          file:write(line .. "\n")
-        end
-        file:close()
-        print("Created new project: " .. path)
-        vim.cmd("edit " .. path)
-      else
-        print("Error creating file: " .. path)
+      if not file then
+        vim.notify("Error creating file: " .. path, vim.log.levels.ERROR)
+        return
       end
+      for _, line in ipairs(content) do
+        file:write(line .. "\n")
+      end
+      file:close()
+      vim.notify("Created new project: " .. path, vim.log.levels.INFO)
+      vim.cmd("edit " .. vim.fn.fnameescape(path))
+    end
+
+    vim.keymap.set("n", "<Leader>op", function()
+      vim.ui.input({ prompt = "Project Name: " }, function(name)
+        if not name or name == "" then
+          return
+        end
+        vim.ui.input({ prompt = "Project Tags (space separated): " }, function(tags_input)
+          create_project_file(name, tags_input or "")
+        end)
+      end)
     end, { desc = "Create new [P]roject file" })
 
     -- Insert stored links via fzf-lua (fallback to vim.ui.select)
@@ -575,6 +585,12 @@ SCHEDULED: <%<%Y-%m-%d %a>>
             local src = vim.api.nvim_buf_get_name(0)
             if src == "" or vim.fn.filereadable(src) ~= 1 then
               vim.notify("No org file to export.", vim.log.levels.WARN)
+              return
+            end
+            -- vim.system raises on a missing executable rather than routing
+            -- the failure to the callback, so the guard has to come first.
+            if vim.fn.executable("pandoc") == 0 then
+              vim.notify("pandoc is not installed.", vim.log.levels.ERROR)
               return
             end
             if vim.bo.modified then
