@@ -54,6 +54,14 @@ return {
     local saved_jumpoptions
 
     local function scope_jumpoptions()
+      -- Neovim makes a buffer current for the duration of an autocommand it
+      -- fires for a buffer that is in no window, so `FileType` on some other
+      -- plugin's scratch buffer arrives here reading that buffer's filetype
+      -- and takes the restore branch. `win_gettype()` is what distinguishes
+      -- that borrowed window from a real one.
+      if vim.fn.win_gettype() == "autocmd" then
+        return
+      end
       if vim.bo.filetype == "tex" then
         if saved_jumpoptions == nil then
           saved_jumpoptions = vim.o.jumpoptions
