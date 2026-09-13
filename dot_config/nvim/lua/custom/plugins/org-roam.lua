@@ -11,13 +11,24 @@ local api = {}
 return {
   "chipsenkbeil/org-roam.nvim",
   tag = "0.2.0",
-  -- VeryLazy rather than eager: org-roam walks the roam directory during
-  -- setup, and doing that before the first screen draw costs the whole scan up
-  -- front. Firing right after the draw keeps every keymap and command below
-  -- available by the time anything can be typed, and lets orgmode keep the
-  -- VeryLazy trigger its own spec asks for -- a `lazy = false` here overrides
-  -- that spec and drags orgmode into startup too.
-  event = "VeryLazy",
+  -- setup() walks the whole roam directory to build its database, which is by
+  -- far the most expensive load in this config. Nothing outside an org buffer
+  -- needs it: the capture templates reach their helpers through
+  -- `require("custom.org")` rather than through this spec, and the autocmds
+  -- org-roam installs (update-on-save, persist-on-exit) are all scoped to
+  -- `*.org`. So the triggers below are the complete set of ways in -- opening
+  -- an org file, one of the plugin's own commands, or one of the `<leader>n`
+  -- maps -- and a session that touches no org file never pays for the scan.
+  ft = "org",
+  cmd = {
+    "RoamAddAlias",
+    "RoamAddOrigin",
+    "RoamRemoveAlias",
+    "RoamRemoveOrigin",
+    "RoamReset",
+    "RoamSave",
+    "RoamUpdate",
+  },
   dependencies = { "nvim-orgmode/orgmode" },
   keys = {
     {
