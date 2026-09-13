@@ -7,9 +7,13 @@
 -- enclosing scope, context as a sticky header at the *top* of the window,
 -- navic as the breadcrumb in the *statusline*. They complement rather than
 -- conflict; if the header feels redundant, drop one.
+-- navic asks only for core `vim.lsp` and an LspAttach autocmd, never for the
+-- nvim-lspconfig plugin, so it does not depend on it. Declaring that edge would
+-- drag lspconfig (and mason and fidget behind it) in through lualine, which
+-- loads at VeryLazy, defeating lspconfig's own BufReadPre trigger in sessions
+-- that never open a file.
 return {
   "SmiteshP/nvim-navic",
-  dependencies = { "neovim/nvim-lspconfig" },
   lazy = true, -- loaded as a lualine winbar component / on LspAttach
   opts = {
     -- Attach to any LSP client exposing documentSymbol, no per-server wiring.
