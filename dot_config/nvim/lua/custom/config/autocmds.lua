@@ -25,11 +25,3 @@ vim.api.nvim_create_autocmd("VimResized", {
   pattern = "*",
   command = "tabdo wincmd =",
 })
-
--- Ensure wrap is always on for all buffers
-vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-  pattern = "*",
-  callback = function()
-    vim.wo.wrap = true
-  end,
-})
