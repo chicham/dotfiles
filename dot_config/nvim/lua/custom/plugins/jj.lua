@@ -87,6 +87,12 @@ return {
     -- Files a revset's chain changed, as absolute paths. `jj diff --summary`
     -- prints a status column and paths relative to the invocation directory,
     -- which is `root` here.
+    --
+    -- A rename or copy is printed with the two names folded into one entry --
+    -- `R sub/{a.txt => b.txt}`, or `R { => sub}/a.txt` when only the directory
+    -- moved. Taking that line verbatim yields a path nothing can open, so the
+    -- brace is collapsed to its right-hand side: the destination is the file
+    -- that exists at `@` and therefore the one to review.
     ---@param root string
     ---@param base string
     ---@return string[]|nil files, string|nil err
@@ -99,6 +105,7 @@ return {
       for line in out:gmatch("[^\n]+") do
         local path = line:match("^%a%s+(.+)$")
         if path then
+          path = path:gsub("{(.-) => (.-)}", "%2"):gsub("//+", "/")
           files[#files + 1] = root .. "/" .. path
         end
       end
