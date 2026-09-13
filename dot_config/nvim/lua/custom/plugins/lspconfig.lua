@@ -49,22 +49,19 @@ return {
           return ":IncRename " .. vim.fn.expand("<cword>")
         end, { buffer = event.buf, expr = true, desc = "LSP: [R]e[n]ame" })
         map("<leader>ra", vim.lsp.buf.code_action, "[R]efactor [A]ction")
-        -- Better diagnostic navigation
-        vim.keymap.set("n", "[d", function()
-          vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR, float = true })
-        end, { desc = "Previous error" })
 
-        vim.keymap.set("n", "]d", function()
-          vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR, float = true })
-        end, { desc = "Next error" })
-
-        vim.keymap.set("n", "[w", function()
-          vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.WARN, float = true })
-        end, { desc = "Previous warning" })
-
-        vim.keymap.set("n", "]w", function()
-          vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.WARN, float = true })
-        end, { desc = "Next warning" })
+        -- Severity-filtered diagnostic navigation. Buffer-local like the rest
+        -- of this callback: a global map here would outlive the attach and
+        -- exist in buffers that never had a server.
+        local jump = function(count, severity)
+          return function()
+            vim.diagnostic.jump({ count = count, severity = severity, float = true })
+          end
+        end
+        map("[d", jump(-1, vim.diagnostic.severity.ERROR), "Previous error")
+        map("]d", jump(1, vim.diagnostic.severity.ERROR), "Next error")
+        map("[w", jump(-1, vim.diagnostic.severity.WARN), "Previous warning")
+        map("]w", jump(1, vim.diagnostic.severity.WARN), "Next warning")
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
 
