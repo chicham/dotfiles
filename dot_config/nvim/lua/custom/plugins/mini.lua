@@ -257,4 +257,59 @@ return {
       end
     end,
   },
+
+  -- Keyword highlighting in comments (replaces folke/todo-comments.nvim), plus
+  -- hex colour swatches.
+  --
+  -- The keyword list is the union of todo-comments' seven defaults and their
+  -- thirteen aliases, because hipatterns has no built-in set -- every pattern here is
+  -- one that used to be recognised. `%f[%w]...%f[%W]` are frontier patterns:
+  -- they anchor the match to a word boundary so TODO matches in `TODO:` and
+  -- `TODO(name):` but not inside `TODOS`.
+  --
+  -- Two differences from todo-comments are deliberate and accepted: only the
+  -- keyword is coloured, not the text following it; and matching is not
+  -- restricted to comments, so a keyword inside a string literal highlights
+  -- too.
+  {
+    "nvim-mini/mini.hipatterns",
+    version = false,
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      local hipatterns = require("mini.hipatterns")
+
+      local function words(group, list)
+        local out = {}
+        for _, word in ipairs(list) do
+          out[word] = { pattern = "%f[%w]()" .. word .. "()%f[%W]", group = group }
+        end
+        return out
+      end
+
+      local highlighters = vim.tbl_extend(
+        "error",
+        words("MiniHipatternsFixme", { "FIX", "FIXME", "BUG", "FIXIT", "ISSUE" }),
+        words("MiniHipatternsHack", { "HACK" }),
+        words("MiniHipatternsTodo", { "TODO" }),
+        words("MiniHipatternsNote", {
+          "NOTE",
+          "INFO",
+          "WARN",
+          "WARNING",
+          "XXX",
+          "PERF",
+          "OPTIM",
+          "OPTIMIZE",
+          "PERFORMANCE",
+          "TEST",
+          "TESTING",
+          "PASSED",
+          "FAILED",
+        })
+      )
+      highlighters.hex_color = hipatterns.gen_highlighter.hex_color()
+
+      hipatterns.setup({ highlighters = highlighters })
+    end,
+  },
 }

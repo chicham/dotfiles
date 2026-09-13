@@ -1067,14 +1067,6 @@ require("lazy").setup({
       vim.cmd.colorscheme("catppuccin")
     end,
   },
-
-  -- Highlight todo, notes, etc in comments
-  {
-    "folke/todo-comments.nvim",
-    event = "VimEnter",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    opts = { signs = false },
-  },
 })
 
 -- Treesitter-based "any block" text object (ib / ab) — matches any bracket
