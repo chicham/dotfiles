@@ -25,17 +25,12 @@ return {
     "ChezmoiEdit",
     "ChezmoiExecuteTemplate",
   },
+  -- `execute_template` is left at its defaults: it opens in a vsplit, so the
+  -- floating-window options the plugin also accepts are never read.
   opts = {
     source_path = source_dir,
     edit = {
       apply_on_save = "never", -- Options: "auto", "confirm", "never"
-    },
-    window = {
-      execute_template = {
-        relative = "editor",
-        style = "minimal",
-        border = "single",
-      },
     },
   },
 }
