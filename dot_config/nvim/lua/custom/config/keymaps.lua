@@ -8,7 +8,7 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 -- Diagnostic keymaps
 -- Read live state (vim.diagnostic.is_enabled) as the source of truth so this
 -- toggle stays in sync with anything else that flips diagnostics (e.g. the
--- CoderPad practice mode defined at the bottom of this file).
+-- CoderPad practice mode in lua/custom/coderpad.lua).
 local function toggle_diagnostics()
   vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end

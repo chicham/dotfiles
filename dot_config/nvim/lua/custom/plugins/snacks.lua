@@ -16,10 +16,9 @@
 -- which no ui plugin can intercept.
 --
 -- `words` highlights every reference to the symbol under the cursor and moves
--- between them with `]]`/`[[`. It replaces the kickstart CursorHold autocmds
--- that used to live in init.lua: same `vim.lsp.buf.document_highlight` call
--- underneath, but triggered on CursorMoved with a debounce rather than after
--- `updatetime`, and it adds the navigation. vimtex binds `]]`/`[[` too, but
+-- between them with `]]`/`[[`. It is `vim.lsp.buf.document_highlight` driven
+-- from CursorMoved with a debounce, rather than from `updatetime`, so the
+-- highlight keeps up with the cursor. vimtex binds `]]`/`[[` too, but
 -- buffer-locally in tex buffers, so those win where they apply.
 --
 -- `dim` is the focus/spotlight: it dims code outside the cursor's treesitter

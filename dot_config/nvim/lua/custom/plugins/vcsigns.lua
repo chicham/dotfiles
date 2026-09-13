@@ -7,7 +7,7 @@
 -- and in a workspace.
 --
 -- Hunk navigation uses ]h / [h because ]c / [c are taken by the treesitter
--- class-motion mappings in init.lua (the upstream README binds ]c / [c).
+-- class-motion mappings in treesitter.lua (the upstream README binds ]c / [c).
 return {
   "algmyr/vcsigns.nvim",
   dependencies = { "algmyr/vclib.nvim", "lewis6991/async.nvim" },

@@ -12,7 +12,8 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Disable vim-matchup treesitter engine for markdown: injection parsing
--- triggers node:range() on stale nodes in nvim 0.12 (see inbox.org todo).
+-- triggers node:range() on a stale node on nvim 0.12, which errors on every
+-- cursor move in a fenced code block.
 -- Must be set before vim-matchup's autoload fires so s:init_option skips it.
 vim.g.matchup_treesitter_disabled = { "markdown", "markdown_inline" }
 

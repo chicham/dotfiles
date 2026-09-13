@@ -281,9 +281,9 @@ function _G.OrigamiSigFoldtext()
   }
 end
 
--- Folding: code files auto-open as an outline (see lua/custom/plugins/origami.lua).
--- Treesitter folds whole function/method nodes + comments, so every function
--- collapses to a single line (its signature) and all class methods stay visible.
+-- Folding: code files auto-open as an outline. Treesitter folds whole
+-- function/method nodes + comments, so every function collapses to a single
+-- line (its signature) and all class methods stay visible.
 
 -- Function-like and class-like treesitter node types (used to find the def the
 -- cursor sits in). Functions fold whole; classes don't (their methods show).

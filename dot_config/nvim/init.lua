@@ -1,9 +1,9 @@
 -- Neovim Configuration
--- This file serves as the main entry point for your Neovim setup.
--- It bootstraps the plugin manager, sets fundamental editor options,
--- defines global keybindings, and configures core plugins.
 --
--- Fast, focused configuration for efficient editing
+-- The entry point, and only that: it pulls in the three editor-level modules
+-- under lua/custom/config, bootstraps and starts lazy.nvim over the specs in
+-- lua/custom/plugins, and starts the two local modules that are not plugins.
+-- Nothing is configured here -- each plugin owns its own file.
 
 -- Options first: the leader keys it sets are what every plugin spec's `keys`
 -- table is resolved against, so nothing may load before it.

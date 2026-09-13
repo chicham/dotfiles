@@ -114,7 +114,7 @@ return {
   --
   -- ii = inner scope (body lines), ai = scope + its border (the header line,
   -- e.g. the `def`/`if` line). [i/]i are intentionally NOT mapped here -- those
-  -- stay on the @conditional treesitter moves defined in init.lua.
+  -- stay on the @conditional treesitter moves defined in treesitter.lua.
   --
   -- The scope line is recoloured per indentation depth to mimic rainbow-
   -- delimiters (the look ibl gave via scope_highlight_from_extmark). Note this
@@ -139,7 +139,8 @@ return {
         mappings = {
           object_scope = "ii",
           object_scope_with_border = "ai",
-          -- Disabled: keep [i/]i bound to the @conditional moves (init.lua).
+          -- Disabled: keep [i/]i bound to the @conditional moves
+          -- (treesitter.lua).
           goto_top = "",
           goto_bottom = "",
         },
