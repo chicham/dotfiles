@@ -1,10 +1,13 @@
 return {
   "jonatan-branting/nvim-better-n",
   dependencies = { "kevinhwang91/nvim-hlslens" },
-  -- The plugin exists to redefine n and N, so those keys are also the only way
-  -- to need it. lazy holds them until the first press, then replays into the
-  -- mappings config() installs -- which is what pulls in hlslens too.
-  keys = { "n", "N" },
+  -- Not `keys = { "n", "N" }`: create() works by watching every keystroke
+  -- through vim.on_key, so the plugin has to already be running when the
+  -- motion that n repeats is typed. Loading it on the first n means that
+  -- press has nothing recorded to repeat and falls through to a plain search.
+  -- VeryLazy is the earliest trigger that is still off the startup path but
+  -- guaranteed to fire before any input.
+  event = "VeryLazy",
   config = function()
     local better_n = require("better-n")
     better_n.setup({
