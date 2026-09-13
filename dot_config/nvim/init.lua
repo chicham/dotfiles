@@ -382,7 +382,9 @@ require("lazy").setup({
 
   { -- Useful plugin to show you pending keybinds.
     "folke/which-key.nvim",
-    event = "VimEnter", -- Sets the loading event to 'VimEnter'
+    -- VeryLazy rather than VimEnter: the popup is delayed 300ms behind a
+    -- keypress, so it cannot be needed before the first screen draw.
+    event = "VeryLazy",
     opts = {
       -- Show the popup only after a deliberate pause, so it helps when you
       -- hesitate but stays out of the way during fluent editing.
