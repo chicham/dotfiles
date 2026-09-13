@@ -1,3 +1,8 @@
+-- A quickfix window that reads like a buffer: aligned columns, a diff-style
+-- sign column, and `>` / `<` to widen or narrow the surrounding context lines
+-- without leaving the list. The quickfix list is the review surface here --
+-- quickfix-review keeps its comments in it and jj.lua's `:JjReview` builds its
+-- file list from it -- so it is worth having it legible.
 return {
   "stevearc/quicker.nvim",
   event = "FileType qf",
