@@ -43,7 +43,11 @@ return {
         -- whole <leader>c space belongs to quickfix-review, whose maps are
         -- global while these are buffer-local, so an LSP buffer would
         -- silently shadow the review commands wherever the two overlap.
-        map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
+        -- Expr rhs so the cmdline opens prefilled with the word under the
+        -- cursor; inc-rename previews the edit live and applies it on <CR>.
+        vim.keymap.set("n", "<leader>rn", function()
+          return ":IncRename " .. vim.fn.expand("<cword>")
+        end, { buffer = event.buf, expr = true, desc = "LSP: [R]e[n]ame" })
         map("<leader>ra", vim.lsp.buf.code_action, "[R]efactor [A]ction")
         -- Better diagnostic navigation
         vim.keymap.set("n", "[d", function()
