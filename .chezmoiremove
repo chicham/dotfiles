@@ -6,3 +6,4 @@
 .config/fish/functions/__cached_init.fish
 .config/fish/completions/docker.fish
 .config/fish/theme_preference
+.wezterm.lua
