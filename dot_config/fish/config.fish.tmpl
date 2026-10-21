@@ -182,43 +182,64 @@ end
 if type -q fzf
     set -x FZF_DISABLE_KEYBINDINGS 1
     fzf --fish | source
-    # Drop FZF's own alt-c cd widget; Alt+Shift+C below is the directory jump.
+    # Drop FZF's alt-c cd widget; alt-C below is the directory jump.
     bind -e alt-c 2>/dev/null
-    if bind -M insert >/dev/null 2>&1
-        bind -M insert -e alt-c 2>/dev/null
-    end
-    bind \ct __fzf_search_current_dir      # Ctrl+T: search files
-    bind \eC '__fzf_cd --hidden'           # Alt+Shift+C: cd with hidden files
+    bind -M insert -e alt-c 2>/dev/null
+    bind \ct __fzf_search_current_dir
+    bind \eC '__fzf_cd --hidden'
 
     # Route the completion picker itself (Tab) through fzf.
     bind \t fuzzy_complete
-    if bind -M insert >/dev/null 2>&1
-        bind -M insert \t fuzzy_complete
-    end
+    bind -M insert \t fuzzy_complete
 end
 
 # [[ if has "atuin" .modules -]] #
 # Atuin shell history with search - https://atuin.sh
 if type -q atuin
-    # atuin's init spawns `atuin uuid` for the session id; uuidgen produces the
-    # same 32 hex chars for a fraction of the cost, so seed the two variables
+    # atuin's init spawns `atuin uuid` (a UUIDv7: 48-bit ms timestamp + random
+    # bits, RFC 9562) for the session id. Rebuilding that layout with fish
+    # builtins plus one `date` call avoids the atuin fork/exec while keeping
+    # session ids time-ordered like atuin's own, so seed the two variables
     # the init checks before sourcing it.
-    if type -q uuidgen
-        if not set -q ATUIN_SESSION; or test "$ATUIN_SHLVL" != "$SHLVL"
-            set -gx ATUIN_SESSION (uuidgen | string lower | string replace -a - '')
-            set -gx ATUIN_SHLVL $SHLVL
-        end
-    end
+    if not set -q ATUIN_SESSION; or test "$ATUIN_SHLVL" != "$SHLVL"
+        set -l hex_digits 0 1 2 3 4 5 6 7 8 9 a b c d e f
+        set -l variant_digits 8 9 a b
 
-    set -gx ATUIN_NOBIND true
+        set -l ts_ms (math (command date +%s) '*' 1000)
+        set -l ts_hex (string pad -w 12 -c 0 -- (math --base=hex $ts_ms | string sub -s 3))
+
+        set -l session "$ts_hex"7
+
+        set -l i 0
+        while test $i -lt 3
+            set -l idx (random 1 16)
+            set session "$session$hex_digits[$idx]"
+            set i (math $i + 1)
+        end
+
+        set -l vidx (random 1 4)
+        set session "$session$variant_digits[$vidx]"
+
+        set i 0
+        while test $i -lt 15
+            set -l idx (random 1 16)
+            set session "$session$hex_digits[$idx]"
+            set i (math $i + 1)
+        end
+
+        set -gx ATUIN_SESSION $session
+        set -gx ATUIN_SHLVL $SHLVL
+    end
     # --disable-up-arrow: keep fish's native up/down prefix search on the arrow
-    # keys, instead of Atuin's own history TUI.
+    # keys. Trackpad scrolling emits arrow sequences that would otherwise pop
+    # open the history TUI.
     atuin init fish --disable-up-arrow | source
     atuin gen-completions --shell fish | source
 end
 
-# Atuin history rendered through fzf instead of atuin's own TUI, when both
-# tools are present.
+# Experimental: atuin data rendered through fzf instead of atuin's own TUI.
+# ctrl-r is bound too but doesn't fire in this terminal setup (ghostty/zellij/
+# fish vi mode) - alt-r/alt-f are the ones that actually work.
 if status is-interactive; and type -q fzf; and type -q atuin
     bind ctrl-r '__atuin_fzf_search directory'
     bind alt-r '__atuin_fzf_search directory'
