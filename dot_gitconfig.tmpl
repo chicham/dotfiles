@@ -44,6 +44,7 @@
 
 [core]
 # [[ if has "editor" .modules ]] #
+    # Use Neovim as default editor
     editor = nvim
 # [[ else ]] #
     editor = vi
@@ -95,8 +96,8 @@
 [branch]
     # Sort branches by commit date when listing
     sort = committerdate
-    # Automatically set up the push remote
-    autoSetupMerge = simple
+    # New branches track their start point, local or remote
+    autoSetupMerge = always
 
 [transfer]
     # Check integrity of objects during transfer
@@ -303,6 +304,8 @@
 
 # [[ if has "python_dev" .modules ]] #
 # Jupyter notebook diff and merge tools configuration
+# These sections will be active only if nbdime is installed
+# You can run: nbdime config-git --global --enable to properly configure these
 [diff "jupyternotebook"]
     command = git-nbdiffdriver diff
 
