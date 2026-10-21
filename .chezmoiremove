@@ -1,0 +1,8 @@
+# Targets whose source was removed; chezmoi apply deletes them on every machine.
+.config/direnv/direnvrc
+.config/fish/conf.d/direnv.fish
+.config/fish/conf.d/fish_frozen_key_bindings.fish
+.config/fish/conf.d/fish_frozen_theme.fish
+.config/fish/functions/__cached_init.fish
+.config/fish/completions/docker.fish
+.config/fish/theme_preference
