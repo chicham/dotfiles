@@ -315,7 +315,8 @@ $RECYCLE.BIN/
 # Per-feature jj workspaces live at the repo root and are short-lived; never tracked.
 .workspaces/
 
-# Direnv local state
+# Direnv: .envrc files carry secrets and per-machine paths; never tracked
+.envrc
 .envrc.local
 .direnv/
 
