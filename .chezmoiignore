@@ -43,6 +43,7 @@ docker-test.sh
 # Exclude macOS-specific files on Linux
 .chezmoiscripts/darwin/**
 Library/Application Support/Code/**
+Library/LaunchAgents/**
 # aerospace is a darwin-only window manager (see packages.darwin.modules)
 .config/aerospace/**
 {{ end }}

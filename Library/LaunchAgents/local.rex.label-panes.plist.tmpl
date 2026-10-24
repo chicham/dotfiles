@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Keeps ~/.config/rex/scripts/label-panes.lua running: Rex only sends events
+     to a script started with `rex do`, never to init.lua. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.rex.label-panes</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>{{ .chezmoi.homeDir }}/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex</string>
+    <string>do</string>
+    <string>{{ .chezmoi.homeDir }}/.config/rex/scripts/label-panes.lua</string>
+    <string>--all</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <!-- The script exits when the Rex server is down; retry until it is back. -->
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>StandardOutPath</key>
+  <string>{{ .chezmoi.homeDir }}/Library/Logs/rex-label-panes.log</string>
+  <key>StandardErrorPath</key>
+  <string>{{ .chezmoi.homeDir }}/Library/Logs/rex-label-panes.log</string>
+</dict>
+</plist>

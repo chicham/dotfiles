@@ -1,0 +1,19 @@
+#!/bin/bash
+set -eu
+
+# Reload the agent whenever the plist or the script it runs changes.
+# plist: {{ include "Library/LaunchAgents/local.rex.label-panes.plist.tmpl" | sha256sum }}
+# script: {{ include "dot_config/rex/scripts/label-panes.lua" | sha256sum }}
+
+label="local.rex.label-panes"
+plist="${HOME}/Library/LaunchAgents/${label}.plist"
+domain="gui/$(id -u)"
+
+if [ ! -f "${plist}" ]; then
+  echo "Warning: ${plist} is missing. Skipping ${label}."
+  exit 0
+fi
+
+launchctl bootout "${domain}/${label}" 2>/dev/null || true
+launchctl bootstrap "${domain}" "${plist}"
+echo "Loaded ${label}"

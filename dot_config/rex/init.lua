@@ -30,6 +30,7 @@ rex.bind(P .. "down", "pane.focus.down")
 
 -- ----- Sessions, search, agents -----
 rex.bind(P .. "s", "session.switch")
+rex.bind(P .. "b", "client.sidebar.toggle")
 rex.bind(P .. "/", "client.find.open")
 -- The Activity sidebar lists every agent that is working, waiting, or done.
 rex.bind(P .. "a", "client.sidebar.activity.toggle")
