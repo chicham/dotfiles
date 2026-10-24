@@ -2,9 +2,12 @@
 # rex-session — print the Rex session id of the project that contains DIR,
 # creating the session if none has that label.
 #
-# Usage: rex-session [--root] [DIR]
+# Usage: rex-session [--root] [--json] [DIR]
 #   DIR     defaults to $PWD
 #   --root  print the project root instead of the session id (creates nothing)
+#   --json  print {"session_id","created","window_id","block_id"}; window_id
+#           and block_id name the new session's first window and pane, and
+#           are null when the session already existed
 #
 # The project root is the part of DIR before `/.workspaces/<name>` (a jj
 # workspace belongs to its repo's session), else the nearest ancestor holding
@@ -13,11 +16,14 @@
 # Exit 1 when rex is missing or the server refuses.
 set -eu
 
-print_root=0
-if [ "${1:-}" = "--root" ]; then
-  print_root=1
-  shift
-fi
+print_root=0 json=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --root) print_root=1; shift ;;
+    --json) json=1; shift ;;
+    *) break ;;
+  esac
+done
 dir=$(cd "${1:-$PWD}" && pwd -P)
 
 project_root() {
@@ -64,9 +70,20 @@ trap 'rmdir "$lock" 2>/dev/null || true' EXIT INT TERM
 
 ids=$(find_session)
 if [ -z "$ids" ]; then
-  rex new "$label" --cwd "$root" --json | jq -r '.session_id'
+  created=$(rex new "$label" --cwd "$root" --json)
+  if [ "$json" = 1 ]; then
+    printf '%s\n' "$created" | jq -c '{session_id, created: true,
+      window_id: .initial_windows[0].window_id, block_id: .initial_windows[0].block_ids[0]}'
+  else
+    printf '%s\n' "$created" | jq -r '.session_id'
+  fi
   exit 0
 fi
 count=$(printf '%s\n' "$ids" | wc -l | tr -d ' ')
 [ "$count" -gt 1 ] && echo "rex-session: $count sessions named '$label', using the first" >&2
-printf '%s\n' "$ids" | head -n 1
+id=$(printf '%s\n' "$ids" | head -n 1)
+if [ "$json" = 1 ]; then
+  jq -cn --arg s "$id" '{session_id: $s, created: false, window_id: null, block_id: null}'
+else
+  printf '%s\n' "$id"
+fi

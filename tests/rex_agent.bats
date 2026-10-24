@@ -20,7 +20,7 @@ setup() {
 printf '%s\n' "$*" >> "$REX_LOG"
 case "$1 ${2:-}" in
   "ls --json") [ -n "${FAKE_DOWN:-}" ] && exit 1; printf '%s\n' "$FAKE_SESSIONS" ;;
-  "new "*) echo '{"session_id":"session:new"}' ;;
+  "new "*) echo '{"session_id":"session:new","initial_windows":[{"window_id":"window:init","block_ids":["block:init"]}]}' ;;
   "window new") echo '{"window_id":"window:w1","block_ids":["block:b1"],"revision":1}' ;;
   "split "*) echo '{"block_id":"block:s1"}' ;;
   "block inspect") echo '{"block":{"window_id":"window:host"}}' ;;
@@ -74,6 +74,18 @@ EOF
   run rex-session "$PROJ/src"
   [ "$output" = "session:new" ]
   grep -qx "new proj --cwd $PROJ --json" "$REX_LOG"
+}
+
+@test "--json names the first window of a session it creates" {
+  run rex-session --json "$PROJ/src"
+  [ "$status" -eq 0 ]
+  [ "$output" = '{"session_id":"session:new","created":true,"window_id":"window:init","block_id":"block:init"}' ]
+}
+
+@test "--json reports an existing session as not created" {
+  FAKE_SESSIONS='{"sessions":[{"session_id":"session:p","label":"proj"}]}'
+  run rex-session --json "$PROJ"
+  [ "$output" = '{"session_id":"session:p","created":false,"window_id":null,"block_id":null}' ]
 }
 
 @test "warns and picks the first of duplicate sessions" {

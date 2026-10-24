@@ -21,7 +21,7 @@ printf '%s\n' "$*" >> "$REX_LOG"
 [ "$1" = -C ] && shift 2
 case "$1 ${2:-}" in
   "ls --json") cat "$FAKE/sessions.json" ;;
-  "new "*) echo '{"session_id":"session:proj"}' ;;
+  "new "*) echo '{"session_id":"session:proj","initial_windows":[{"window_id":"window:init","block_ids":["block:init"]}]}' ;;
   "window ls") cat "$FAKE/windows.json" ;;
   "window new") echo '{"window_id":"window:new","block_ids":["block:new"]}' ;;
   "client ls") cat "$FAKE/clients.json" ;;
@@ -121,11 +121,23 @@ window() {
   grep -q "window_id=window:new" "$REX_LOG"
 }
 
-@test "creates the project session when missing" {
+@test "a session it creates at the root keeps one window, its first" {
   echo '{"sessions":[{"session_id":"session:home","label":"home"}]}' > "$FAKE/sessions.json"
   run rex-attach "$PROJ"
   grep -qx "new proj --cwd $PROJ --json" "$REX_LOG"
-  grep -q '^block close' "$REX_LOG"
+  ! grep -q '^window new' "$REX_LOG"
+  grep -q "window_id=window:init" "$REX_LOG"
+  [ "$(tail -n 1 "$REX_LOG")" = "block close -s session:home block:me" ]
+}
+
+@test "a session it creates for a subdirectory swaps its first window for one there" {
+  echo '{"sessions":[{"session_id":"session:home","label":"home"}]}' > "$FAKE/sessions.json"
+  pane block:me fish "$PROJ/sub dir"
+  run rex-attach "$PROJ"
+  grep -qx "window new -s session:proj --cwd $PROJ/sub dir --json" "$REX_LOG"
+  grep -qx "block close -s session:proj block:init" "$REX_LOG"
+  grep -q "window_id=window:new" "$REX_LOG"
+  [ "$(tail -n 1 "$REX_LOG")" = "block close -s session:home block:me" ]
 }
 
 @test "keeps the pane and hints when the app refuses actions" {
@@ -178,8 +190,10 @@ EOF
   sleep 5
   target=$(rex ls --json | jq -r --arg l "$name" '.sessions[] | select(.label == $l) | .session_id')
   src_left=$(rex block ls -s "$sid" 2> /dev/null | grep -c "${bid: -6}" || true)
+  windows=$([ -n "$target" ] && rex window ls -s "$target" --json | jq '.windows | length')
   [ -n "$target" ] && rex kill "$target" > /dev/null
   rex kill "$sid" > /dev/null 2>&1 || true
   [ -n "$target" ]
   [ "$src_left" -eq 0 ]
+  [ "$windows" -eq 1 ]
 }
