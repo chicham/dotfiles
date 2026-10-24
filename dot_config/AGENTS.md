@@ -53,6 +53,8 @@ docs style refactor perf test revert`. Mark breaking changes with `!` or a `BREA
 match and rewrite. `sd` does bulk replace. `rg` does literal search, and is the tool for orgfiles.
 Bulk edits: an sg rule file, then `ast-grep -U`, then `sd`, with `Edit` as the last resort.
 `land` is a fish function, so the Bash tool cannot call it: use `jj land`.
+In Rex, `rex-agent` starts a subagent in its own window and prints the ids to follow it.
+`rex-agent -h` gives the options and how to keep an unwatched agent from stalling.
 
 ## Python
 Stack: `jax flax optax etils beartype grain chex toolz`.
