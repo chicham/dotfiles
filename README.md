@@ -169,6 +169,7 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 ### Claude Code × Rex Integration
 - `~/.local/bin/rex-agent` - start a Claude Code agent in its own Rex window (or split pane) of the project's session, optionally in a new jj workspace; prints the window and block ids as JSON
 - `~/.local/bin/rex-session` - print or create the Rex session of the project holding a directory
+- `~/.local/bin/rex-attach` and `~/.config/direnv/lib/rex.sh` - `use rex` in an `.envrc` moves a shell pane entering the project into the project's Rex session
 
 ### Claude Code × Zellij Integration
 - `~/.config/fish/functions/cc-wt.fish` - `cc-wt <name>` launcher (claude worktree → jj workspace in a zellij floating pane)

@@ -116,6 +116,7 @@ Run inside a Rex terminal. Each agent gets its own window in the project's sessi
 | Split the current pane instead | `rex-agent --split below` | Directions: right (default), left, above, below |
 | Read an agent's screen | `rex capture -s <session_id> -b <block_id>` | Ids come from the `rex-agent` JSON |
 | Project session id | `rex-session` / `rex-session --root` | Creates the session when missing / prints the project root |
+| Move a pane into its project's session on `cd` | `echo 'use rex' >> .envrc && direnv allow` | A shell pane entering the project reuses (or opens) a window there, the app switches to it and the old pane closes; panes running a program are left alone. Needs Remote Control on in Rex |
 
 ### Claude Code × Zellij
 

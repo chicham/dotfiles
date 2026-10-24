@@ -1,0 +1,75 @@
+#!/bin/sh
+# rex-attach — move the calling Rex pane into the session of the project that
+# holds DIR: reuse a plain shell window of that session already at the pane's
+# directory, or open one, show it in the Rex app, then close the calling pane.
+#
+# Usage: rex-attach [DIR]   (DIR defaults to $PWD; called by direnv `use rex`)
+#
+# Does nothing (exit 0) when:
+#   - REX_SESSION or REX_BLOCK is unset (not in a Rex pane), or rex is missing;
+#   - the pane's foreground program is not direnv, fish, bash, zsh or sh, so a pane
+#     running an agent, an editor or a script is never moved or closed;
+#   - the pane already sits in the project's session.
+# Windows labelled agent:* are never reused. The calling pane is closed only
+# after the target window exists and the Rex app was switched to it; with no
+# app client, or when the switch fails, the pane stays open.
+set -eu
+
+[ -n "${REX_SESSION:-}" ] && [ -n "${REX_BLOCK:-}" ] || exit 0
+command -v rex >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 || exit 0
+dir=$(cd "${1:-$PWD}" && pwd -P)
+
+fg_name() {
+  rex block call -s "$1" -b "$2" process 2>/dev/null | jq -r '.foreground.name // empty'
+}
+
+is_shell() {
+  case "${1#-}" in
+    fish | bash | zsh | sh) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# The shell's own cwd: direnv evaluates .envrc from the .envrc directory, which
+# is the project root, not necessarily where the user cd'd.
+block_pwd() {
+  url=$(rex block call -s "$1" -b "$2" pwd 2>/dev/null | jq -r '.pwd // empty')
+  path=${url#file://}
+  path="/${path#*/}"
+  printf '%b\n' "$(printf '%s' "$path" | sed 's/%\([0-9A-Fa-f][0-9A-Fa-f]\)/\\x\1/g')"
+}
+
+# While the prompt hook runs, the pane's foreground job is direnv itself.
+caller=$(fg_name "$REX_SESSION" "$REX_BLOCK")
+[ "$caller" = direnv ] || is_shell "$caller" || exit 0
+
+session=$(rex-session "$dir")
+[ "$session" = "$REX_SESSION" ] && exit 0
+
+here=$(block_pwd "$REX_SESSION" "$REX_BLOCK")
+here=${here:-$dir}
+
+window=""
+for pair in $(rex window ls -s "$session" --json | jq -r '
+    .windows[] | select(.label | startswith("agent:") | not)
+    | .window_id as $w | [.layers[].blocks[].block_id] | select(length == 1)
+    | "\($w),\(.[0])"'); do
+  w=${pair%,*} b=${pair#*,}
+  if is_shell "$(fg_name "$session" "$b")" && [ "$(block_pwd "$session" "$b")" = "$here" ]; then
+    window=$w
+    break
+  fi
+done
+if [ -z "$window" ]; then
+  window=$(rex window new -s "$session" --cwd "$here" --json | jq -r '.window_id')
+fi
+
+# Without an app (or with Remote Control off) the user would not see the new
+# window, so the calling pane is kept.
+app=$(rex client ls --json | jq -r '[.clients[] | select(.info.kind == "app") | .client_id][0] // empty')
+[ -n "$app" ] || exit 0
+if ! rex -C "$app" "do" session.select session_id="$session" window_id="$window" >/dev/null 2>&1; then
+  echo "rex-attach: opened a window in session $(basename "$(rex-session --root "$dir")"); turn on Remote Control in Rex to switch to it" >&2
+  exit 0
+fi
+rex block close -s "$REX_SESSION" "$REX_BLOCK"
