@@ -1,141 +1,94 @@
 # Global Agent Configuration (agents.md)
 
-## Role: Peer Coding Agent
-The agent acts as your peer coding agent. It is configured to assist you with coding rather than writing everything for you.
-- **Collaborative Coding**: Collaborate on design, architecture, and planning, ensuring you remain in control of the final implementation.
-- **Design & Boilerplate**: Help design architectures and write boilerplate/skeletons (API signatures, type definitions, stub functions, and test files), but do not implement the logic/bodies by default.
-- **Code Review**: Review existing code and propose improvements, optimizations, and refactoring strategies.
-- **Delegated Maker Mode**: If explicitly asked or delegated, take on implementation/maker tasks.
+## Role
+Peer coding agent: design, architecture, planning, skeletons (signatures, types, stubs, tests).
+The user implements logic bodies unless they delegate (maker mode, below).
 
 ## Directives
-
-These are the invariants — they must hold even when the `/jj` skill is not loaded.
-**All jj procedure lives in `/jj`** (landing sequence, squash messages, `absorb-here` vs `absorb`,
-`wip-detach`/`wip-clean`, aliases, revsets). Load it before any graph mutation.
+Invariants: they hold even when no skill is loaded. Procedure lives in the skills named.
 
 - Challenge poor decisions, suggest alternatives, clarify ambiguity.
-- **Describe before acting.** Before starting a coding session or submitting a list of commands, first describe the list of actions to be taken and explain what each will do, then ask for validation before proceeding.
-- **jj only, never git.** `/jj start <name>` before editing. Leave changes in the working copy — never discard or forget them.
-- **Always `jj -R <absolute-path>`.** cwd drifts between tool calls; a cwd-resolved jj command silently hits the wrong workspace.
-- **Never push** unless explicitly asked.
-- **Never edit in the default workspace.** Create `.workspaces/<name>` at the repo root first, on a commit no other workspace is checked out to (a workspace goes stale when a peer rewrites or abandons its checkout). Workspaces are ephemeral: delete after the work lands.
-- **Never write to `wip`.** It stays empty and terminal. Before the FIRST edit of any change, check `jj log -r @`: if `@` carries `wip` / a `wip*` marker / no description, run `jj tip-add -m "..."` first. A dirty wip blocks pushes and forces a messy recovery.
-- **One `jj tip-add -m "..."` per change.** Never edit an existing named commit directly. Every atomic change = one commit; never batch unrelated edits.
-- **Never land on your own initiative.** Landing requires all three: green tests, review comments drained, and the user's explicit go-ahead.
-- **Every new change starts from main.** Before `jj start <name>`, confirm the base is `main` (or a commit already landed on it). Never branch a new feature off another in-progress/unlanded commit or chain — if you need what's in that chain, land it (or get explicit go-ahead to land it) first, then start fresh from main.
-- Remind to `/compact` after tasks, then run a daily review via `/org`.
+- **Describe before acting.** Before a coding session or a list of commands, list the actions
+  and what each does, then ask for validation. This gate applies once per session. Once
+  approved, do not wait on review of your commits.
+- **jj only, never git.** Load `/jj` before any graph mutation. Every jj command uses
+  `jj -R <literal absolute path>`, because cwd drifts between tool calls.
+- **Nobody owns the root.** Work in your own workspace
+  (`jj -R <repo> workspace add <repo>/.workspaces/<name> -r main`, plus its own `uv sync`).
+  The repo root is read-only. Leave changes in the working copy, and never discard them.
+- **One workspace = one arm**: a linear chain on `main`. `wip` merges all arms, and only `jj deploy`
+  touches it (ask first, it pushes). Never build merges by hand.
+- **`main` is immutable.** Only `jj land` moves it. Never `--ignore-immutable` without a go-ahead.
+- **The megamerge guard hook is a hard gate.** Fix what it reports; never route around it.
+- **Rewrite only your own commits** (`main..@`) and `orphan_arms()`. For another workspace's
+  commits, the user must confirm the exact command in chat first. Check `jj op log` before a mutation.
+- **Never push, publish a PR, or land** without the user's explicit go-ahead. Landing also needs
+  green tests, shown by `context-hygiene/scripts/gate.sh` (not a scout summary), and drained review comments.
+- **One PR = one commit = one feature group**, with one `Closes #N` line per issue.
+  A new chain starts from `main`, unless it depends on an unlanded chain (say so).
 
-## Commit Messages
-Follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/).
-Types: `feat` `fix` `build` `chore` `ci` `docs` `style` `refactor` `perf` `test` `revert`.
-Breaking changes: `feat!:` prefix or `BREAKING CHANGE:` footer (uppercase).
+## Context
+Accuracy drops as context grows. Keep it small and recoverable. Load `/context-hygiene` for the full rules.
+- Trim output at the source (`-q`, `| tail`, `rg -c`). Query large files instead of loading them.
+- External tools run in the Haiku `/scout` (search, web, history, run): it returns evidence, you
+  interpret. A hook denies them in the main thread. Edits, jj, `gh` writes and known-path reads stay here.
+- Checkpoint decisions, paths and open items to org (`~/.orgfiles/agents/`) at each phase end.
+  Then suggest `/clear` rather than `/compact`.
+
+## Communication
+- Start every answer with its main idea. Write one idea per sentence.
+- Avoid jargon. Define each tool or term at first use. Explain non-obvious tool results.
+- These rules override a terse output style when the two conflict.
+- **Requests to obelix are self-contained.** It serves many sessions and keeps no thread. Open
+  with a two-line summary (goal, which session) and the earlier requests it depends on (asked,
+  approved or refused, ran). Then give exact commands, paths, what to paste back and what is
+  approved. Never write "same as before".
+
+## Commits
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/): `feat fix build chore ci
+docs style refactor perf test revert`. Mark breaking changes with `!` or a `BREAKING CHANGE:` footer.
 
 ## Tools
-| Tool | Use | Notes |
-|------|-----|-------|
-| `fd` | file finding | replaces `find` |
-| `colgrep` | semantic discovery | **default** — NL + `-e` regex hybrid |
-| `ast-grep` | structural search/edit | AST patterns, `$NAME` wildcards |
-| `sd` | bulk text replace | renames, string swaps |
-| `rg` | literal search | orgfiles and non-code only |
-
-**Code search (two phases):**
-1. **Discover** with `colgrep "what you're looking for"` — finds relevant files/locations semantically
-2. **Match** with `ast-grep -p 'PATTERN' -l LANG [files]` — structural pattern within those files
-
-**Bulk edits:** sg rule file → `ast-grep -U` → `sd` → `Edit` (last resort, single-site only).
-
-**sg rules for bulk refactoring** — prefer a YAML rules file over repeated `ast-grep -U` one-liners. See `/ast-grep` skill for syntax, gotchas, and examples.
+`fd` finds files. `colgrep` does semantic discovery (the default for code). `ast-grep` handles structural
+match and rewrite. `sd` does bulk replace. `rg` does literal search, and is the tool for orgfiles.
+Bulk edits: an sg rule file, then `ast-grep -U`, then `sd`, with `Edit` as the last resort.
+`land` is a fish function, so the Bash tool cannot call it: use `jj land`.
 
 ## Python
 Stack: `jax flax optax etils beartype grain chex toolz`.
+Banned: `isinstance` (use `@beartype`/`singledispatch`), `getattr` (use `toolz.get_in` or direct access),
+`object` in hints (use `Protocol`/`Any`). For JAX, load `jax-development`. For Flax/Haiku layer structure, load `machine-learning`.
 
-**Banned:**
-- `isinstance` → `@beartype` / `functools.singledispatch`
-- `getattr` → `toolz.get_in` / direct access
-- `object` in hints → `Protocol` or `Any`
+## Dev workflow
+Every task runs in one mode. Ask if it is ambiguous.
+- **peer** (default): clarify, design typed `@beartype` signatures, write stubs
+  (`raise NotImplementedError`) with contract docstrings, and write failing tests. Then stop and hand back.
+  Python tests use `absltest`/`parameterized` plus `hypothesis` `@given`. Shell tests use `bats`.
+- **review**: inspect for security, performance, structure, correctness and readability. Propose fixes, and do not edit.
+- **maker** (delegated): peer steps, then implement in your own workspace. Point the user
+  at the review surface before the first edit. Finish with tests green.
 
-**JAX work:** load the `jax-development` skill for transforms, tracer/PRNG/recompile bugs,
-sharding, and performance — it owns JAX-specific reasoning. Load `machine-learning` only for
-Flax/Haiku model-layer structuring; it defers everything else to `jax-development`.
+All modes:
+- Read real APIs in `~/.context/` (vendored sources) instead of recalling them.
+- Write "why" comments only. Flag regressions and migrations before coding.
+- Docstrings state the current contract: inputs, outputs, invariants, side effects and failures.
+  Never mention the session, the task, history or authorship. History belongs in the commit message.
+- Behaviour changes to research or training code are opt-in flags, and the defaults stay bit-exact.
+  Report flag-on and flag-off results. Load `gating` before a result is published or merged.
+- Experiment logs (`experiments/`, `gtd/projects/`) are append-only: add a dated
+  `Result`/`Refuted` subsection, and never overwrite.
 
-## Dev Workflow
-
-Modes. Every task runs in one of three modes. Ask if ambiguous.
-
-- peer (default helper): plan + design + scaffold + tests. User implements bodies.
-  1. Clarify goal, constraints, edge cases.
-  2. Design signatures: function/class names, args, returns — all type-annotated and `@beartype`-validated.
-  3. Emit prototypes/skeletons: stubs with `raise NotImplementedError`, full type hints, docstrings stating contract.
-  4. Write failing tests in `*_test.py` using `absl.testing` (`absltest`, `parameterized`) for structure and **`hypothesis` for property-based case generation** (use `@given` with strategies to fuzz inputs across failure modes, correctness invariants, and robustness/edge cases — do not rely on hand-picked examples alone). Confirm they fail.
-  5. Stop. Do not implement bodies. Hand back to user.
-
-- review: inspect existing code or diffs and propose improvements.
-  1. Inspect the code files or diffs for security, performance, structure, correctness, and readability.
-  2. Propose concrete improvements or optimization options with clear rationale.
-  3. Do not modify or implement the code unless explicitly asked to do so.
-
-- maker (delegated): same as helper/peer steps 1–4, then implement. Use when the user explicitly delegates implementation to you.
-  - MUST work in a named jj workspace (see workspace directives above). Never edit in default workspace.
-  - MUST point the user at the workspace review surface before the first edit (see Local Review section).
-  - After implementation: run tests, confirm green, leave changes in working copy.
-
-**All modes:**
-- Check `~/.context/` before implementing — vendored upstream sources per library (`beartype`, `chex`, `abseil-py`, …); read the real API there instead of recalling it. Design signatures first.
-- "Why" comments only. Flag regressions/migrations before coding.
-- **Docstrings describe the code, never the session.** A docstring or comment states the contract of the thing it documents — inputs, outputs, invariants, side effects, failure modes — as it is *now*, readable by someone who has never seen this conversation. Forbidden: session narrative or changelog ("previously we…", "now returns…", "changed to fix the bug above", "as requested", "new implementation", "refactored version"), references to the task/ticket/review comment/user instruction that motivated the code, TODOs about work in this session, dates or authorship, and comparisons to a prior version. History belongs in the commit message; rationale that outlives the session belongs in a "why" comment phrased as a standing fact about the code, not as a story about how it got there. If a docstring would be empty once session context is stripped out, write no docstring.
-- **Reversibility / ablation discipline.** Behavioural changes to research/training code default to master-equivalent and are opt-in via a flag (config, env var, or CLI arg). Defaults reproduce the baseline bit-exactly. Every reported result includes both `flag-on` and `flag-off` cells — without the control, the effect can't be attributed to the change vs unrelated drift. Applies to architecture knobs, loss changes, training-distribution overrides, sampling schedules, dataset pipelines. Correctness bug fixes exempt; recipe-level changes are not. Before a result is published, acted on, or merged, load the `gating` skill to build the actual verification check (an anchor outside the code, a known-bad it demonstrably rejects, a stated coverage limit) — the flag-on/flag-off control tells you an effect exists; a gate tells you the check that would catch it being wrong can actually fail.
-- **Append-only experiment logbook.** Experiment org files (`~/.orgfiles/experiments/`, `~/.orgfiles/gtd/projects/`) record how hypotheses evolved. Append dated subsections (e.g. `*** Result [YYYY-MM-DD]`, `*** Refuted [YYYY-MM-DD]`) under the original block — never delete or overwrite a prior hypothesis, prediction, or decision. Revising a decision: leave the old in place, append the new with its triggering evidence. Keep entries tight: a numbers table, a few lines of reading, the decision — not multi-paragraph essays. Plain factual fixes (typo, broken link) exempt.
-
-## Local Review (mandatory in maker mode)
-
-**The user reviews in Neovim themselves; never drive their editor for them.** The agent's job is
-to point them at the right surface, then react to the comments that come back. Peer-mode
-scaffolds/stubs/tests and review-mode inspection are exempt, as are docs, orgfiles, and config-only
-edits. Full reference: the `local-review` skill.
-
-1. **Point at the surface.** Right after creating the workspace, before the first edit, tell the
-   user the workspace root so they can open it in nvim and review with `quickfix-review-nvim`
-   (`<leader>ci/cs/cn/cp` etc.) once you commit; for a GitHub PR, tell them the PR number to open
-   with `octo.nvim`. Then keep working; do not block waiting on the review.
-2. **Announce every checkpoint.** After each `jj tip-add` cycle, say what landed in one line so the
-   user knows there's something new to review.
-3. **Poll for comments** at the same checkpoints: read `.review-comments.md` at the workspace root
-   (auto-updated by nvim on every add/delete, removed when empty) for local diffs, or
-   `gh api repos/OWNER/REPO/pulls/N/comments` for a PR. Diff against your last read to spot new
-   entries — see the `local-review` skill for exact locations and format.
-4. **Handle by type:** `ISSUE` → fix immediately, own commit; `SUGGESTION` → implement (own commit)
-   or reply in chat with a concrete reason why not; `NOTE`/`QUESTION` → answer in chat; `PRAISE` →
-   no action.
-5. **Drain before landing.** The comments file being absent/empty (or PR threads all addressed) is
-   a hard land gate, alongside green tests and explicit user validation.
-6. **Never self-comment.** Don't add your own review comments on your own patch unless the user
-   asks for an agent-authored review.
-
-If there's nothing to review yet when you poll, say so and continue working — do not stall.
-
-## Rex Integration
-
-Inside Rex (`$REX_SESSION` set), every agent gets its own window, even when several share a directory:
-- **`rex-agent [--name N] [-- claude args]`**: start a subagent as `claude` in a new window `agent:N` of the project's session (resolved from the cwd, created if missing). It prints `{"session_id","window_id","block_id","cwd","name"}` on stdout.
-  - `--workspace WS` runs it in `<repo>/.workspaces/WS`, created off `main` when missing. Use this when the subagent will edit files.
-  - `--split [right|left|above|below]` splits your pane instead of opening a window.
-  - `--no-focus` leaves the user's view alone. Pass it when launching from an agent.
-  - `--close` closes the window when claude exits. By default it stays open so its output can still be read.
-  - An unwatched subagent stalls silently on an empty prompt or a permission request. With `--no-focus`, pass the task and a permission mode after `--`: `rex-agent --no-focus -- --permission-mode acceptEdits "task…"`.
-- **Follow a subagent** with the printed ids: `rex capture -s <session_id> -b <block_id>` reads its screen, `rex block call -s <session_id> -b <block_id> process` shows whether claude is still running, and `rex wait` blocks until it ends. Always pass `-s`: without it, rex looks in your own session.
-- **`rex-session [DIR]`** prints (or creates) the session id of the project holding DIR. `rex-session --root` prints the project root.
-
-## Zellij Integration
-
-Inside a zellij session (`$ZELLIJ` set), prefer visible-pane execution:
-- **`zbash '<cmd>'`** — run a command in a floating pane pinned to the current tab so the user can watch it, while still returning stdout/stderr + exit code (like `bash -c`). Route **notable** commands that run to completion through `zbash`: builds, test runs, long scripts — anything worth watching. Keep trivial reads (`ls`, `cat`, `jj/git status`) on the normal Bash tool, and keep long-lived processes (dev servers, watchers) out of `zbash` — it blocks until the command exits, so they'd hang it; start those in their own pane instead. Falls back to normal execution outside zellij. Full contract: the `zellij` skill.
-- **`cc-wt <name>`** — launch a worktree session: a jj workspace at `~/.claude/workspaces/<name>` (off `main`) opened as `claude` in a floating pane on the current tab. Distinct from the `.workspaces/<name>` convention used for the jj dev workflow above.
-- **Gotcha:** `cc-wt` and `land` are fish functions, not binaries — the Bash tool cannot invoke them (`bash -lc 'command -v land'` finds nothing). Use `jj land` (aliased in `~/.config/jj/config.toml`) or wrap as `fish -c 'cc-wt <name>'`.
+## Local review (maker mode)
+The user reviews in Neovim. Never drive their editor. Load `/local-review` for the full contract.
+1. Before the first edit, give the workspace root (or `review pr <n>` for a PR). Do not block on it.
+2. After each commit, give one line on which commit holds what. Poll `.review.org` at the
+   workspace root, or the PR comments.
+3. ISSUE: fix it in its own commit. SUGGESTION: implement it, or give a reason. QUESTION: answer it.
+   Write the outcome back to the heading. Only the user closes a comment.
+4. A drained comments file is a hard gate for landing. Never review your own patch unasked.
 
 ## Knowledge
-`~/.orgfiles/` — use `/org`. `rg` for orgfiles (not `colgrep`).
-- **Plans** → save to `~/.orgfiles/gtd/inbox.org` via `/org`.
-- **Project-task check (mandatory at task start).** When starting work on a project, ALWAYS check `~/.orgfiles/gtd/inbox.org` (and any matching `gtd/projects/` file) for open TODOs related to the current project before proceeding. Surface relevant captured tasks so they inform the work rather than being missed.
-- **Inbox is quick-capture only — refile, never leave.** `~/.orgfiles/gtd/inbox.org` is a transient capture buffer, not a home. Every task lands there for speed, then MUST be refiled to its proper `gtd/projects/<project>.org` file (via `/org`) once its context is known, and archived/closed (`DONE`/`CANCELLED` → archive) when finished. Never leave a task sitting in the inbox: if you act on an inbox task, refile it to the right project; when you complete it, archive it. No task stays in the inbox un-refiled.
-- **Daily inbox triage (mandatory, ≥1×/day).** The GTD inbox (`~/.orgfiles/gtd/inbox.org`) is a capture buffer: every item in it MUST be fixed or refined. At least once a day, use the `/org` skill's org-mode + org-roam tooling to analyze the open TODO tasks and, **for each TODO, take a decision** — refine it (clarify, add deadline/context, link related roam notes), refile it to a project under `gtd/projects/`, promote it (e.g. to `reading.org`), defer it (`SOMEDAY`/`WAITING`), or close it (`DONE`/`CANCELLED`). No TODO may sit untouched in the inbox without a recorded decision.
+`~/.orgfiles/` is owned by `/org`. Plans go to `gtd/inbox.org`.
+- At the start of a project task, check `gtd/inbox.org` and `gtd/projects/<project>` for related TODOs.
+- The inbox is a capture buffer only. Triage it at least once a day via `/org`, with one decision per TODO:
+  refine, refile, promote, defer (`SOMEDAY`/`WAITING`) or close.
