@@ -122,6 +122,7 @@ Inside Rex (`$REX_SESSION` set), every agent gets its own window, even when seve
   - `--split [right|left|above|below]` splits your pane instead of opening a window.
   - `--no-focus` leaves the user's view alone. Pass it when launching from an agent.
   - `--close` closes the window when claude exits. By default it stays open so its output can still be read.
+  - An unwatched subagent stalls silently on an empty prompt or a permission request. With `--no-focus`, pass the task and a permission mode after `--`: `rex-agent --no-focus -- --permission-mode acceptEdits "task…"`.
 - **Follow a subagent** with the printed ids: `rex capture -s <session_id> -b <block_id>` reads its screen, `rex block call -s <session_id> -b <block_id> process` shows whether claude is still running, and `rex wait` blocks until it ends. Always pass `-s`: without it, rex looks in your own session.
 - **`rex-session [DIR]`** prints (or creates) the session id of the project holding DIR. `rex-session --root` prints the project root.
 

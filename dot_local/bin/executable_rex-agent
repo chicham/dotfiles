@@ -20,6 +20,8 @@
 # with `rex block call -s <session_id> -b <block_id> process`, and wait for it
 # with `rex wait`. The `-s` is needed whenever the caller sits in another
 # session. claude runs through the login shell's environment, not the caller's.
+# Nobody watches a --no-focus window, so give claude its task and a permission
+# mode (`-- --permission-mode acceptEdits "task"`) or it waits unseen for input.
 # Without Rex (no rex binary or no reachable server), claude runs in the
 # foreground of the current terminal and nothing is printed.
 set -eu
