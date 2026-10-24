@@ -166,6 +166,10 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 - `~/.config/tuicr/config.toml` - Code review TUI configuration ([tuicr Documentation](https://tuicr.dev/)) (requires `git_advanced` module)
 - `~/.config/nvim/init.lua` - Neovim editor configuration ([Neovim Documentation](https://neovim.io/doc/)) (requires `editor` module)
 
+### Claude Code × Rex Integration
+- `~/.local/bin/rex-agent` - start a Claude Code agent in its own Rex window (or split pane) of the project's session, optionally in a new jj workspace; prints the window and block ids as JSON
+- `~/.local/bin/rex-session` - print or create the Rex session of the project holding a directory
+
 ### Claude Code × Zellij Integration
 - `~/.config/fish/functions/cc-wt.fish` - `cc-wt <name>` launcher (claude worktree → jj workspace in a zellij floating pane)
 - `~/.local/share/cc-zellij/bin/{git,tmux}` - translation shims, activated **only** by `cc-wt` (never on your global PATH)

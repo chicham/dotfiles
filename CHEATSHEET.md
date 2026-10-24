@@ -104,6 +104,19 @@ chezmoi purge --force
 | Tab completion picker | `Tab` opens an fzf picker over every fish completion (commands, flags, flag values); `Tab`/`Shift-Tab` cycle, typing re-filters live, `Esc` cancels, `Enter` inserts |
 | Search shell history via fzf | `Ctrl-R` / `Alt-R` (this directory) / `Alt-F` (global) — requires `atuin` module |
 
+### Claude Code × Rex
+
+Run inside a Rex terminal. Each agent gets its own window in the project's session.
+
+| Task | Command | Description |
+|------|---------|-------------|
+| Start an agent in its own window | `rex-agent --name review` | Opens window `agent:review` running `claude` in the session named after the project; prints JSON ids |
+| Pass a prompt | `rex-agent --no-focus -- -p 'run the tests'` | Args after `--` go to `claude`; `--no-focus` keeps your view |
+| Agent in its own jj workspace | `rex-agent --workspace fix-x` | Creates `<repo>/.workspaces/fix-x` off `main` when missing |
+| Split the current pane instead | `rex-agent --split below` | Directions: right (default), left, above, below |
+| Read an agent's screen | `rex capture -s <session_id> -b <block_id>` | Ids come from the `rex-agent` JSON |
+| Project session id | `rex-session` / `rex-session --root` | Creates the session when missing / prints the project root |
+
 ### Claude Code × Zellij
 
 Run inside a [zellij](https://zellij.dev/) session.

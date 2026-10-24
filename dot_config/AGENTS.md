@@ -114,6 +114,17 @@ edits. Full reference: the `local-review` skill.
 
 If there's nothing to review yet when you poll, say so and continue working — do not stall.
 
+## Rex Integration
+
+Inside Rex (`$REX_SESSION` set), every agent gets its own window, even when several share a directory:
+- **`rex-agent [--name N] [-- claude args]`**: start a subagent as `claude` in a new window `agent:N` of the project's session (resolved from the cwd, created if missing). It prints `{"session_id","window_id","block_id","cwd","name"}` on stdout.
+  - `--workspace WS` runs it in `<repo>/.workspaces/WS`, created off `main` when missing. Use this when the subagent will edit files.
+  - `--split [right|left|above|below]` splits your pane instead of opening a window.
+  - `--no-focus` leaves the user's view alone. Pass it when launching from an agent.
+  - `--close` closes the window when claude exits. By default it stays open so its output can still be read.
+- **Follow a subagent** with the printed ids: `rex capture -s <session_id> -b <block_id>` reads its screen, `rex block call -s <session_id> -b <block_id> process` shows whether claude is still running, and `rex wait` blocks until it ends. Always pass `-s`: without it, rex looks in your own session.
+- **`rex-session [DIR]`** prints (or creates) the session id of the project holding DIR. `rex-session --root` prints the project root.
+
 ## Zellij Integration
 
 Inside a zellij session (`$ZELLIJ` set), prefer visible-pane execution:

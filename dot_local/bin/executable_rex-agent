@@ -1,0 +1,82 @@
+#!/bin/sh
+# rex-agent — start a Claude Code agent in its own Rex window (or split pane)
+# in the session of the current project, and print where it runs.
+#
+# Usage: rex-agent [--name NAME] [--split [DIR]] [--no-focus] [--close]
+#                  [--workspace WS] [--cwd DIR] [-- CLAUDE_ARGS...]
+#   --name NAME     window label is agent:NAME (default agent:HHMMSS-PID)
+#   --split [DIR]   split the caller's pane (right, left, above, below) instead
+#                   of opening a window; needs REX_BLOCK
+#   --no-focus      leave the user's current window or pane focused
+#   --close         close the window when claude exits (default: keep it open
+#                   so its final output stays capturable)
+#   --workspace WS  run in <repo>/.workspaces/WS, created off main with
+#                   `jj workspace add` when missing (and `uv sync` when the
+#                   repo has a pyproject.toml)
+#   --cwd DIR       project directory (default $PWD)
+#
+# Stdout: one JSON object {"session_id","window_id","block_id","cwd","name"}.
+# Read the agent with `rex capture -s <session_id> -b <block_id>`, its state
+# with `rex block call -s <session_id> -b <block_id> process`, and wait for it
+# with `rex wait`. The `-s` is needed whenever the caller sits in another
+# session. claude runs through the login shell's environment, not the caller's.
+# Without Rex (no rex binary or no reachable server), claude runs in the
+# foreground of the current terminal and nothing is printed.
+set -eu
+
+name="" split="" focus=true keep=--keep-open ws="" cwd=$PWD
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --name) name=$2; shift 2 ;;
+    --split)
+      case "${2:-}" in
+        right | left | above | below) split=$2; shift 2 ;;
+        *) split=right; shift ;;
+      esac ;;
+    --no-focus) focus=false; shift ;;
+    --close) keep=""; shift ;;
+    --workspace) ws=$2; shift 2 ;;
+    --cwd) cwd=$2; shift 2 ;;
+    --) shift; break ;;
+    -h | --help) sed -n '2,/^set -eu/p' "$0" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
+    *) echo "rex-agent: unknown option $1" >&2; exit 2 ;;
+  esac
+done
+name=${name:-$(date +%H%M%S)-$$}
+cwd=$(cd "$cwd" && pwd -P)
+
+if [ -n "$ws" ]; then
+  root=$(rex-session --root "$cwd")
+  [ -d "$root/.jj" ] || { echo "rex-agent: --workspace needs a jj repo at $root" >&2; exit 1; }
+  cwd="$root/.workspaces/$ws"
+  if [ ! -d "$cwd" ]; then
+    jj -R "$root" workspace add "$cwd" -r main >&2
+    if [ -f "$cwd/pyproject.toml" ] && command -v uv >/dev/null 2>&1; then
+      (cd "$cwd" && uv sync -q) >&2
+    fi
+  fi
+fi
+
+if ! command -v rex >/dev/null 2>&1 || ! rex ls --json >/dev/null 2>&1; then
+  cd "$cwd"
+  exec claude "$@"
+fi
+
+# Each agent gets its own label so peers in the same directory stay distinct.
+if [ -n "$split" ]; then
+  [ -n "${REX_BLOCK:-}" ] || { echo "rex-agent: --split needs REX_BLOCK" >&2; exit 1; }
+  session=$REX_SESSION
+  out=$(rex split -b "$REX_BLOCK" --split "$split" --label "agent:$name" \
+    --cwd "$cwd" --focus="$focus" $keep --json -- claude "$@")
+  block=$(printf '%s' "$out" | jq -r '.block_id // .block_ids[0]')
+  window=$(rex block inspect "$block" --json | jq -r '.block.window_id')
+else
+  session=$(rex-session "$cwd")
+  out=$(rex window new -s "$session" "agent:$name" --cwd "$cwd" \
+    --focus="$focus" $keep --json -- claude "$@")
+  window=$(printf '%s' "$out" | jq -r '.window_id')
+  block=$(printf '%s' "$out" | jq -r '.block_ids[0]')
+fi
+
+jq -cn --arg s "$session" --arg w "$window" --arg b "$block" --arg c "$cwd" --arg n "$name" \
+  '{session_id: $s, window_id: $w, block_id: $b, cwd: $c, name: $n}'

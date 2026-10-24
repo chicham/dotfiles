@@ -1,0 +1,72 @@
+#!/bin/sh
+# rex-session — print the Rex session id of the project that contains DIR,
+# creating the session if none has that label.
+#
+# Usage: rex-session [--root] [DIR]
+#   DIR     defaults to $PWD
+#   --root  print the project root instead of the session id (creates nothing)
+#
+# The project root is the part of DIR before `/.workspaces/<name>` (a jj
+# workspace belongs to its repo's session), else the nearest ancestor holding
+# .jj or .git, else DIR itself. The session label is the root's basename.
+# Several sessions with that label: the first is used and a warning is printed.
+# Exit 1 when rex is missing or the server refuses.
+set -eu
+
+print_root=0
+if [ "${1:-}" = "--root" ]; then
+  print_root=1
+  shift
+fi
+dir=$(cd "${1:-$PWD}" && pwd -P)
+
+project_root() {
+  case "$1" in
+    */.workspaces/*) printf '%s\n' "${1%%/.workspaces/*}"; return ;;
+  esac
+  d=$1
+  while [ "$d" != "/" ]; do
+    if [ -e "$d/.jj" ] || [ -e "$d/.git" ]; then
+      printf '%s\n' "$d"
+      return
+    fi
+    d=$(dirname "$d")
+  done
+  printf '%s\n' "$1"
+}
+
+root=$(project_root "$dir")
+if [ "$print_root" = 1 ]; then
+  printf '%s\n' "$root"
+  exit 0
+fi
+
+command -v rex >/dev/null 2>&1 || { echo "rex-session: rex not found" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "rex-session: jq not found" >&2; exit 1; }
+
+label=$(basename "$root")
+[ "$root" = "$HOME" ] && label=home
+
+find_session() {
+  rex ls --json | jq -r --arg l "$label" '[.sessions[] | select(.label == $l) | .session_id] | .[]'
+}
+
+# A lock keeps two concurrent callers from both creating the session.
+lock="${TMPDIR:-/tmp}/rex-session.$(id -u).$label.lock"
+tries=0
+until mkdir "$lock" 2>/dev/null; do
+  tries=$((tries + 1))
+  # A lock older than the 5 s wait is left over from a killed caller.
+  [ "$tries" -ge 50 ] && { rmdir "$lock" 2>/dev/null || true; tries=0; continue; }
+  sleep 0.1
+done
+trap 'rmdir "$lock" 2>/dev/null || true' EXIT INT TERM
+
+ids=$(find_session)
+if [ -z "$ids" ]; then
+  rex new "$label" --cwd "$root" --json | jq -r '.session_id'
+  exit 0
+fi
+count=$(printf '%s\n' "$ids" | wc -l | tr -d ' ')
+[ "$count" -gt 1 ] && echo "rex-session: $count sessions named '$label', using the first" >&2
+printf '%s\n' "$ids" | head -n 1
