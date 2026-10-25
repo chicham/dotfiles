@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# agent-new: create a jj workspace off main and start an agent in it, in a new
+# Rex tab labelled after the workspace.
+#
+# Usage: agent-new [-r REPO] [--popup] [NAME] [-- CMD...]
+#
+#   REPO  any directory inside a jj repo (default: $PWD)
+#   NAME  workspace name, [a-z0-9][a-z0-9._-]*; asked for when omitted
+#   CMD   program to start in the workspace (default: claude)
+#   --popup  ask in a bordered, opaque fzf box; wait for enter on an error
+#
+# Creates REPO_ROOT/.workspaces/NAME at main, then runs
+# `rex run --cwd WS --label NAME -- CMD`. When direnv is installed, CMD runs
+# under `direnv exec WS`, so it sees the .envrc environment a shell in WS would;
+# environment setup (venv, dependencies) is left to that .envrc.
+# Exit 2: bad usage or name. Exit 1: not a jj repo, workspace exists, or a
+# command failed. Nothing is created when the name or repo check fails.
+set -euo pipefail
+
+source "${BASH_SOURCE[0]%/*}/popup.bash"
+
+usage() {
+  sed -n '/^set -/q; 2,$s/^# \{0,1\}//p' "${BASH_SOURCE[0]}"
+}
+
+valid_name() {
+  [[ $1 =~ ^[a-z0-9][a-z0-9._-]*$ ]]
+}
+
+die() {
+  local code=$1
+  shift
+  echo "agent-new: $*" >&2
+  return "$code"
+}
+
+main() {
+  local repo=$PWD name="" popup=0
+  while (($#)); do
+    case $1 in
+      -r | --repo) repo=$2; shift 2 ;;
+      --popup) popup=1; shift ;;
+      -h | --help) usage; return 0 ;;
+      --) shift; break ;;
+      -*) usage >&2; return 2 ;;
+      *) name=$1; shift ;;
+    esac
+  done
+  local cmd=("$@")
+  ((${#cmd[@]})) || cmd=(claude)
+
+  # Launched from a key binding the popup closes on exit; keep errors
+  # readable. A cancelled prompt (130) is not an error.
+  if ((popup)); then
+    trap 'rc=$?; ((rc && rc != 130)) && { echo "agent-new failed ($rc). Press enter." >&2; read -r _; }; exit $rc' EXIT
+    popup_paint
+  fi
+
+  local root
+  root=$(jj -R "$repo" root 2>/dev/null) || die 1 "$repo is not inside a jj repo"
+
+  if [[ -z $name ]] && ((popup)); then
+    name=$(popup_prompt "new agent in ${root##*/}: workspace name") || return 130
+  elif [[ -z $name ]]; then
+    read -r -p "agent name: " name
+  fi
+  valid_name "$name" || die 2 "invalid name '$name' (use [a-z0-9][a-z0-9._-]*)"
+
+  local ws=$root/.workspaces/$name
+  [[ ! -e $ws ]] || die 1 "$ws already exists"
+
+  jj -R "$root" workspace add "$ws" --name "$name" -r main
+
+  # `rex run` skips interactive shell config, so direnv never loads the repo's
+  # .envrc, which owns the environment (venv, VCS_VERSIONING_DISABLE_JJ...).
+  local env=()
+  if command -v direnv >/dev/null; then
+    env=(direnv exec "$ws")
+  fi
+  rex run --cwd "$ws" --label "$name" -- "${env[@]}" "${cmd[@]}"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  main "$@"
+fi

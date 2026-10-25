@@ -17,6 +17,10 @@ rex.bind(P .. "q", "client.tab.close")
 rex.bind(P .. ",", "client.tab.rename")
 rex.bind(P .. "tab", "client.tab.next")
 rex.bind(P .. "shift+tab", "client.tab.previous")
+-- Rex has no tab picker like session.switch; jump by position instead (tabs count from 1).
+for i = 1, 9 do
+  rex.bind(P .. tostring(i), "client.tab.goto", { index = i })
+end
 
 -- ----- Panes -----
 rex.bind(P .. "v", "pane.split", { direction = "right" })
@@ -29,11 +33,10 @@ rex.bind(P .. "up", "pane.focus.up")
 rex.bind(P .. "down", "pane.focus.down")
 
 -- ----- Sessions, search, agents -----
-rex.bind(P .. "s", "session.switch")
+rex.bind(P .. "shift+s", "session.switch")
+rex.bind(P .. "s", "session.new")
 rex.bind(P .. "b", "client.sidebar.toggle")
 rex.bind(P .. "/", "client.find.open")
--- The Activity sidebar lists every agent that is working, waiting, or done.
-rex.bind(P .. "a", "client.sidebar.activity.toggle")
 
 -- ============================================================================
 -- RESIZE MODE: Ctrl+A r, then arrows; Esc, q or Enter to leave
@@ -85,6 +88,56 @@ rex.action{
   end,
 }
 rex.bind(P .. "e", "edit_scrollback")
+
+-- ============================================================================
+-- AGENTS: Ctrl+A n starts an agent in a new jj workspace, Ctrl+A g lists them
+-- ============================================================================
+
+-- Rex's Lua API has no text prompt, so new_agent floats a short-lived
+-- terminal over the current window, palette-style, running a script that asks
+-- with fzf. It closes when the script exits.
+local scripts = os.getenv("HOME") .. "/.config/rex/scripts/"
+
+-- The focused pane's directory: the shell's OSC 7 report, else the
+-- foreground program's cwd (a pane running claude reports no pwd change).
+local function pane_dir(block_id)
+  local res = rex.block.call("com.superlogical.terminal", "pwd", { block_id = block_id })
+  if res and res.pwd then
+    return (res.pwd:gsub("^file://[^/]*", ""))
+  end
+  local proc = rex.block.call("com.superlogical.terminal", "process", { block_id = block_id })
+  return proc and proc.foreground and proc.foreground.cwd or os.getenv("HOME")
+end
+
+local function popup(command, cwd)
+  local _, err = rex.session.new_layer{
+    bounds = { 0.1, 0.15, 0.8, 0.7 },
+    focus  = true,
+    layout = rex.layout.block{
+      flavor  = "com.superlogical.terminal.shell",
+      options = { command = command, cwd = cwd },
+    },
+  }
+  if err then
+    rex.log("error", "popup: " .. tostring(err))
+  end
+end
+
+rex.action{
+  name     = "new_agent",
+  title    = "New Agent in jj Workspace",
+  category = "Agents",
+  run      = function(ctx, args)
+    local dir = pane_dir(ctx.block_id)
+    popup({ scripts .. "agent-new", "--popup", "-r", dir }, dir)
+  end,
+}
+rex.bind(P .. "n", "new_agent")
+
+-- The Activity sidebar is Rex's own agent list: state per pane, click to jump.
+-- Ctrl+A b toggles the sidebar on whichever panel it last showed; this always
+-- opens Activity.
+rex.bind(P .. "g", "client.sidebar.activity.toggle")
 
 -- ============================================================================
 -- TERMINAL
