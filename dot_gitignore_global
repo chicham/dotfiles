@@ -328,3 +328,10 @@ __pycache__/
 # Review annotations are exported per working copy and drained before landing;
 # they describe a change under review, never part of it.
 .review-comments.md
+
+### local-review / nvim state ###
+# Per-working-copy review comments and editor state; never part of a change.
+.review.org
+.nvim-state.org
+
+**/.claude/settings.local.json

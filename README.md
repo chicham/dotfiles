@@ -167,6 +167,7 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 ### Claude Code × Rex Integration
 - `~/.local/bin/rex-agent` - start a Claude Code agent in its own Rex window (or split pane) of the project's session, optionally in a new jj workspace; prints the window and block ids as JSON
 - `~/.local/bin/rex-session` - print or create the Rex session of the project holding a directory
+- `~/.config/rex/scripts/tab-pick` - fzf popup that jumps to any tab in any session by name (bound to `Ctrl+A s`)
 
 ### Agent Skills
 - `~/.claude/skills/` - [Agent Skills](https://agentskills.io/specification) installed with `gh skill`, **not** tracked by chezmoi

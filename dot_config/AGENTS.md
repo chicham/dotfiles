@@ -18,20 +18,28 @@ Invariants: they hold even when no skill is loaded. Procedure lives in the skill
   The repo root is read-only. Leave changes in the working copy, and never discard them.
 - **One workspace = one arm**: a linear chain on `main`. `wip` merges all arms, and only `jj deploy`
   touches it (ask first, it pushes). Never build merges by hand.
+- **Edit across arms from a scratch `@` on `wip`.** `jj new wip` is allowed. Edit or resolve there,
+  then move each hunk into its arm with `jj absorb --into 'arms()'` (ask first). Afterwards `@` must be
+  empty. Never commit there. After every land, sync or rebase, `conflicts() & mutable()` must be empty.
 - **`main` is immutable.** Only `jj land` moves it. Never `--ignore-immutable` without a go-ahead.
 - **The megamerge guard hook is a hard gate.** Fix what it reports; never route around it.
 - **Rewrite only your own commits** (`main..@`) and `orphan_arms()`. For another workspace's
   commits, the user must confirm the exact command in chat first. Check `jj op log` before a mutation.
 - **Never push, publish a PR, or land** without the user's explicit go-ahead. Landing also needs
   green tests, shown by `context-hygiene/scripts/gate.sh` (not a scout summary), and drained review comments.
-- **One PR = one commit = one feature group**, with one `Closes #N` line per issue.
-  A new chain starts from `main`, unless it depends on an unlanded chain (say so).
+- **One PR = one commit = one feature group**, with one `Closes: #N` line per issue
+  (`Issue: #N` when linked but not closing, `Issue: none` with the issue in the body when there is none).
+  Each footer line is its own paragraph (blank line before and after), and the last sub-issue's
+  commit also closes the parent issue. A new chain starts from `main`, unless it depends on an unlanded chain (say so).
 
 ## Context
 Accuracy drops as context grows. Keep it small and recoverable. Load `/context-hygiene` for the full rules.
 - Trim output at the source (`-q`, `| tail`, `rg -c`). Query large files instead of loading them.
 - External tools run in the Haiku `/scout` (search, web, history, run): it returns evidence, you
   interpret. A hook denies them in the main thread. Edits, jj, `gh` writes and known-path reads stay here.
+- Subagents run on Sonnet: pass `model: "sonnet"` to every Agent call, unless the user names another
+  model or the agent type fixes its own (the `/scout` stays Haiku). An Agent call without `model`
+  inherits the main session's model.
 - Checkpoint decisions, paths and open items to org (`~/.orgfiles/agents/`) at each phase end.
   Then suggest `/clear` rather than `/compact`.
 
@@ -94,3 +102,19 @@ The user reviews in Neovim. Never drive their editor. Load `/local-review` for t
 - At the start of a project task, check `gtd/inbox.org` and `gtd/projects/<project>` for related TODOs.
 - The inbox is a capture buffer only. Triage it at least once a day via `/org`, with one decision per TODO:
   refine, refile, promote, defer (`SOMEDAY`/`WAITING`) or close.
+
+## Tracking
+Each item has one home. Never copy it into a second one; link instead.
+- **Code bugs and features → GitHub issues.** Commits close them (`Closes: #N`). Issues hold code work
+  only, never run follow-ups.
+- **Experiments → orgfiles**: hypotheses, runs in flight (`tracking.org`), dated results (logbook),
+  leaderboard. Load `experiment-methodology` for what goes where.
+- **Metric values → the metrics store.** Notes and reports cite the store; they never copy numbers by hand.
+- **Personal TODOs and pending decisions → `gtd/`** (push, land, choices for the user).
+- **Links both ways:** a run that exposes a bug gets a logbook line `→ #N`, and the issue cites the
+  `run_id` or the experiment's org `:ID:`. A `gtd/` TODO that becomes code work turns into an issue,
+  and the TODO is closed or shrinks to a pointer.
+- **Closing an issue whose fix trains or evaluates a model:** before the issue closes, post an issue
+  comment with the TensorBoard log path or the W&B run URL for each run that validates the fix.
+  Give a link only, never metric values; the numbers stay in the metrics store. Since `Closes: #N`
+  closes the issue when the commit lands, the comment is a landing gate, like green tests.
