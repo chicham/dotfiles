@@ -1,7 +1,7 @@
 # chezmoi:template:left-delimiter="[[ " right-delimiter=" ]] #"
 # ============================================================================
 # Ghostty Configuration
-# Ghostty configuration
+# Migrated from WezTerm
 # ============================================================================
 
 # ============================================================================
@@ -19,17 +19,17 @@ font-size = 14
 # Line height (cell height adjustment for 1.1 line height equivalent)
 adjust-cell-height = 10%
 
-# Cursor appearance (reverse video)
+# Cursor appearance (reverse video like WezTerm's force_reverse_video_cursor)
 cursor-color = cell-foreground
 cursor-text = cell-background
 
-# Inactive pane dimming
+# Inactive pane dimming (equivalent to WezTerm's inactive_pane_hsb)
 unfocused-split-opacity = 0.7
 
 # Split divider color (optional - defaults to theme appropriate color)
 # split-divider-color = #585b70
 
-# Window padding (minimal)
+# Window padding (minimal like WezTerm)
 window-padding-x = 0
 window-padding-y = 0,4
 
@@ -78,6 +78,20 @@ keybind = shift+enter=text:\x1b\r
 # [[ if eq .chezmoi.os "darwin" ]] #
 # ----- Tilde sign ~ (macOS default) -----
 keybind = alt+n=text:~
+
+# ----- Pipe sign | (macOS default) -----
+keybind = shift+alt+l=text:|
+
+# ----- Backslash \ (macOS default) -----
+keybind = shift+alt+:=text:\\
+
+# ----- Square brackets [ ] (macOS default) -----
+keybind = shift+alt+(=text:[
+keybind = shift+alt+)=text:]
+
+# ----- Curly brackets { } (macOS default) -----
+keybind = alt+(=text:{
+keybind = alt+)=text:}
 # [[ end ]] #
 
 # ============================================================================

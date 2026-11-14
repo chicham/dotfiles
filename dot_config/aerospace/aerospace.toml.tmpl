@@ -53,38 +53,46 @@ outer.right = 3
 6 = 'secondary'
 
 [mode.main.binding]
-# Monitor Operations (Ctrl)
-ctrl-up = 'focus-monitor --wrap-around prev'
-ctrl-down = 'focus-monitor --wrap-around next'
-ctrl-shift-up = 'move-node-to-monitor --wrap-around --focus-follows-window prev'
-ctrl-shift-down = 'move-node-to-monitor --wrap-around --focus-follows-window next'
+# alt = windows, ctrl = workspaces, ctrl-alt = screens + system.
+# tab = cycle (shift reverses), esc = back-and-forth.
 
-# Window Focus Operations (Alt + Left/Right)
-alt-left = 'focus --boundaries-action wrap-around-the-workspace dfs-prev'
-alt-right = 'focus --boundaries-action wrap-around-the-workspace dfs-next'
-
-# Workspace Operations (Alt + Up/Down)
-alt-up = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --wrap-around prev"
-alt-down = "exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --wrap-around next"
+# Windows (alt)
+alt-tab = 'focus --boundaries-action wrap-around-the-workspace dfs-next'
+alt-shift-tab = 'focus --boundaries-action wrap-around-the-workspace dfs-prev'
+alt-esc = 'focus-back-and-forth'
 alt-shift-left = 'move left'
+alt-shift-down = 'move down'
+alt-shift-up = 'move up'
 alt-shift-right = 'move right'
-alt-shift-up = 'move-node-to-workspace --focus-follows-window --wrap-around prev'
-alt-shift-down = 'move-node-to-workspace --focus-follows-window --wrap-around next'
+alt-shift-h = 'join-with left'
+alt-shift-j = 'join-with down'
+alt-shift-k = 'join-with up'
+alt-shift-l = 'join-with right'
 
-# Back-and-forth Operations (Tab)
-ctrl-tab = 'focus-back-and-forth'
-alt-tab = 'workspace-back-and-forth'
+# Workspaces (ctrl); cycling skips empty workspaces and stays on the focused screen
+ctrl-tab = 'exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --stdin --wrap-around next'
+ctrl-shift-tab = 'exec-and-forget aerospace list-workspaces --monitor focused --empty no | aerospace workspace --stdin --wrap-around prev'
+ctrl-esc = 'workspace-back-and-forth'
+ctrl-1 = 'workspace 1'
+ctrl-2 = 'workspace 2'
+ctrl-3 = 'workspace 3'
+ctrl-4 = 'workspace 4'
+ctrl-5 = 'workspace 5'
+ctrl-shift-1 = 'move-node-to-workspace 1'
+ctrl-shift-2 = 'move-node-to-workspace 2'
+ctrl-shift-3 = 'move-node-to-workspace 3'
+ctrl-shift-4 = 'move-node-to-workspace 4'
+ctrl-shift-5 = 'move-node-to-workspace 5'
+ctrl-shift-up = 'exec-and-forget aerospace list-workspaces --monitor focused | aerospace move-node-to-workspace --stdin --wrap-around --focus-follows-window next'
+ctrl-shift-down = 'exec-and-forget aerospace list-workspaces --monitor focused | aerospace move-node-to-workspace --stdin --wrap-around --focus-follows-window prev'
 
-# Window Layout Operations (Alt + hjkl)
-alt-j = 'join-with down'
-alt-k = 'join-with up'
-alt-l = 'join-with right'
-alt-h = 'join-with left'
+# Screens (ctrl-alt + arrows)
+ctrl-alt-left = 'focus-monitor --wrap-around left'
+ctrl-alt-right = 'focus-monitor --wrap-around right'
+ctrl-alt-shift-left = 'move-node-to-monitor --wrap-around --focus-follows-window left'
+ctrl-alt-shift-right = 'move-node-to-monitor --wrap-around --focus-follows-window right'
 
-# System Operations
-ctrl-enter = 'exec-and-forget open -na Ghostty'
-ctrl-r = 'reload-config'
-ctrl-w = 'close'
-ctrl-shift-w = 'close-all-windows-but-current'
-
+# System (ctrl-alt); keeps ctrl-w / ctrl-r / ctrl-enter free for shell, rex and nvim
+ctrl-alt-enter = 'exec-and-forget open -na Ghostty'
+ctrl-alt-r = 'reload-config'
 # [[ end ]] #
