@@ -38,8 +38,8 @@ return {
     {
       "<leader>ar",
       function()
-        local root = vim.fs.root(0, { ".jj", ".git" }) or vim.fn.getcwd()
-        local path = root .. "/.review-comments.md"
+        local org = require("custom.review-org")
+        local path = org.path(org.REVIEW_FILE)
         if vim.fn.filereadable(path) == 0 then
           vim.notify("No review comments at " .. path, vim.log.levels.WARN)
           return
@@ -47,7 +47,13 @@ return {
         -- Send the path, not the contents: send_to_terminal types into
         -- the pane, so a multi-line paste would submit line by line.
         require("claudecode.terminal").send_to_terminal(
-          "Review comments are ready in " .. path .. " -- read it and address the ISSUE and SUGGESTION entries.",
+          "Review comments are ready in "
+            .. path
+            .. " -- read it, address every heading left of the bar, and write your resolution "
+            .. "into that heading's keyword and its RESOLUTION/REPLY/CHANGE/RESOLVED_AT properties. "
+            .. "Editor state is in "
+            .. org.path(org.STATE_FILE)
+            .. ".",
           { submit = true }
         )
       end,
