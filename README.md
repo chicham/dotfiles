@@ -86,7 +86,6 @@ Fish, Starship, Git, bat, eza, fd, fzf, ripgrep, zoxide, rip2, dust, bottom, dir
 | `python_dev` | nbdime, pre-commit (via uv) | Python/Jupyter development tools |
 | `gcloud` | Google Cloud SDK | Google Cloud CLI (cask on darwin, manual install on linux) |
 | `colima` | Colima | Container runtime (darwin only) |
-| `multiplexer` | Zellij | Terminal multiplexer |
 | `aerospace` | AeroSpace | Tiling window manager (darwin only) |
 | `onepassword` | 1Password, 1Password CLI | Password manager (darwin only) |
 | `agent_skills` | [`gh skill`](https://cli.github.com/manual/gh_skill) sync | Installs and keeps up to date every skill declared in the private `artefactory/skills` companion repo (org-internal, not publicly linkable) — its own custom skills, plus its curated list of recommended external skills |
@@ -118,7 +117,6 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 - 🐋 **Container Development** (`cloud`) - [Colima](https://github.com/abiosoft/colima) for running Docker containers on macOS without Docker Desktop
 - ⏰ **Shell History** (`atuin`) - [Atuin](https://atuin.sh/) syncs your command history across machines with powerful search
 - 📁 **Smart Navigation** - [Zoxide](https://github.com/ajeetdsouza/zoxide) learns your most-used directories for instant navigation
-- 🤖 **Claude Code × Zellij** - `cc-wt <name>` runs `claude --worktree` as a centralized [jj](https://jj-vcs.github.io/) workspace inside a [zellij](https://zellij.dev/) floating pane pinned to the current tab; the `zellij` agent skill (`zbash`) runs shell commands in visible floating panes while capturing their output and exit code
 - 🧠 **Agent Skills** (`agent_skills`) - every `chezmoi apply` runs [`gh skill update --all`](https://cli.github.com/manual/gh_skill) then `gh skill install` for every agent the team uses (`claude-code`, `github-copilot`, `codex`, `gemini-cli`). Never `--force`: a name collision with a skill you authored or installed yourself is left alone, not overwritten; only skills already tracked by `gh skill` get updated. The skill list itself isn't in this repo — it installs every custom skill authored in the private companion repo `artefactory/skills` (org-internal, not publicly linkable), plus every skill listed in that repo's `recommended-skills.txt` (pointers to external repos, never vendored). Add or remove a skill there, not here. Reuses the same authenticated `gh` chezmoi init already requires; silently skipped if `gh` isn't authenticated. Config: `.chezmoidata/agent_skills.yaml`
 
 ## What Files Will Be Created/Modified
@@ -169,12 +167,6 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 ### Claude Code × Rex Integration
 - `~/.local/bin/rex-agent` - start a Claude Code agent in its own Rex window (or split pane) of the project's session, optionally in a new jj workspace; prints the window and block ids as JSON
 - `~/.local/bin/rex-session` - print or create the Rex session of the project holding a directory
-
-### Claude Code × Zellij Integration
-- `~/.config/fish/functions/cc-wt.fish` - `cc-wt <name>` launcher (claude worktree → jj workspace in a zellij floating pane)
-- `~/.local/share/cc-zellij/bin/{git,tmux}` - translation shims, activated **only** by `cc-wt` (never on your global PATH)
-- `~/.local/bin/zbash` - run a command in a visible zellij floating pane, capturing output + exit code
-- `~/.claude/skills/zellij/` - agent skill instructing Claude to route commands through `zbash`
 
 ### Agent Skills
 - `~/.claude/skills/` - [Agent Skills](https://agentskills.io/specification) installed with `gh skill`, **not** tracked by chezmoi

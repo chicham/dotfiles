@@ -63,13 +63,6 @@
   executable = true
   path = "mergiraf"
 
-# zellij - A terminal workspace with batteries included
-[".local/bin/zellij"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "zellij-org/zellij" (printf "zellij-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
-  executable = true
-  path = "zellij"
-
 # starship - The minimal, blazing-fast, and infinitely customizable prompt for any shell
 [".local/bin/starship"]
   type = "archive-file"
@@ -159,15 +152,6 @@
   executable = true
   stripComponents = 1
   path = "git-lfs"
-# [[ end ]] #
-
-# [[ if has "multiplexer" .modules ]] #
-# zellij - A terminal workspace with batteries included
-[".local/bin/zellij"]
-  type = "archive-file"
-  url = # [[ gitHubLatestReleaseAssetURL "zellij-org/zellij" (printf "zellij-%s-unknown-linux-musl.tar.gz" $rustArch) | quote ]] #
-  executable = true
-  path = "zellij"
 # [[ end ]] #
 
 # starship - The minimal, blazing-fast, and infinitely customizable prompt for any shell

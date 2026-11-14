@@ -7,3 +7,8 @@
 .config/fish/completions/docker.fish
 .config/fish/theme_preference
 .wezterm.lua
+.config/zellij
+.config/fish/functions/cc-wt.fish
+.local/bin/zbash
+.local/bin/zellij
+.local/share/cc-zellij

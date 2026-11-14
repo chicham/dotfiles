@@ -117,23 +117,6 @@ Run inside a Rex terminal. Each agent gets its own window in the project's sessi
 | Read an agent's screen | `rex capture -s <session_id> -b <block_id>` | Ids come from the `rex-agent` JSON |
 | Project session id | `rex-session` / `rex-session --root` | Creates the session when missing / prints the project root |
 
-### Claude Code × Zellij
-
-Run inside a [zellij](https://zellij.dev/) session.
-
-| Task | Command | Description |
-|------|---------|-------------|
-| Worktree as jj workspace + floating pane | `cc-wt <name>` | Runs `claude --worktree <name> --tmux=classic`; creates a [jj](https://jj-vcs.github.io/) workspace at `~/.claude/workspaces/<name>` and opens claude in a floating pane pinned to the current tab |
-| Run a command in a visible floating pane | `zbash '<command>'` | Executes in a floating pane (watch it live) while returning stdout/stderr + the real exit code, like `bash -c` |
-| | `zbash 'cargo test'` | Watch tests run live in a floating pane |
-| | `zbash 'rg TODO src/ | head'` | Pipelines work; quote the whole command |
-| Keep the pane open after exit | `ZBASH_KEEP=1 zbash '<cmd>'` | Default is close-on-exit |
-| Cap how long zbash waits | `ZBASH_TIMEOUT=60 zbash '<cmd>'` | Seconds before giving up (default 600) |
-
-> The `zellij` agent skill tells Claude Code to route shell commands through `zbash`
-> automatically, so you can watch what an agent session is doing. `zbash` falls back to
-> running the command normally when you are not inside zellij.
-
 ### Agent Skills
 
 Managed with `gh skill` (GitHub CLI 2.93+). The `skills` alias is shorthand for `gh skill`.

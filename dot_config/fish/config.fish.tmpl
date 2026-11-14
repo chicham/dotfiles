@@ -165,13 +165,6 @@ if type -q zoxide
     end
 end
 
-# Zellij terminal workspace - https://zellij.dev
-if type -q zellij
-    function __init_zellij --on-event fish_prompt
-        zellij setup --generate-completion fish | source
-        functions --erase __init_zellij
-    end
-end
 
 # Direnv is initialised by homebrew's vendor_conf.d/direnv.fish - https://direnv.net
 
@@ -245,7 +238,7 @@ if type -q atuin
 end
 
 # Experimental: atuin data rendered through fzf instead of atuin's own TUI.
-# ctrl-r is bound too but doesn't fire in this terminal setup (ghostty/zellij/
+# ctrl-r is bound too but doesn't fire in this terminal setup (ghostty/rex/
 # fish vi mode) - alt-r/alt-f are the ones that actually work.
 if status is-interactive; and type -q fzf; and type -q atuin
     bind ctrl-r '__atuin_fzf_search directory'
