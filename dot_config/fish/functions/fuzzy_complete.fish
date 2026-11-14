@@ -1,9 +1,10 @@
 function fuzzy_complete --description 'Tab completion picker backed by fzf'
-    set -l cmd_line (commandline -cp)
-    # Cut at the cursor like $cmd_line: the whole token (`commandline -t`)
-    # would carry the text right of the cursor into fzf's --query and make
-    # the FC_PREFIX length arithmetic below go negative.
-    set -l token (commandline -ct)
+    # Like fish's own Tab, the whole token is completed, the text after the
+    # cursor included (`Doc|s` completes to `Documents/`), and the whole
+    # token is replaced. $cmd_line therefore runs to the end of the token,
+    # which keeps the FC_PREFIX length arithmetic below non-negative.
+    set -l token (commandline -t)
+    set -l cmd_line (commandline -cp)(string sub -s (math (string length -- (commandline -ct)) + 1) -- $token)
     set -l command (commandline -co)[1]
 
     # A token the user opened with a quote (`ls "/tmp/a b`) comes back from
@@ -114,14 +115,27 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
         set -a extra_opts --no-extended
     end
 
+    # Every reload starts a fish of its own. A bare `fish --no-config` given
+    # this shell's function and completion search paths yields the same
+    # candidates (checked for git, jj, uv, cd, brew, docker, chezmoi) in
+    # ~140 ms instead of ~300 ms, since config.fish and conf.d are skipped.
+    # Names ending in PATH are exported colon-joined and re-imported as lists.
+    set -lx FC_FUNCTION_PATH $fish_function_path
+    set -lx FC_COMPLETE_PATH $fish_complete_path
+    set -l fc_env 'set fish_function_path $FC_FUNCTION_PATH; set fish_complete_path $FC_COMPLETE_PATH;'
+
     set -l chosen (_fuzzy_complete_render --comps $comps \
         | fzf --ansi --tiebreak=begin $extra_opts \
               --delimiter='\t' --with-nth=1,2 --nth=1 \
-              --with-shell='fish -c' \
-              --bind='change:reload:sleep 0.1; _fuzzy_complete_render "$FC_PREFIX"{q}' \
+              --with-shell='fish --no-config -c' \
+              --bind="change:reload:sleep 0.1; $fc_env _fuzzy_complete_render \"\$FC_PREFIX\"{q}" \
               --bind='tab:down,shift-tab:up' \
+              --preview="$fc_env _fuzzy_complete_preview {1} {2}" \
+              --preview-window='right,50%,border-left,<100(hidden)' \
+              --bind="ctrl-o:execute($fc_env _fuzzy_complete_open {1} {2})" \
               --query="$token" \
-              --prompt="$command> " --header='enter: insert  esc: cancel')
+              --prompt="$command> " \
+              --header='enter: insert  ctrl-o: open  ctrl-/: preview  esc: cancel')
 
     if test -n "$chosen"
         _fuzzy_complete_insert (string split -f1 \t -- $chosen) $token

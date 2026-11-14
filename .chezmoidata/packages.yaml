@@ -21,6 +21,8 @@ packages:
         - 'fzf'
         - 'ripgrep'
         - 'zoxide'
+        - 'chafa'
+        - 'hexyl'
         - 'rip2'
         - 'dust'
         - 'dysk'

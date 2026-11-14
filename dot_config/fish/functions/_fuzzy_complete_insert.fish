@@ -1,11 +1,11 @@
-function _fuzzy_complete_insert --description 'Replace the current token up to the cursor with a chosen candidate, matching native fish escaping and trailing-space rules'
+function _fuzzy_complete_insert --description 'Replace the current token with a chosen candidate, matching native fish escaping and trailing-space rules'
     set -l cand $argv[1]
-    # Part of the token left of the cursor, as the picker matched it:
-    # already stripped of any opening quote the user typed. Falls back to
-    # the raw text so the function stays callable on its own.
+    # The token as the picker matched it: already stripped of any opening
+    # quote the user typed. Falls back to the raw text so the function stays
+    # callable on its own.
     set -l token $argv[2]
     if not set -q argv[2]
-        set token (commandline -ct)
+        set token (commandline -t)
     end
 
     # fish appends a space after an unambiguous completion so the next arg
@@ -47,12 +47,10 @@ function _fuzzy_complete_insert --description 'Replace the current token up to t
         set n_vars (math $n_vars - 1)
     end
 
-    # Replace only what lies left of the cursor, as fish's own completion
-    # does; text right of the cursor in the same token is kept after it.
-    set -l before (commandline -ct)
-    set -l after (string sub -s (math (string length -- "$before") + 1) -- (commandline -t))
-    set -l start (math (commandline -C) - (string length -- "$before"))
-    commandline -t -- $escaped$suffix$after
+    # The whole token is replaced, as fish's own Tab does, and the cursor
+    # lands right after the inserted candidate.
+    set -l start (math (commandline -C) - (string length -- (commandline -ct)))
+    commandline -t -- $escaped$suffix
     commandline -C (math $start + (string length -- "$escaped$suffix"))
     commandline -f repaint
 end
