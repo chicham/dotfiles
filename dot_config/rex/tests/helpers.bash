@@ -8,24 +8,33 @@ setup_fakes() {
   FIX="$BATS_TEST_TMPDIR/fix"
   CALLS="$BATS_TEST_TMPDIR/calls"
   mkdir -p "$BIN" "$FIX"
-
-  # The chezmoi source names the script executable_agent-new without an exec
-  # bit; stage it as chezmoi deploys it so the tests run what ~/.config/rex gets.
-  SCRIPTS="$BATS_TEST_TMPDIR/scripts"
-  mkdir -p "$SCRIPTS"
-  cp "$SCRIPTS_SRC/popup.bash" "$SCRIPTS/popup.bash"
-  cp "$SCRIPTS_SRC/executable_agent-new" "$SCRIPTS/agent-new"
-  chmod +x "$SCRIPTS/agent-new"
   : >"$CALLS"
   export FIX CALLS
   export PATH="$BIN:$PATH"
 
+  # The chezmoi source names executables executable_<name> without an exec
+  # bit; stage the scripts as chezmoi deploys them so the tests run what
+  # ~/.config/rex gets. The same staging works on the deployed copy.
+  SCRIPTS="$BATS_TEST_TMPDIR/scripts"
+  mkdir -p "$SCRIPTS"
+  for src in "$SCRIPTS_SRC"/*; do
+    dst="$SCRIPTS/$(basename "${src#"$SCRIPTS_SRC"/executable_}")"
+    cp "$src" "$dst"
+    [[ $src == */executable_* ]] && chmod +x "$dst"
+  done
+
   cat >"$BIN/rex" <<'EOF'
 #!/usr/bin/env bash
 echo "rex $*" >>"$CALLS"
+[[ "$1 $2" != "-C client:gone" ]] || { echo "Error: client target not found" >&2; exit 1; }
 case "$1 $2" in
   "ls --json") cat "$FIX/sessions.json" ;;
   "block ls") cat "$FIX/blocks-$4.json" ;;
+  "window ls") cat "$FIX/windows-$4.json" ;;
+  "do -s")
+    # do -s SESSION -b BLOCK com.superlogical.terminal.title
+    [[ $6 == com.superlogical.terminal.title ]] || exit 1
+    cat "$FIX/title-$5.json" 2>/dev/null || exit 1 ;;
   "block call")
     # Blocks resolve only within a session, so -s must name the right one.
     [[ $3 == -s && $5 == -b ]] || exit 1

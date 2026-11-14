@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# tab-pick: fuzzy-pick any tab, in any session, by name and show it.
+#
+# Usage: tab-pick [-C CLIENT] [--popup | --list]
+#
+#   CLIENT   the Rex app to switch; when it is gone or omitted, rex's choice
+#            (the only connected app)
+#   --popup  draw in a bordered, opaque fzf box; wait for enter on an error
+#   --list   print the names instead of picking
+#   --menu FILE  read the "SESSION_ID<TAB>WINDOW_ID<TAB>name" lines from FILE
+#            (then delete it) instead of asking rex; init.lua's tab_pick
+#            builds it in the server, which is much faster
+#
+# A tab is named as the sidebar names it: its own label when renamed, else
+# its focused pane's terminal title (set by the program), else that pane's
+# Rex label, else "-". Tabs are listed in session order, then tab order.
+# On a pick, runs `rex [-C CLIENT] do session.select session_id=S window_id=W`.
+# Exit 130: cancelled. Exit 2: bad usage. Exit 1: a rex call failed.
+set -euo pipefail
+
+source "${BASH_SOURCE[0]%/*}/popup.bash"
+
+usage() {
+  sed -n '/^set -/q; 2,$s/^# \{0,1\}//p' "${BASH_SOURCE[0]}"
+}
+
+# One "SESSION_ID<TAB>WINDOW_ID<TAB>name" line per tab.
+menu() {
+  local sid wid own bid label title
+  rex ls --json | jq -r '.sessions[].session_id' |
+    while read -r sid; do
+      # own: the tab's label unless it is Rex's default; label: the focused
+      # pane's Rex label. "-" stands in for empty so read keeps the columns.
+      rex window ls -s "$sid" --json </dev/null | jq -r '
+        .windows[] | .focused_block_id as $f
+        | [.window_id,
+           (if (.label // "" | test("^(Window [0-9a-f]{8})?$")) then "-" else .label end),
+           ($f // "-"),
+           ([.layers[].blocks[] | select(.block_id == $f) | .label // empty] | first // "-")]
+        | @tsv' |
+        while IFS=$'\t' read -r wid own bid label; do
+          title=$own
+          if [[ $title == - && $bid != - ]]; then
+            title=$(rex do -s "$sid" -b "$bid" com.superlogical.terminal.title </dev/null 2>/dev/null |
+              jq -r '.title // empty' 2>/dev/null) || title=
+            [[ -n $title ]] || title=$label
+          fi
+          printf '%s\t%s\t%s\n' "$sid" "$wid" "$title"
+        done
+    done
+}
+
+main() {
+  local client=() popup=0 list=0 file=""
+  while (($#)); do
+    case $1 in
+      -C | --client) client=(-C "$2"); shift 2 ;;
+      --popup) popup=1; shift ;;
+      --list) list=1; shift ;;
+      --menu) file=$2; shift 2 ;;
+      -h | --help) usage; return 0 ;;
+      *) usage >&2; return 2 ;;
+    esac
+  done
+
+  local lines
+  if [[ -n $file ]]; then
+    lines=$(<"$file")
+    rm -f "$file"
+  else
+    lines=$(menu)
+  fi
+
+  if ((list)); then
+    cut -f3- <<<"$lines"
+    return
+  fi
+
+  local fzf_opts=(--delimiter=$'\t' --with-nth=3 --no-sort --cycle
+    --layout=reverse --info=inline-right --no-scrollbar --highlight-line
+    --prompt='❯ ' --pointer='▌' --gutter=' ')
+  if ((popup)); then
+    trap 'rc=$?; ((rc && rc != 130)) && { echo "tab-pick failed ($rc). Press enter." >&2; read -r _; }; exit $rc' EXIT
+    popup_paint
+    fzf_opts+=("${POPUP_FZF_OPTS[@]}" --border-label=' Tabs ' --border-label-pos=3
+      --color='border:#6c7086,label:#cba6f7:bold,prompt:#cba6f7,pointer:#cba6f7,info:#6c7086'
+      --color='fg:#bac2de,fg+:#cdd6f4:bold,bg+:#313244,hl:#f9e2af,hl+:#f9e2af:bold,gutter:-1')
+  fi
+
+  local pick sid wid
+  # fzf exits 1 on no match and 130 on Esc; both mean nothing to switch to.
+  pick=$(fzf "${fzf_opts[@]}" <<<"$lines") || return 130
+  IFS=$'\t' read -r sid wid _ <<<"$pick"
+  # CLIENT can be a short-lived connection (an action run through the API
+  # reports the caller, gone by now); fall back to rex's own app choice.
+  # The +-form keeps an empty array legal under set -u on bash 3.2 (/bin/bash).
+  rex ${client[@]+"${client[@]}"} do session.select "session_id=$sid" "window_id=$wid" >/dev/null 2>&1 ||
+    rex do session.select "session_id=$sid" "window_id=$wid" >/dev/null
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  main "$@"
+fi
