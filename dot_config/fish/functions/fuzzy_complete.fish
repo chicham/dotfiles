@@ -49,7 +49,19 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
         return 0
     end
 
-    set -l comps (complete -C $cmd_line)
+    # `complete -C` returns nothing for a `**` token whose last segment is
+    # literal (`src/**/sub/fi`), so _fuzzy_complete_glob lists those. A
+    # wildcard in the last segment (`src/**/*.py`) stays with fish's native
+    # Tab below, which expands it in place to every match.
+    set -l glob_flags
+    test "$command" = cd; and set glob_flags --dirs
+    set -l is_glob 0
+    set -l comps
+    if set comps (_fuzzy_complete_glob $glob_flags -- $token)
+        set is_glob 1
+    else
+        set comps (complete -C $cmd_line)
+    end
 
     if test (count $comps) -eq 0
         commandline -f complete
@@ -94,6 +106,9 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
     # column. The initial list stays interactive while `change:reload` swaps
     # in the freshly `complete -C`'d candidates for the new prefix a beat
     # later - no frozen/blank list while that runs.
+    # Tab grows the query to the next path segment of the highlighted row and
+    # Shift-Tab drops one (_fuzzy_complete_extend); arrows and ctrl-n/ctrl-p
+    # move through the list. The new query fires the same change reload.
     # The reload is debounced with `sleep 0.1` (fzf cancels the previous
     # still-sleeping reload when a new keystroke arrives) so fast typing
     # doesn't spawn a `complete -C` call per character.
@@ -114,6 +129,14 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
     if string match -qr '^!|\$$' -- $token
         set -a extra_opts --no-extended
     end
+    # fzf's search is off for queries it cannot match literally (see
+    # _fuzzy_complete_search_mode); the reload filters those instead. The
+    # change binding re-decides on every edit, before the reload. It runs in
+    # the foreground: a bg-transform can land after a later keystroke's and
+    # leave search on for a glob.
+    if test (_fuzzy_complete_search_mode $token) = disable-search
+        set -a extra_opts --disabled
+    end
 
     # Every reload starts a fish of its own. A bare `fish --no-config` given
     # this shell's function and completion search paths yields the same
@@ -128,14 +151,15 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
         | fzf --ansi --tiebreak=begin $extra_opts \
               --delimiter='\t' --with-nth=1,2 --nth=1 \
               --with-shell='fish --no-config -c' \
-              --bind="change:reload:sleep 0.1; $fc_env _fuzzy_complete_render \"\$FC_PREFIX\"{q}" \
-              --bind='tab:down,shift-tab:up' \
+              --bind="change:transform($fc_env _fuzzy_complete_search_mode {q})+reload(sleep 0.1; $fc_env _fuzzy_complete_render --split \"\$FC_PREFIX\" {q})" \
+              --bind="tab:transform-query($fc_env _fuzzy_complete_extend {q} {1})" \
+              --bind="shift-tab:transform-query($fc_env _fuzzy_complete_extend --back {q})" \
               --preview="$fc_env _fuzzy_complete_preview {1} {2}" \
               --preview-window='right,50%,border-left,<100(hidden)' \
               --bind="ctrl-o:execute($fc_env _fuzzy_complete_open {1} {2})" \
               --query="$token" \
               --prompt="$command> " \
-              --header='enter: insert  ctrl-o: open  ctrl-/: preview  esc: cancel')
+              --header='tab: extend  shift-tab: back  enter: insert  ctrl-o: open  ctrl-/: preview  esc: cancel')
 
     if test -n "$chosen"
         _fuzzy_complete_insert (string split -f1 \t -- $chosen) $token
