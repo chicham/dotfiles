@@ -38,28 +38,23 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
         return 0
     end
 
-    # An unambiguous zoxide jump (see completions/cd.fish for the threshold)
-    # skips the picker entirely - same target `cd <token><enter>` would
-    # reach, just inserted rather than run, so a stray keystroke never lands
-    # you somewhere you didn't mean to go.
-    if test "$command" = cd
-        and functions -q __zoxide_cd_dominant_match
-        and set -l winner (__zoxide_cd_dominant_match $token)
-        _fuzzy_complete_insert $winner $token
-        return 0
-    end
+    # Everything before the token being completed (e.g. "git " for "git c").
+    # Exported so the reload binding below can rebuild "prefix + live query"
+    # and re-run `complete -C` as the user edits the fzf search box, instead
+    # of filtering a candidate list that was frozen at the old prefix.
+    set -lx FC_PREFIX (string sub -l (math (string length -- $cmd_line) - (string length -- $token)) -- $cmd_line)
 
-    # `complete -C` returns nothing for a `**` token whose last segment is
-    # literal (`src/**/sub/fi`), so _fuzzy_complete_glob lists those. A
-    # wildcard in the last segment (`src/**/*.py`) stays with fish's native
-    # Tab below, which expands it in place to every match.
-    set -l glob_flags
-    test "$command" = cd; and set glob_flags --dirs
-    set -l is_glob 0
+    # `cd` lists local directories, then zoxide entries (_fuzzy_complete_cd):
+    # one row in total is inserted, more open the picker. Tab never jumps
+    # to a zoxide guess on its own; `cd <token><enter>` still does.
+    # Elsewhere, `complete -C` returns nothing for a `**` token whose last
+    # segment is literal (`src/**/sub/fi`), so _fuzzy_complete_glob lists
+    # those. A wildcard in the last segment (`src/**/*.py`) stays with
+    # fish's native Tab below, which expands it in place to every match.
     set -l comps
-    if set comps (_fuzzy_complete_glob $glob_flags -- $token)
-        set is_glob 1
-    else
+    if test "$command" = cd
+        set comps (_fuzzy_complete_cd -- $FC_PREFIX $token)
+    else if not set comps (_fuzzy_complete_glob -- $token)
         set comps (complete -C $cmd_line)
     end
 
@@ -91,12 +86,6 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
         return 0
     end
 
-    # Everything before the token being completed (e.g. "git " for "git c").
-    # Exported so the reload binding below can rebuild "prefix + live query"
-    # and re-run `complete -C` as the user edits the fzf search box, instead
-    # of filtering a candidate list that was frozen at the old prefix.
-    set -lx FC_PREFIX (string sub -l (math (string length -- $cmd_line) - (string length -- $token)) -- $cmd_line)
-
     # Layout/cycle/pointer/marker/etc come from the global FZF_DEFAULT_OPTS;
     # only pass what's specific to rendering completion candidates here.
     # --nth=1 restricts fzf's own live filtering to the candidate column
@@ -106,21 +95,26 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
     # column. The initial list stays interactive while `change:reload` swaps
     # in the freshly `complete -C`'d candidates for the new prefix a beat
     # later - no frozen/blank list while that runs.
-    # Tab grows the query to the next path segment of the highlighted row and
-    # Shift-Tab drops one (_fuzzy_complete_extend); arrows and ctrl-n/ctrl-p
-    # move through the list. The new query fires the same change reload.
+    # Tab grows the query to the next path segment of the highlighted row
+    # (after `cd`, to the whole row, whose subdirectories the reload then
+    # lists under it) and Shift-Tab drops one (_fuzzy_complete_extend);
+    # arrows and ctrl-n/ctrl-p move through the list. The new query fires
+    # the same change reload. Both also move the cursor to the first row,
+    # which the reload keeps: fzf would keep the old index instead, so Enter
+    # after Tab could pick a subdirectory over the directory Tab chose.
     # The reload is debounced with `sleep 0.1` (fzf cancels the previous
     # still-sleeping reload when a new keystroke arrives) so fast typing
     # doesn't spawn a `complete -C` call per character.
     set -l extra_opts
+    set -l extend_opts
     if test "$command" = cd
-        # zoxide (aliased to `cd`) already returns its own frecency-ranked,
-        # token-filtered order (see completions/cd.fish) - that ranking IS
-        # what a bare `cd <token>` jump resolves to. Without --no-sort, fzf
-        # re-scores candidates with its own fuzzy heuristic and can promote
-        # a lower-frecency dir (e.g. a literal prefix match) above it,
-        # silently diverging from what typing `cd <token><enter>` would do.
-        set extra_opts --no-sort
+        # The rows come ordered: the browsed directory, local directories,
+        # then zoxide by frecency. Without --no-sort, fzf re-scores them
+        # with its own fuzzy heuristic and the order is lost.
+        # fish and zoxide match directories case-insensitively; fzf's smart
+        # case would hide `work/...` rows for the query `Wo`.
+        set extra_opts --no-sort -i
+        set extend_opts --whole
     end
     # fzf's extended syntax reads a leading '!' as negation and a trailing
     # '$' as a suffix anchor, and has no escape for either, so a token like
@@ -152,8 +146,8 @@ function fuzzy_complete --description 'Tab completion picker backed by fzf'
               --delimiter='\t' --with-nth=1,2 --nth=1 \
               --with-shell='fish --no-config -c' \
               --bind="change:transform($fc_env _fuzzy_complete_search_mode {q})+reload(sleep 0.1; $fc_env _fuzzy_complete_render --split \"\$FC_PREFIX\" {q})" \
-              --bind="tab:transform-query($fc_env _fuzzy_complete_extend {q} {1})" \
-              --bind="shift-tab:transform-query($fc_env _fuzzy_complete_extend --back {q})" \
+              --bind="tab:transform-query($fc_env _fuzzy_complete_extend $extend_opts {q} {1})+first" \
+              --bind="shift-tab:transform-query($fc_env _fuzzy_complete_extend --back {q})+first" \
               --preview="$fc_env _fuzzy_complete_preview {1} {2}" \
               --preview-window='right,50%,border-left,<100(hidden)' \
               --bind="ctrl-o:execute($fc_env _fuzzy_complete_open {1} {2})" \

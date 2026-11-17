@@ -2,18 +2,18 @@ function _fuzzy_complete_render --description 'Render complete -C candidates as 
     # `--comps <line>...` renders candidates the caller already has, so the
     # first draw does not run `complete -C` a second time (slow completers
     # would double the Tab latency). `--split <prefix> <token>` is what fzf's
-    # change:reload passes: a token holding a wildcard is listed by
-    # _fuzzy_complete_glob --any (directories only after `cd`), anything else
-    # by `complete -C` on the joined line. A bare command line is always
-    # given to `complete -C`.
+    # change:reload passes: after `cd`, _fuzzy_complete_cd --self lists the
+    # rows; elsewhere a token holding a wildcard is listed by
+    # _fuzzy_complete_glob --any, anything else by `complete -C` on the
+    # joined line. A bare command line is always given to `complete -C`.
     set -l comps
     if test "$argv[1]" = --comps
         set comps $argv[2..]
     else if test "$argv[1]" = --split
         set -l words (string split -n ' ' -- (string trim -- $argv[2]))
-        set -l flags --any
-        test "$words[1]" = cd; and set -a flags --dirs
-        if not set comps (_fuzzy_complete_glob $flags -- $argv[3])
+        if test "$words[1]" = cd
+            set comps (_fuzzy_complete_cd --self -- $argv[2] $argv[3])
+        else if not set comps (_fuzzy_complete_glob --any -- $argv[3])
             set comps (complete -C "$argv[2]$argv[3]")
         end
     else

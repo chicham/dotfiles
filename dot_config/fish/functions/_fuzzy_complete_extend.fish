@@ -1,5 +1,6 @@
 function _fuzzy_complete_extend --description 'Grow or shrink the picker query by one path segment'
     # Usage: _fuzzy_complete_extend <query> <candidate>
+    #        _fuzzy_complete_extend --whole <query> <candidate>
     #        _fuzzy_complete_extend --back <query>
     # <query> is the picker's raw query (escaped as on the command line);
     # <candidate> the highlighted candidate, unescaped as `complete -C`
@@ -9,11 +10,13 @@ function _fuzzy_complete_extend --description 'Grow or shrink the picker query b
     #   `a/b c/sub/x.py` gives `a/b\ c/sub/`);
     # - any other query: the candidate cut at the first '/' after the part
     #   it shares with the query, or the whole candidate when none follows.
+    # --whole: the whole candidate, with a trailing '/' (the `cd` picker,
+    # whose rows are all directories, zoxide's absolute ones included).
     # An empty candidate leaves the query unchanged.
     # --back: the query minus its last segment (`a/b/c` and `a/b/c/` give
     # `a/b/`). A `**` replaced by an extension is not restored.
     # Pure: prints only.
-    argparse back -- $argv; or return 2
+    argparse back whole -- $argv; or return 2
     set -l query $argv[1]
 
     if set -q _flag_back
@@ -24,6 +27,12 @@ function _fuzzy_complete_extend --description 'Grow or shrink the picker query b
     set -l cand $argv[2]
     if test -z "$cand"
         printf '%s\n' $query
+        return 0
+    end
+
+    if set -q _flag_whole
+        string match -q -- '*/' $cand; or set cand $cand/
+        _fuzzy_complete_escape $cand $query
         return 0
     end
 

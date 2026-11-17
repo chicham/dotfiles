@@ -74,6 +74,13 @@ mode() {
   [ "$(mode '')" = enable-search ]
 }
 
+@test "--whole takes a zoxide row entire, with a trailing /" {
+  run ext --whole 'arte' '/z/Work/arte facts'
+  [ "$output" = '/z/Work/arte\ facts/' ]
+  run ext --whole 'a/**/su' 'a/b c/sub/'
+  [ "$output" = 'a/b\ c/sub/' ]
+}
+
 @test "back drops the last segment" {
   run ext --back 'a/b\ c/sub/fi'
   [ "$output" = 'a/b\ c/sub/' ]
