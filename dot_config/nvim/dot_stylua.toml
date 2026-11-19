@@ -7,6 +7,7 @@
 # `syntax` must be Lua52: stylua otherwise reads `::continue::` as Luau syntax
 # and refuses to parse the file at all, which is a formatter that silently skips
 # whichever files use goto.
+
 syntax = "Lua52"
 column_width = 120
 indent_type = "Spaces"

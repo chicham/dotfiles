@@ -24,6 +24,9 @@ bare() {
   for line in 'git ch' 'jj ' 'bat --th' 'brew inst' 'jq --a' 'ls D'; do
     expected=$(full "$line")
     [ -n "$expected" ]
-    [ "$(bare "$line")" = "$expected" ] || { echo "differs: $line"; return 1; }
+    [ "$(bare "$line")" = "$expected" ] || {
+      echo "differs: $line"
+      return 1
+    }
   done
 }

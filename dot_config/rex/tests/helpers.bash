@@ -8,7 +8,7 @@ setup_fakes() {
   FIX="$BATS_TEST_TMPDIR/fix"
   CALLS="$BATS_TEST_TMPDIR/calls"
   mkdir -p "$BIN" "$FIX"
-  : >"$CALLS"
+  : > "$CALLS"
   export FIX CALLS
   export PATH="$BIN:$PATH"
 
@@ -23,7 +23,7 @@ setup_fakes() {
     [[ $src == */executable_* ]] && chmod +x "$dst"
   done
 
-  cat >"$BIN/rex" <<'EOF'
+  cat > "$BIN/rex" << 'EOF'
 #!/usr/bin/env bash
 echo "rex $*" >>"$CALLS"
 [[ "$1 $2" != "-C client:gone" ]] || { echo "Error: client target not found" >&2; exit 1; }
@@ -43,7 +43,7 @@ case "$1 $2" in
 esac
 EOF
 
-  cat >"$BIN/jj" <<'EOF'
+  cat > "$BIN/jj" << 'EOF'
 #!/usr/bin/env bash
 echo "jj $*" >>"$CALLS"
 if [[ $3 == root ]]; then
@@ -56,12 +56,12 @@ fi
 EOF
 
   # Only recorded, so tests can assert agent-new leaves uv to direnv.
-  cat >"$BIN/uv" <<'EOF'
+  cat > "$BIN/uv" << 'EOF'
 #!/usr/bin/env bash
 echo "uv $*" >>"$CALLS"
 EOF
 
-  cat >"$BIN/direnv" <<'EOF'
+  cat > "$BIN/direnv" << 'EOF'
 #!/usr/bin/env bash
 # direnv exec DIR CMD...: record, then run CMD in the caller's cwd as direnv does.
 echo "direnv $1 $2" >>"$CALLS"
@@ -69,7 +69,7 @@ shift 2
 exec "$@"
 EOF
 
-  cat >"$BIN/fzf" <<'EOF'
+  cat > "$BIN/fzf" << 'EOF'
 #!/usr/bin/env bash
 # Picks the line given by $FZF_PICK (1-based), or cancels when unset.
 echo "fzf $*" >>"$CALLS"

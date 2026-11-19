@@ -10,7 +10,7 @@ setup() {
   bin=$(mktemp -d)
   root=$(mktemp -d)
   mkdir -p "$root/Work/x" "$root/Work/y" "$root/Wobble" "$root/a/leaf" "$root/a/b c"
-  printf '#!/bin/sh\nprintf "%%s" "$FAKE_ZOXIDE"\n' >"$bin/zoxide"
+  printf '#!/bin/sh\nprintf "%%s" "$FAKE_ZOXIDE"\n' > "$bin/zoxide"
   chmod +x "$bin/zoxide"
   export PATH="$bin:$PATH" FAKE_ZOXIDE=''
 }

@@ -15,7 +15,7 @@ setup() {
   export REX_LOG="$BATS_TEST_TMPDIR/rex.log"
   export FAKE_SESSIONS='{"sessions":[]}'
   : > "$REX_LOG"
-  cat > "$BIN/rex" <<'EOF'
+  cat > "$BIN/rex" << 'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$REX_LOG"
 case "$1 ${2:-}" in
@@ -26,7 +26,7 @@ case "$1 ${2:-}" in
   "block inspect") echo '{"block":{"window_id":"window:host"}}' ;;
 esac
 EOF
-  cat > "$BIN/claude" <<'EOF'
+  cat > "$BIN/claude" << 'EOF'
 #!/bin/sh
 echo "claude in $(pwd -P): $*"
 EOF

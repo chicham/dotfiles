@@ -7,26 +7,26 @@ load helpers
 # empty title, and one whose title call fails.
 setup() {
   setup_fakes
-  cat >"$FIX/sessions.json" <<'EOF'
+  cat > "$FIX/sessions.json" << 'EOF'
 {"sessions":[{"session_id":"s1","label":"alpha"},{"session_id":"s2","label":"beta"}]}
 EOF
-  cat >"$FIX/windows-s1.json" <<'EOF'
+  cat > "$FIX/windows-s1.json" << 'EOF'
 {"session_id":"s1","label":"alpha","windows":[
  {"window_id":"w1","label":"Window 0123abcd","focused_block_id":"b2","layers":[
    {"kind":"tiled","blocks":[{"block_id":"b1","label":"nvim"},{"block_id":"b2","label":"claude"}]}]},
  {"window_id":"w2","label":"logs","focused_block_id":"b4","layers":[
    {"kind":"tiled","blocks":[{"block_id":"b4","label":"tail"}]}]}]}
 EOF
-  cat >"$FIX/windows-s2.json" <<'EOF'
+  cat > "$FIX/windows-s2.json" << 'EOF'
 {"session_id":"s2","label":"beta","windows":[
  {"window_id":"w3","label":"Window 89abcdef","focused_block_id":"b5","layers":[
    {"kind":"tiled","blocks":[{"block_id":"b5","label":"shell"}]}]},
  {"window_id":"w4","label":"Window 01234567","focused_block_id":"b6","layers":[
    {"kind":"tiled","blocks":[{"block_id":"b6"}]}]}]}
 EOF
-  echo '{"title":"Fix login redirect"}' >"$FIX/title-b2.json"
-  echo '{"title":"ignored"}' >"$FIX/title-b4.json"
-  echo '{"title":""}' >"$FIX/title-b5.json"
+  echo '{"title":"Fix login redirect"}' > "$FIX/title-b2.json"
+  echo '{"title":"ignored"}' > "$FIX/title-b4.json"
+  echo '{"title":""}' > "$FIX/title-b5.json"
 }
 
 @test "--list names tabs like the sidebar: own label, else focused pane's title, else its label" {
@@ -86,7 +86,7 @@ EOF
 }
 
 @test "--menu reads the lines from a file, deletes it, and asks rex nothing" {
-  printf 's9\tw9\t● Ready-made\n' >"$BATS_TEST_TMPDIR/menu"
+  printf 's9\tw9\t● Ready-made\n' > "$BATS_TEST_TMPDIR/menu"
   FZF_PICK=1 run "$SCRIPTS/tab-pick" --menu "$BATS_TEST_TMPDIR/menu" -C client:x
   [ "$status" -eq 0 ]
   [ ! -e "$BATS_TEST_TMPDIR/menu" ]

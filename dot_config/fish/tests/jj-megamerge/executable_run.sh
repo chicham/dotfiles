@@ -13,6 +13,6 @@ for t in cases flows; do
   echo "### $t"
   out=$(bash "$work/$t.sh" "$work")
   printf '%s\n' "$out"
-  grep -q '^pass=[0-9]* fail=0$' <<<"$out" || status=1
+  grep -q '^pass=[0-9]* fail=0$' <<< "$out" || status=1
 done
 exit $status

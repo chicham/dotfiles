@@ -6,7 +6,7 @@ setup() {
   setup_fakes
   REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$REPO/sub"
-  echo "$REPO" >"$FIX/jj-root"
+  echo "$REPO" > "$FIX/jj-root"
 }
 
 @test "creates the workspace off main and starts claude in a labelled tab, never uv" {
@@ -37,8 +37,8 @@ setup() {
 
 @test "rejects invalid names before creating anything" {
   for bad in "" "Upper" "-dash" "a/b" "a b" "../x"; do
-    : >"$CALLS"
-    run "$SCRIPTS/agent-new" -r "$REPO" -- claude <<<"$bad"
+    : > "$CALLS"
+    run "$SCRIPTS/agent-new" -r "$REPO" -- claude <<< "$bad"
     [ "$status" -eq 2 ]
     run cat "$CALLS"
     [[ "$output" != *"workspace add"* ]]

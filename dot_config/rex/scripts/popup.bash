@@ -19,7 +19,7 @@ popup_prompt() {
   local out rc=0
   # No items, so fzf exits 1 ("no match") on Enter; the query is still printed.
   out=$(fzf "${POPUP_FZF_OPTS[@]}" --border-label=" $1 " --print-query \
-    --disabled --no-info --prompt='> ' </dev/null) || rc=$?
+    --disabled --no-info --prompt='> ' < /dev/null) || rc=$?
   ((rc == 0 || rc == 1)) || return 130
   printf '%s\n' "${out%%$'\n'*}"
 }

@@ -13,9 +13,9 @@ setup() {
   mkdir -p "$root/a/b c/sub" "$root/a/sub" "$root/a/.hid/sub" "$root/a/ign/sub"
   touch "$root/a/b c/sub/file.py" "$root/a/b c/sub/other.py" "$root/a/sub/f2.py" \
     "$root/a/x.py" "$root/a/.hid/sub/h.py" "$root/a/ign/sub/i.py"
-  printf 'ign/\n' >"$root/a/.gitignore"
+  printf 'ign/\n' > "$root/a/.gitignore"
   # `zoxide query -l` prints $FAKE_ZOXIDE, so each case pins the database.
-  printf '#!/bin/sh\nprintf "%%s" "$FAKE_ZOXIDE"\n' >"$bin/zoxide"
+  printf '#!/bin/sh\nprintf "%%s" "$FAKE_ZOXIDE"\n' > "$bin/zoxide"
   chmod +x "$bin/zoxide"
   export PATH="$bin:$PATH" FAKE_ZOXIDE=''
 }
