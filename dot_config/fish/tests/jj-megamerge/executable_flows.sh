@@ -340,7 +340,7 @@ check "prek: commit before the bad one passes" $? 0
 c $A bookmark create topic -r @-
 c $A bookmark track topic@origin
 jj -R $A push -b topic > /dev/null 2>&1
-check "push: bad commit mid-range refused" $? 1
+check "push: tip still holding the bad file refused" $? 1
 check "push: nothing published" "$(d 'remote_bookmarks(exact:"topic")')" ""
 jj -R $A push > /dev/null 2>&1
 check "push: unnamed refused" $? 2
@@ -357,6 +357,16 @@ jj -R $A sync > /dev/null 2>&1
 jj -R $A push -b main > /dev/null 2>&1
 check "push: main pushed once no arm forks" $? 0
 check "push: main published" "$(d 'remote_bookmarks(exact:"main")')" "chore: main 2"
+# Only the tip is checked: a later commit that fixes a failing one unblocks the push.
+touch $A/BAD
+c $A commit -m 'feat: a bad 2'
+rm $A/BAD
+c $A commit -m 'feat: a fix bad 2'
+c $A bookmark create topic2 -r @-
+c $A bookmark track topic2@origin
+jj -R $A push -b topic2 > /dev/null 2>&1
+check "push: failing commit fixed below the tip pushes" $? 0
+check "push: fixed tip published" "$(d 'remote_bookmarks(exact:"topic2")')" "feat: a fix bad 2"
 # A new bookmark must be tracked first: jj's own rule, kept by jj push.
 c $B bookmark create clean -r 'description(substring:"feat: b1")'
 c $B bookmark track clean@origin

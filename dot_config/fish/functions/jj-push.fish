@@ -1,4 +1,4 @@
-function jj-push --description 'Push named bookmarks once prek passes on every commit they would publish'
+function jj-push --description 'Push named bookmarks once prek passes on their tips'
     # Usage: jj-push [-R <workspace>] [--remote <name>] -b <bookmark> [-b <bookmark>...]
     #   alias: jj push -b NAME
     #
@@ -7,8 +7,10 @@ function jj-push --description 'Push named bookmarks once prek passes on every c
     #   - `wip` is refused: it ships through `jj deploy`, which gates it against every arm;
     #   - `main` is refused while mm_unpushed_forks() is non-empty (arms forking from unpushed
     #     main commits would be left on old copies), the guard's rule for pushing main;
-    #   - jj-prek passes on every commit the push would publish: ancestors of the bookmarks not
-    #     yet on <remote>.
+    #   - jj-prek passes on each bookmark tip not yet on <remote>: the tree the remote ends up
+    #     with, as a git pre-push hook checks. Commits below a tip are not checked: once
+    #     immutable, a commit that failed a hook could never be fixed, and its push would stay
+    #     blocked for good.
     # Then runs `jj git push --remote <remote> -b <bookmark>...`.
     #
     # The guard checks the command an agent types; this function runs `jj git push` itself, so
@@ -50,9 +52,9 @@ function jj-push --description 'Push named bookmarks once prek passes on every c
     end
 
     set -l heads (string join ' | ' (printf 'bookmarks(exact:"%s")\n' $_flag_bookmark))
-    set -l publish "::($heads) ~ ::remote_bookmarks(remote=exact:\"$remote\") ~ root()"
+    set -l publish "($heads) ~ ::remote_bookmarks(remote=exact:\"$remote\")"
     if not jj-prek $repo_args -- $publish
-        echo "jj push: prek failed on a commit to publish; nothing pushed" >&2
+        echo "jj push: prek failed on a bookmark tip; nothing pushed" >&2
         return 1
     end
     jj $repo_args git push --remote $remote (printf -- '-b\n%s\n' $_flag_bookmark)

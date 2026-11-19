@@ -65,7 +65,7 @@ edit-args = ["diff", "$left", "$right"]
 # Usage: `jj prek [<revset>]`. Logic: jj-prek.fish.
 prek = ["util", "exec", "--", "fish", "-c", "jj-prek $argv", "--"]
 
-# Push named bookmarks once `jj prek` passes on every commit they would publish; carries the
+# Push named bookmarks once `jj prek` passes on their tips (what the remote ends up with); carries the
 # guard's push rules (named only, no wip, no main while mm_unpushed_forks()).
 # Usage: `jj push -b NAME [--remote NAME]`. Logic: jj-push.fish.
 push = ["util", "exec", "--", "fish", "-c", "jj-push $argv", "--"]
