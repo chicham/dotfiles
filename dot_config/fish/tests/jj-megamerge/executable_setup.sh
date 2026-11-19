@@ -4,7 +4,8 @@
 set -e
 S=$1; T=$S/t; rm -rf $T; mkdir -p $T; cd $T
 git init -q --bare remote.git; git init -q --bare deploy.git
-jj git init repo >/dev/null 2>&1; R=$T/repo
+# Signing is off from the first commit: the user's signer (1Password) would prompt and stall the run.
+jj --config signing.behavior=drop git init repo >/dev/null 2>&1; R=$T/repo
 jj -R $R config set --repo signing.behavior drop
 jj -R $R config set --repo signing.sign-all false
 c() { jj -R "$1" "${@:2}" >/dev/null 2>&1; }

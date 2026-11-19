@@ -41,13 +41,6 @@ pager = "bat --style=plain"
 conflict-marker-style = "diff"
 log-word-wrap = true
 
-[merge-tools.nvim]
-program = "nvim"
-merge-args = ["-d", "$left", "$output", "$right",
-              "-c", "wincmd w",
-              "-c", "wincmd J"]
-merge-tool-edits-conflict-markers = true
-
 [merge-tools.oyui]
 program = "oyui"
 edit-args = ["diff", "$left", "$right"]
@@ -66,10 +59,16 @@ edit-args = ["diff", "$left", "$right"]
 # Every fish-backed alias ends with "--" so a leading flag (`jj pull --all-remotes`)
 # reaches the function instead of fish itself.
 
-# Run every hook in .pre-commit-config.yaml over the whole repo.
-# `--all-files` is mandatory: plain `prek run` errors in a jj repo
-# ("config file is not staged") because jj keeps no git index.
-prek = ["util", "exec", "--", "prek", "run", "--all-files"]
+# Run every prek hook on the content of each commit of a revset (default @), each in its own
+# `jj run` checkout with a throwaway git index: from a workspace, a plain `prek run` checks
+# the root checkout's files instead. prek is the version the project pins, else the latest.
+# Usage: `jj prek [<revset>]`. Logic: jj-prek.fish.
+prek = ["util", "exec", "--", "fish", "-c", "jj-prek $argv", "--"]
+
+# Push named bookmarks once `jj prek` passes on every commit they would publish; carries the
+# guard's push rules (named only, no wip, no main while mm_unpushed_forks()).
+# Usage: `jj push -b NAME [--remote NAME]`. Logic: jj-push.fish.
+push = ["util", "exec", "--", "fish", "-c", "jj-push $argv", "--"]
 
 # Deploy every arm: gate each arm, rebase `wip` onto `arm_tips()`, gate `wip` (no
 # conflict, exactly the arm tips as parents, no other merge), push it to the deploy remote.
@@ -121,6 +120,9 @@ issue-new = ["util", "exec", "--", "fish", "-c", "issue-new $argv", "--"]
 [revsets]
 # Plain `jj log` shows the megamerge: main, every in-flight chain, and `@`.
 log = "megamerge()"
+# Bare `jj fix` rewrites my arm only (jj also refits its descendants, i.e. wip). jj's default,
+# reachable(@, mutable()), walks through wip into every peer's arm; same scope as automerge.
+fix = "(chain(@) & mutable()) ~ present(wip):: ~ ::(working_copies() ~ @ ~ present(wip)::)"
 
 [templates]
 log = '''
@@ -256,3 +258,17 @@ program = "nbdiff"
 diff-args = ["--color-words", "$left", "$right"]
 diff-invocation-mode = "file-by-file"
 diff-expected-exit-codes = [0, 1]   # nbdiff exits 1 when it finds differences
+
+# `jj fix`: each changed file goes through a tool on stdin, its stdout replaces the file.
+# Tools run from the workspace root, so `uv run --with ruff` takes the venv's pinned ruff,
+# else the latest release. --no-sync: jj fix calls the tool once per file, in parallel, and a
+# syncing uv would install dependencies (and race on creating .venv) on every call.
+# --exit-zero: a lint ruff cannot fix must not discard the fixes it made (jj keeps a file
+# only on exit 0); ruff still prints the file unchanged on a syntax error.
+[fix.tools.ruff-check]
+command = ["uv", "run", "--no-sync", "--with", "ruff", "ruff", "check", "--fix", "--exit-zero", "--stdin-filename=$path", "-"]
+patterns = ["glob:'**/*.py'", "glob:'**/*.pyi'"]
+
+[fix.tools.ruff-format]
+command = ["uv", "run", "--no-sync", "--with", "ruff", "ruff", "format", "--stdin-filename=$path", "-"]
+patterns = ["glob:'**/*.py'", "glob:'**/*.pyi'"]

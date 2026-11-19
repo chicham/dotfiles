@@ -211,4 +211,37 @@ check "mixed orphan: conflict-free" "$(d 'description(substring:"feat: o mixed")
 check "mixed orphan: json untouched" "$(json 'description(substring:"feat: o mixed")')" '{"a":1,"c":3}'
 check "mixed orphan: no divergent copy" "$(d 'divergent()')" ""
 
+# jj prek checks each commit's own content; jj push publishes only what passes.
+HOOKS='repos:\n  - repo: local\n    hooks:\n      - id: no-bad\n        name: no BAD files\n        language: fail\n        entry: BAD file present\n        files: BAD\n'
+$S/setup.sh $S
+mv_main 'chore: hooks' .pre-commit-config.yaml "$HOOKS"; jj -R $A sync >/dev/null 2>&1; jj -R $B sync >/dev/null 2>&1
+touch $A/BAD; c $A commit -m 'feat: a bad'; echo ok > $A/ok.txt; c $A commit -m 'feat: a after bad'
+jj -R $A prek >/dev/null 2>&1; check "prek: fails on the workspace's own @" $? 1
+jj -R $B prek >/dev/null 2>&1; check "prek: clean workspace passes" $? 0
+jj -R $A prek 'description(substring:"feat: a1")' >/dev/null 2>&1; check "prek: commit before the bad one passes" $? 0
+c $A bookmark create topic -r @-; c $A bookmark track topic@origin
+jj -R $A push -b topic >/dev/null 2>&1; check "push: bad commit mid-range refused" $? 1
+check "push: nothing published" "$(d 'remote_bookmarks(exact:"topic")')" ""
+jj -R $A push >/dev/null 2>&1; check "push: unnamed refused" $? 2
+jj -R $A push -b wip >/dev/null 2>&1; check "push: wip refused" $? 2
+mv_main 'chore: main 2' base.txt 'M2\n'
+check "push: arms fork from unpushed main (precondition)" "$(d 'mm_unpushed_forks()' | head -1)" "chore: hooks"
+jj -R $A push -b main >/dev/null 2>&1; check "push: main refused while arms fork from it unpushed" $? 1
+check "push: main not published" "$(d 'remote_bookmarks(exact:"main") & description(substring:"chore: hooks")')" ""
+jj -R $B sync >/dev/null 2>&1; c $A abandon -r 'description(substring:"feat: a bad") | description(substring:"feat: a after bad")'
+jj -R $A sync >/dev/null 2>&1
+jj -R $A push -b main >/dev/null 2>&1; check "push: main pushed once no arm forks" $? 0
+check "push: main published" "$(d 'remote_bookmarks(exact:"main")')" "chore: main 2"
+# A new bookmark must be tracked first: jj's own rule, kept by jj push.
+c $B bookmark create clean -r 'description(substring:"feat: b1")'; c $B bookmark track clean@origin
+jj -R $B push -b clean >/dev/null 2>&1; check "push: clean bookmark pushed" $? 0
+check "push: clean published" "$(d 'remote_bookmarks(exact:"clean")')" "feat: b1"
+
+# Bare jj fix runs ruff check then ruff format through uv, on my arm only.
+printf 'y   =  2\n' > $A/g.py; c $A describe -m 'feat: a g.py'
+printf 'import os\nx   =  1\n' > $B/f.py; c $B describe -m 'feat: b f.py'
+jj -R $B fix >/dev/null 2>&1; check "fix: exit" $? 0
+check "fix: unused import removed, formatted" "$(jj -R $B file show -r @ 'root-file:"f.py"')" "x = 1"
+check "fix: peer arm untouched" "$(jj -R $R file show -r 'description(substring:"feat: a g.py")' 'root-file:"g.py"')" "y   =  2"
+
 echo "pass=$pass fail=$fail"
