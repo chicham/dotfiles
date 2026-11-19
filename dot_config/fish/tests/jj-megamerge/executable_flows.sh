@@ -116,4 +116,99 @@ check "divergent: two copies of d1" "$(d 'divergent() & mutable() & description(
 why=$(jj -R $A deploy --no-push 2>&1 >/dev/null | head -1)
 check "divergent: deploy refuses on the copies" "${why%%;*}" "deploy: divergent copies"
 
+# mergiraf: a structural conflict (two keys added to one JSON object) is resolved; a line
+# conflict in a text file is not, and an orphan arm with both is left exactly as it was.
+mv_main() { c $R new main -m "$1"; printf '%b' "$3" > $R/$2; c $R bookmark set main -r @; c $R new main; }
+JB='{\n  "a": 1\n}\n'; JL='{\n  "a": 1,\n  "b": 2\n}\n'; JR='{\n  "a": 1,\n  "c": 3\n}\n'
+json() { jj -R $R file show -r "$1" 'root-file:"c.json"' | tr -d ' \n'; }
+
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; jj -R $A sync >/dev/null 2>&1
+printf '%b' "$JR" > $A/c.json; c $A describe -m 'feat: a1 json'
+mv_main 'feat: json b' c.json "$JL"
+msg=$(jj -R $A land 2>&1); check "automerge land: stops after merging" $? 1
+check "automerge land: asks for a rerun" "$(grep -c 'rerun jj land' <<<"$msg")" "1"
+check "automerge land: names the undo" "$(grep -c 'op revert' <<<"$msg")" "1"
+check "automerge land: arm conflict-free" "$(d 'mm_conflicts(description(substring:"feat: a1 json"))')" ""
+check "automerge land: main not moved yet" "$(d main)" "feat: json b"
+jj -R $A land >/dev/null 2>&1; check "automerge land: rerun lands" $? 0
+check "automerge land: main" "$(d main)" "feat: a1 json"
+check "automerge land: both keys kept" "$(json main)" '{"a":1,"b":2,"c":3}'
+
+$S/setup.sh $S
+echo A > $A/base.txt; c $A describe -m 'feat: a1 base'
+mv_main 'feat: main base' base.txt 'M\n'
+msg=$(jj -R $A land 2>&1); check "line conflict: land refuses" $? 1
+check "line conflict: names the conflicts" "$(grep -c 'resolve these conflicts' <<<"$msg")" "1"
+check "line conflict: still conflicted" "$(d 'mm_conflicts(description(substring:"feat: a1 base"))')" "feat: a1 base"
+check "line conflict: main unchanged" "$(d main)" "feat: main base"
+
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; jj -R $A sync >/dev/null 2>&1
+printf '%b' "$JR" > $A/c.json; c $A describe -m 'feat: a1 json'
+mv_main 'feat: json b' c.json "$JL"
+c $A rebase -s 'roots(chain(@))' -o main
+check "jj automerge: precondition, arm conflicted" "$(d 'mm_conflicts(description(substring:"feat: a1 json"))')" "feat: a1 json"
+jj -R $A automerge >/dev/null 2>&1; check "jj automerge: exit" $? 0
+check "jj automerge: arm conflict-free" "$(d 'mm_conflicts(description(substring:"feat: a1 json"))')" ""
+check "jj automerge: both keys kept" "$(json 'description(substring:"feat: a1 json")')" '{"a":1,"b":2,"c":3}'
+echo A > $A/base.txt; c $A describe -m 'feat: a1 json base'; mv_main 'feat: main base' base.txt 'M\n'
+c $A rebase -s 'roots(chain(@))' -o main
+jj -R $A automerge >/dev/null 2>&1; check "jj automerge: line conflict left, exit" $? 1
+
+# An edit in @ that no jj command has snapshotted yet survives the alias.
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; jj -R $A sync >/dev/null 2>&1
+printf '%b' "$JR" > $A/c.json; c $A describe -m 'feat: a1 json'
+mv_main 'feat: json b' c.json "$JL"
+c $A rebase -s 'roots(chain(@))' -o main
+echo fresh > $A/fresh.txt
+jj -R $A automerge >/dev/null 2>&1; check "unsnapshotted edit: automerge exit" $? 0
+check "unsnapshotted edit: in @" "$(jj -R $A file show -r @ 'root-file:"fresh.txt"' 2>/dev/null)" "fresh"
+check "unsnapshotted edit: on disk" "$(cat $A/fresh.txt 2>/dev/null)" "fresh"
+check "unsnapshotted edit: no divergent copy" "$(d 'divergent()')" ""
+
+# A modify/delete conflict next to a JSON one: the JSON is merged, the deletion is left.
+$S/setup.sh $S
+c $R new main -m 'feat: base files'; printf '%b' "$JB" > $R/c.json; echo d > $R/d.txt; c $R bookmark set main -r @; c $R new main
+jj -R $A sync >/dev/null 2>&1
+printf '%b' "$JR" > $A/c.json; echo D > $A/d.txt; c $A describe -m 'feat: a1 json d'
+c $R new main -m 'feat: json b, drop d'; printf '%b' "$JL" > $R/c.json; rm $R/d.txt; c $R bookmark set main -r @; c $R new main
+c $A rebase -s 'roots(chain(@))' -o main
+jj -R $A automerge >/dev/null 2>&1; check "modify/delete: automerge exit" $? 1
+check "modify/delete: json merged" "$(json 'description(substring:"feat: a1 json d")')" '{"a":1,"b":2,"c":3}'
+check "modify/delete: deletion still conflicted" "$(d 'mm_conflicts(description(substring:"feat: a1 json d"))')" "feat: a1 json d"
+
+# jj sync merges my own arm after its rebase.
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; jj -R $A sync >/dev/null 2>&1
+printf '%b' "$JR" > $A/c.json; c $A describe -m 'feat: a1 json'
+mv_main 'feat: json b' c.json "$JL"
+jj -R $A sync >/dev/null 2>&1; check "own-arm sync: exit" $? 0
+check "own-arm sync: arm on main" "$(d 'roots(chain(description(substring:"feat: a1 json")))-')" "feat: json b"
+check "own-arm sync: conflict-free" "$(d 'mm_conflicts(description(substring:"feat: a1 json"))')" ""
+check "own-arm sync: both keys kept" "$(json 'description(substring:"feat: a1 json")')" '{"a":1,"b":2,"c":3}'
+
+orphan() { # description, then file/content pairs
+  c $R workspace add $R/.workspaces/c -r main; local m=$1; shift
+  while [ $# -gt 0 ]; do printf '%b' "$2" > $R/.workspaces/c/$1; shift 2; done
+  c $R/.workspaces/c commit -m "$m"; c $R workspace forget c; rm -rf $R/.workspaces/c
+}
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; orphan 'feat: o json' c.json "$JR"; mv_main 'feat: json b' c.json "$JL"
+jj -R $A sync >/dev/null 2>&1; check "orphan automerge: sync exit" $? 0
+check "orphan automerge: moved onto main" "$(d 'description(substring:"feat: o json")-')" "feat: json b"
+check "orphan automerge: conflict-free" "$(d 'description(substring:"feat: o json") & conflicts()')" ""
+check "orphan automerge: both keys kept" "$(json 'description(substring:"feat: o json")')" '{"a":1,"b":2,"c":3}'
+jj -R $B status >/dev/null 2>&1; check "orphan automerge: peer workspace not stale" $? 0
+
+$S/setup.sh $S
+mv_main 'feat: json base' c.json "$JB"; orphan 'feat: o mixed' c.json "$JR" base.txt 'O\n'
+mv_main 'feat: json b' c.json "$JL"; mv_main 'feat: main base' base.txt 'M\n'
+jj -R $A sync >/dev/null 2>&1; check "mixed orphan: sync exit" $? 0
+check "mixed orphan: left on its old base" "$(d 'description(substring:"feat: o mixed")-')" "feat: json base"
+check "mixed orphan: conflict-free" "$(d 'description(substring:"feat: o mixed") & conflicts()')" ""
+check "mixed orphan: json untouched" "$(json 'description(substring:"feat: o mixed")')" '{"a":1,"c":3}'
+check "mixed orphan: no divergent copy" "$(d 'divergent()')" ""
+
 echo "pass=$pass fail=$fail"

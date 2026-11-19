@@ -41,9 +41,6 @@ pager = "bat --style=plain"
 conflict-marker-style = "diff"
 log-word-wrap = true
 
-[merge-tools.mergiraf]
-conflict-marker-style = "git"
-
 [merge-tools.nvim]
 program = "nvim"
 merge-args = ["-d", "$left", "$output", "$right",
@@ -80,16 +77,24 @@ prek = ["util", "exec", "--", "prek", "run", "--all-files"]
 # `--remote NAME` overrides the deploy remote. Logic: ~/.config/fish/functions/deploy.fish.
 deploy = ["util", "exec", "--", "fish", "-c", "deploy $argv", "--"]
 
-# Land my arm locally: rebase it onto main when stale, refuse on a conflict or a peer
-# sitting on it, advance main to its tip (forward-only). Never touches another arm or
+# Land my arm locally: rebase it onto main when stale, refuse on a peer sitting on it or
+# on a conflict (after `jj automerge`; a clean automerge also stops, for review: rerun),
+# advance main to its tip (forward-only). Never touches another arm or
 # wip; the next `jj deploy` drops the landed arm from wip.
 # Usage: `jj land [<rev>]` (default @: lands `tip(@)`). Logic: land.fish.
 land = ["util", "exec", "--", "fish", "-c", "land $argv", "--"]
 
 # Local only, no fetch: rebase my arm onto main, then every arm no workspace sits on
-# (one rebase per arm, reverted if it conflicts); name the owned arms still behind.
+# (one rebase per arm, reverted if `jj automerge` cannot clear its conflicts), after
+# `jj automerge` on my own arm; name the owned arms still behind.
 # Never touches an owned arm or wip. Logic: ~/.config/fish/functions/jj-sync.fish.
 sync = ["util", "exec", "--", "fish", "-c", "jj-sync $argv", "--"]
+
+# Resolve the 2-sided conflicts of my arm with mergiraf (jj's built-in tool entry): one
+# operation per conflicted commit, oldest first; prints the files merged and left, and the
+# `jj op revert` that undoes it. `jj land`, `jj sync` and `jj pull` run it themselves.
+# Usage: `jj automerge [<revset>]` (default chain(@)). Logic: automerge.fish.
+automerge = ["util", "exec", "--", "fish", "-c", "automerge $argv", "--"]
 
 # `jj git fetch`, then resolve a conflicted main to main@origin (refused if that drops
 # unpushed work), then `jj sync`, which also drops the copies the forge already merged.

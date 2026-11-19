@@ -3,6 +3,7 @@ function jj-sync --description 'Local only: rebase my arm and every arm no works
     # runs it after the fetch. Touches no remote. Moves my arm (chain(@)) and the arms no
     # workspace sits on (`orphan_arms()`); owned arms are their owners' to sync, and wip
     # is `jj deploy`'s. Named jj-sync so it does not shadow the system `sync` command.
+    # Conflicts the rebase leaves in my arm go through `automerge` (mergiraf); the rest stay.
     #
     # Rebasing drops a local commit whose divergent twin is already in the destination
     # (jj's default; see `jj rebase --keep-divergent`), which is how the copies of commits
@@ -37,6 +38,11 @@ function jj-sync --description 'Local only: rebase my arm and every arm no works
                     echo "sync: dropped commits whose changes are already on main:" >&2
                     printf '  %s\n' $dropped >&2
                 end
+            end
+            # The rebase records conflicts rather than refusing; mergiraf takes what it can,
+            # and what is left stays in the arm for its owner, as before.
+            if test -n "$(jj $repo_args log --no-graph -r 'mm_conflicts(@)' -T commit_id)"
+                automerge $repo_args -- 'chain(@)'
             end
         end
     end
