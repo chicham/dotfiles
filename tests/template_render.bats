@@ -45,8 +45,9 @@ _TEMPLATE_KEYWORD_RE='([-#/]+[[:space:]])?(\{\{|\[\[)[[:space:]-]*(if|else|end|r
   fail=0
   while IFS= read -r f; do
     rel=${f#"$REPO_ROOT"/}
+    # AGENTS.md documents the directive and is chezmoiignored: never a source file.
     case "$rel" in
-      .git/* | .workspaces/* | tests/*) continue ;;
+      .git/* | .workspaces/* | tests/* | AGENTS.md) continue ;;
     esac
     if grep -q 'chezmoi:template:' "$f" 2> /dev/null; then
       echo "$rel: contains chezmoi:template directive but is not a .tmpl file" >&2
