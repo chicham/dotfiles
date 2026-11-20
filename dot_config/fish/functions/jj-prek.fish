@@ -6,7 +6,9 @@ function jj-prek --description 'Run every prek hook on the content of each commi
     # under .jj/run/ and runs `prek run --all-files` there, from the checkout's root. No commit
     # is rewritten (--ignore-changes): hook fixes are reported, not applied.
     #
-    # Isolation: each checkout gets its own throwaway git index (`git init` + `git add -A`).
+    # Isolation: each checkout gets its own throwaway git index (`git init` + `git add -A -f`; -f also stages committed
+    # files a .gitignore matches, so hooks see the whole commit). On a hook failure the shell
+    # stays alive (no `exec`) to print `git diff --stat`: what the hooks modified.
     # prek only works inside a git repository, and a checkout under .jj/ or a jj workspace has
     # no .git of its own: git walks up to the repo root's colocated .git and prek then checks
     # the root's files, passing a commit it never saw. The .git stays inside .jj/run/, which jj
@@ -34,5 +36,8 @@ function jj-prek --description 'Run every prek hook on the content of each commi
     test -n "$argv[1]"; and set rev $argv[1]
     jj $repo_args run --ignore-changes --root -r $rev -- \
         sh -c '[ -e prek.toml ] || [ -e .pre-commit-config.yaml ] || [ -e .pre-commit-config.yml ] || exit 0
-               git init -q && git add -A && exec uv run --no-sync --with prek prek run --all-files'
+               git init -q && git add -A -f && uv run --no-sync --with prek prek run --all-files
+               rc=$?
+               [ $rc -eq 0 ] || git --no-pager diff --stat
+               exit $rc'
 end

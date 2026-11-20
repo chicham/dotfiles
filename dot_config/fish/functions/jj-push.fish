@@ -51,12 +51,27 @@ function jj-push --description 'Push named bookmarks once prek passes on their t
         end
     end
 
-    set -l heads (string join ' | ' (printf 'bookmarks(exact:"%s")\n' $_flag_bookmark))
+    set -l heads (string join ' | ' 'bookmarks(exact:"'$_flag_bookmark'")')
     set -l publish "($heads) ~ ::remote_bookmarks(remote=exact:\"$remote\")"
     if not jj-prek $repo_args -- $publish
         echo "jj push: prek failed on a bookmark tip; nothing pushed" >&2
         return 1
     end
-    jj $repo_args git push --remote $remote (printf -- '-b\n%s\n' $_flag_bookmark)
+    # fish expands a list inside a word per element: one --bookmark=NAME for each bookmark.
+    jj $repo_args git push --remote $remote --bookmark=$_flag_bookmark
     or return 1
+    # jj can exit 0 without pushing a bookmark: a tip still outside the remote's history
+    # means the push did not publish it.
+    set -l left (jj $repo_args --ignore-working-copy --no-pager --color never log --no-graph \
+        -r $publish -T 'change_id.short() ++ " " ++ description.first_line() ++ "\n"')
+    or begin
+        # jj's own error already went to stderr; stdout alone holds tips, so a warning is never one.
+        echo 'jj push: could not verify the push' >&2
+        return 1
+    end
+    if set -q left[1]
+        printf '%s\n' 'jj push: pushed, but these bookmark tips are still not on the remote:' \
+            (string replace -r '^' '    ' -- $left) >&2
+        return 1
+    end
 end

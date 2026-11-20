@@ -373,6 +373,32 @@ c $B bookmark track clean@origin
 jj -R $B push -b clean > /dev/null 2>&1
 check "push: clean bookmark pushed" $? 0
 check "push: clean published" "$(d 'remote_bookmarks(exact:"clean")')" "feat: b1"
+# The bookmark sits outside B's @ ancestry, so jj's default push revset cannot reach it:
+# only an explicit -b passed through to jj git push publishes it.
+c $A bookmark create side -r 'description(substring:"feat: a1")'
+c $B bookmark track side@origin
+jj -R $B push -b side > /dev/null 2>&1
+check "push: bookmark off @ ancestry pushed" $? 0
+check "push: side published" "$(d 'remote_bookmarks(exact:"side")')" "feat: a1"
+# A push that exits 0 yet leaves the tip unpublished is a failure. A fish function shadowing
+# jj (found through XDG_DATA_DIRS, which config.fish cannot reorder like PATH) swallows
+# `git push` to stand in for such a release.
+shim=$S/shim
+mkdir -p $shim/fish/vendor_functions.d
+cat > $shim/fish/vendor_functions.d/jj.fish << 'EOT'
+function jj
+    if contains -- git $argv; and contains -- push $argv
+        return 0
+    end
+    command jj $argv
+end
+EOT
+touch $B/swallow.txt
+c $B commit -m 'feat: b swallow'
+c $B bookmark create swallowed -r @-
+XDG_DATA_DIRS=$shim:$XDG_DATA_DIRS jj -R $B push -b swallowed > /dev/null 2>&1
+check "push: unpublished tip after a 0-exit push fails" $? 1
+check "push: swallowed not published" "$(d 'remote_bookmarks(exact:"swallowed")')" ""
 
 # Bare jj fix runs ruff check then ruff format through uv, on my arm only.
 printf 'y   =  2\n' > $A/g.py
