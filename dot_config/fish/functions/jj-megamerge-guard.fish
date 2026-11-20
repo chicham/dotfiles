@@ -6,6 +6,7 @@ end
 
 function __jj_mm_scan --argument-names cmd
     string match -qr '\bjj\b' -- $cmd; or return 0
+    set cmd (__jj_mm_strip_heredocs $cmd | string collect)
     printf '%s' $cmd | read -lzat tokens
     set -l seg
     set -l skip 0
@@ -23,6 +24,46 @@ function __jj_mm_scan --argument-names cmd
             set -a seg $tok
         end
     end
+end
+
+function __jj_mm_strip_heredocs --argument-names cmd
+    # Prints $cmd without the bodies of heredocs fed to a data tool (cat, tee, ...): their lines
+    # are text, and splitting on newlines would check a body line starting with `jj` as a command.
+    # The `<<TAG` line itself stays. A body fed to anything else (bash, ssh, sudo, ...), a line
+    # with two heredocs, or an unterminated body stays and is scanned: a false block is safe,
+    # a false allow is not.
+    set -l lines (string split -- \n $cmd)
+    set -l n (count $lines)
+    set -l out
+    set -l i 1
+    while test $i -le $n
+        set -l line $lines[$i]
+        set -a out $line
+        set i (math $i + 1)
+        test (count (string match -ar -- '(?<!<)<<(?!<)' $line)) -eq 1; or continue # `<<<` is a herestring
+        string match -qr -- '^(?<pre>.*?)(?<!<)<<(?<dash>-?)\s*(?<q>[\'"]?)(?<tag>[A-Za-z_]\w*)\k<q>(?<post>.*)$' $line
+        or continue
+        # A pipe after the tag (`cat <<EOF | bash`), a substitution around it (`bash -c "$(cat <<EOF`)
+        # or an odd quote before it (`<<` inside a string) can make the body commands.
+        string match -qr -- '[|(`]' "$post"; and continue
+        string match -qr -- '[(`]' "$pre"; and continue
+        test (math (string length -- (string replace -ra -- '[^\'"]' '' $pre)) % 2) -eq 0; or continue
+        set -l words (string split -n ' ' -- (string replace -r -- '.*(&&|\|\||;)' '' $pre))
+        while string match -qr '^[A-Za-z_]\w*=' -- "$words[1]"
+            set -e words[1]
+        end
+        contains -- "$(path basename -- "$words[1]")" cat tee jq python python3 sed awk; or continue
+        set -l j $i
+        while test $j -le $n
+            set -l l $lines[$j]
+            test "$dash" = -; and set l (string replace -r -- '^\t+' '' $l)
+            test "$l" = "$tag"; and break
+            set j (math $j + 1)
+        end
+        test $j -le $n; or continue
+        set i (math $j + 1)
+    end
+    string join \n -- $out
 end
 
 function __jj_mm_block
@@ -50,6 +91,11 @@ function __jj_mm_check
         case '*'
             return 0
     end
+
+    # A version query reads no repo, so it needs no workspace and runs at the root too.
+    set -l first $seg[2]
+    test "$seg[2]" = -R; and set first $seg[4]
+    contains -- "$first" --version -V; and return 0
 
     # cwd drifts between tool calls, so the workspace is always explicit.
     if test "$seg[2]" != -R; or not string match -q -- '/*' "$seg[3]"
@@ -282,6 +328,9 @@ function __jj_mm_rules --argument-names repo rev
         set -l expr "$rule($rev)"
         # Arm tips outside wip, other than the arm being extended: work the deploy remote would never run.
         test $rule = mm_dangling; and set expr "(arm_tips() ~ ::present(wip)) ~ ::($rev) ~ (($rev) ~ ::main)::"
+        # My own arm tip sits above my mid-arm commits; only tips outside ::@ are other arms.
+        # Left out of the alias: deploy evaluates it with no meaningful @.
+        test $rule = mm_stacked_on; and set expr "mm_stacked_on($rev) ~ ::@"
         set -l hits (__jj_mm_revs $repo "$expr")
         or begin
             __jj_mm_block "could not evaluate $rule($rev); pass literal revisions:" $hits

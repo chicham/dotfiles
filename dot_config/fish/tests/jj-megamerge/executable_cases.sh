@@ -70,6 +70,18 @@ g 0 "new main with 2>&1 passes" "jj -R $A new main 2>&1"
 g 2 "unresolvable revset fails closed" "jj -R $A describe -r \$H -m x"
 g 0 "new on an unresolvable revset is left to jj" "jj -R $A new \$H"
 g 0 "deliberate stack on b's tip" "jj -R $A new 'description(substring:\"feat: b1\")'"
+g 0 "heredoc body fed to cat is text" $'cat <<\'EOF\' >> /tmp/x.org\njj -R '"$R"$' commit -m x\nEOF'
+g 0 "<<- body with a tab-indented terminator is text" $'cat <<-EOF > /tmp/x\njj -R '"$R"$' commit -m x\n\tEOF'
+g 2 "heredoc body fed to a shell is commands" $'bash <<EOF\njj -R '"$R"$' commit -m x\nEOF'
+g 2 "command after the heredoc terminator" $'cat <<EOF > /tmp/x\nhi\nEOF\njj -R '"$R"$' commit -m x'
+g 2 "command on the heredoc line" $'cat <<EOF > /tmp/x; jj -R '"$R"$' commit -m x\nhi\nEOF'
+g 2 "unterminated heredoc strips nothing" $'cat <<EOF > /tmp/x\njj -R '"$R"$' commit -m x'
+g 2 "heredoc piped to a shell is commands" $'cat <<EOF | bash\njj -R '"$R"$' commit -m x\nEOF'
+g 2 "quoted << is not a heredoc" $'cat \'<<EOF\' /tmp/x\nEOF\njj -R '"$R"$' commit -m x'
+g 2 "terminator must be the whole line" $'cat <<EOF > /tmp/x\n EOF\njj -R '"$R"$' commit -m x'
+g 0 "jj --version" "jj --version"
+g 0 "jj -V at the repo root" "jj -R $R -V"
+g 2 "--version after the subcommand is not a version query" "jj -R $R commit -m x --version"
 
 echo "== scratch @ on wip"
 c $A new wip
@@ -114,6 +126,7 @@ g 0 "new on mid-arm commit (describe catches the fork)" "jj -R $B new 'descripti
 c $B new 'description(substring:"feat: a1")'
 g 2 "describe on a fork from a mid-arm commit" "jj -R $B describe -m 'feat: b2'"
 g 0 "new on a's tip" "jj -R $B new 'description(substring:\"feat: a2\")'"
+g 0 "describe my own mid-arm commit (my tip sits above it)" "jj -R $A describe -r 'description(substring:\"feat: a1\")' -m 'feat: a1 v2'"
 
 echo "== stale base: main advances"
 fresh
@@ -153,6 +166,7 @@ echo b2 > $B/b2.txt
 c $B commit -m 'feat: b2 on a1'
 g 2 "commit on a (b stacked on a1)" "jj -R $A commit -m 'feat: a2'"
 g 2 "describe on a (b stacked on a1)" "jj -R $A describe -m 'feat: a2'"
+g 2 "describe a1 while b is stacked on it (control)" "jj -R $A describe -r 'description(substring:\"feat: a1\")' -m 'feat: a1 v2'"
 g 0 "commit on b (deliberate stack)" "jj -R $B commit -m 'feat: b3'"
 
 echo "== fork: two arms share a non-tip base"
