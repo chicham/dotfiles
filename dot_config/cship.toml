@@ -18,6 +18,7 @@
 # ⎇ ● ○ ✖ → reserved for starship jj module (workspace / commit state)
 # ▸       → cship agent ("delegated/running" — distinct from ⎇ workspace)
 
+# The context bar (used / auto-compaction window) is drawn by ~/.claude/statusline.sh at the start of this line.
 [cship]
 lines = [
   "$cship.model $cship.effort $cship.agent $cship.peak_usage $cship.usage_limits  $cship.usage_limits.per_model $cship.usage_limits.extra_usage"
