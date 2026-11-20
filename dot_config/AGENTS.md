@@ -36,12 +36,28 @@ Invariants: they hold even when no skill is loaded. Procedure lives in the skill
 Accuracy drops as context grows. Keep it small and recoverable. Load `/context-hygiene` for the full rules.
 - Trim output at the source (`-q`, `| tail`, `rg -c`). Query large files instead of loading them.
 - External tools run in the Haiku `/scout` (search, web, history, run): it returns evidence, you
-  interpret. A hook denies them in the main thread. Edits, jj, `gh` writes and known-path reads stay here.
+  interpret. A hook denies them in the main thread. Short edits, jj, `gh` writes and known-path reads stay here.
+- **Each session is a main session: it orchestrates, it does not do long work.** It keeps the plan,
+  the decisions, the user dialogue and the verification of results. Long work runs in a subagent:
+  coding beyond a few small edits, multi-file search, long runs. Coding goes to a Sonnet subagent in its
+  own workspace; search goes to the `/scout`. The brief states the goal, paths, what is approved and
+  what to return, with a word cap (about 300 words; evidence as counts, paths and short verbatim lines,
+  never whole files or logs): every returned word stays in the main context. The main session checks
+  the result before reporting it.
 - Subagents run on Sonnet: pass `model: "sonnet"` to every Agent call, unless the user names another
   model or the agent type fixes its own (the `/scout` stays Haiku). An Agent call without `model`
-  inherits the main session's model.
+  falls back to `CLAUDE_CODE_SUBAGENT_MODEL` (sonnet, set in `settings.json`), never to the main model.
 - Checkpoint decisions, paths and open items to org (`~/.orgfiles/agents/`) at each phase end.
   Then suggest `/clear` rather than `/compact`.
+- **Token budget.** Every turn re-reads the whole context, so context size times turns is the cost.
+  - Main sessions run on Sonnet. Switch to Opus with `/model` only for design or hard debugging, then back.
+  - `/clear` at every task boundary: it is free, while each auto-compaction is a large request plus a cache rewrite.
+  - Never poll another session or a background task: replies and completions arrive as notifications.
+  - Avoid forks: a fork always runs on the parent's model and carries its whole context.
+- **Advisor: on plans and results only.** It re-reads the whole conversation uncached on a costlier
+  model. For a task that has a plan, call it once on the plan, before the first edit or command, and
+  once on the results, before reporting them as done. A task without a plan (a lookup, a one-line edit,
+  a status check) gets no advisor call.
 
 ## Communication
 - Start every answer with its main idea. Write one idea per sentence.

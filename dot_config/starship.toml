@@ -13,6 +13,39 @@ vimcmd_symbol = "[❮](blue)"
 [cmd_duration]
 style = "yellow"
 
+[directory]
+style = "blue"
+
+[docker_context]
+style = "blue"
+
+[gcloud]
+disabled = true
+
+# --- jj module (replaces git_branch + git_status) ---
+# `when` walks up for .jj using shell parameter expansion only; the obvious
+# `jj root` would cost a jj process start (~50ms) on every prompt, including
+# in plain git and non-repo directories.
+# The segment itself is built by jj-prompt.sh (testable on its own, see
+# ~/.claude/tests/statusline): one `jj log` for the fields plus one for the
+# ahead-of-main count, always with --ignore-working-copy.
+[custom.jj]
+when           = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 0; d=${d%/*}; done; exit 1'''
+shell          = ["sh"]
+ignore_timeout = true
+command        = 'sh "$HOME/.config/starship/jj-prompt.sh"'
+format = "[$output]($style) "
+style  = "mauve"
+
+[git_branch]
+disabled = true
+
+[git_commit]
+disabled = true
+
+[git_status]
+disabled = true
+
 # --- git fallback (only in non-jj repos) ---
 # One ancestor walk decides both questions the old `! jj root && git
 # rev-parse` pair answered, without spawning either tool: whichever of .jj
@@ -20,8 +53,8 @@ style = "yellow"
 # priority. `.git` is `-e` not `-d` because worktrees use a file.
 # `status --branch` then yields branch and dirtiness in a single git call.
 [custom.git_info]
-when = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 1; [ -e "$d/.git" ] && exit 0; d=${d%/*}; done; exit 1'''
-shell = ["sh"]
+when           = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 1; [ -e "$d/.git" ] && exit 0; d=${d%/*}; done; exit 1'''
+shell          = ["sh"]
 ignore_timeout = true
 command = '''
 st=$(git --no-optional-locks status --porcelain --branch 2>/dev/null) || exit 0
@@ -38,55 +71,7 @@ dirty=""
 echo "${branch}${dirty}"
 '''
 format = "[$output]($style) "
-style = "mauve"
-
-# --- jj module (replaces git_branch + git_status) ---
-# `when` walks up for .jj using shell parameter expansion only; the obvious
-# `jj root` would cost a jj process start (~50ms) on every prompt, including
-# in plain git and non-repo directories.
-# One `jj log` then fetches every field through a delimited template instead
-# of one process per field. Fields are split with parameter expansion rather
-# than `read` + heredoc: starship feeds the command to the shell on stdin,
-# so a heredoc would swallow the rest of the script.
-[custom.jj]
-when = '''d=$PWD; while [ -n "$d" ]; do [ -d "$d/.jj" ] && exit 0; d=${d%/*}; done; exit 1'''
-shell = ["sh"]
-ignore_timeout = true
-command = '''
-info=$(jj log -r @ --no-graph --ignore-working-copy -T 'change_id.shortest() ++ "|" ++ bookmarks.join(", ") ++ "|" ++ conflict ++ "|" ++ empty' 2>/dev/null) || exit 0
-[ -n "$info" ] || exit 0
-cid=${info%%|*}; rest=${info#*|}
-bk=${rest%%|*}; rest=${rest#*|}
-hc=${rest%%|*}
-he=${rest##*|}
-ws=$(jj workspace list --ignore-working-copy 2>/dev/null | awk '/^\*/{print $2}')
-out=""
-[ -n "$ws" ] && out="⎇ $ws "
-if [ "$hc" = "true" ]; then out="${out}✖ "; elif [ "$he" = "true" ]; then out="${out}○ "; else out="${out}● "; fi
-out="${out}${cid}"
-[ -n "$bk" ] && out="$out $bk"
-echo "$out"
-'''
-format = "[$output]($style) "
-style = "mauve"
-
-[directory]
-style = "blue"
-
-[docker_context]
-style = "blue"
-
-[gcloud]
-disabled = true
-
-[git_branch]
-disabled = true
-
-[git_commit]
-disabled = true
-
-[git_status]
-disabled = true
+style  = "mauve"
 
 [golang]
 style = "blue"
@@ -96,9 +81,6 @@ style = "blue"
 
 [nodejs]
 style = "green"
-
-[package]
-disabled = true
 
 # Catppuccin Frappe palette (dark)
 [palettes.catppuccin_frappe]
@@ -248,6 +230,9 @@ crust = "#1d2021" # Background variation
 
 [python]
 style = "green"
+
+[package]
+disabled = true
 
 [rust]
 style = "peach"

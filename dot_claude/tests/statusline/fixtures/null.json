@@ -1,0 +1,60 @@
+{
+  "session_id": "e4eea103-729b-430c-813e-7b621c7e3b7d",
+  "transcript_path": "/Users/hicham.randrianarivo/.claude/projects/-Users-hicham-randrianarivo--claude/e4eea103-729b-430c-813e-7b621c7e3b7d.jsonl",
+  "cwd": "/Users/hicham.randrianarivo/.claude",
+  "scratchpad_dir": "/private/tmp/claude-502/-Users-hicham-randrianarivo--claude/e4eea103-729b-430c-813e-7b621c7e3b7d/scratchpad",
+  "prompt_id": "27986a3c-257f-4f3c-9bca-c410cb206430",
+  "effort": {
+    "level": "medium"
+  },
+  "session_name": "CLAUDE.md experiment tracking rule",
+  "model": {
+    "id": "claude-opus-5-5",
+    "display_name": "Opus 5.5"
+  },
+  "workspace": {
+    "current_dir": "/Users/hicham.randrianarivo/.claude",
+    "project_dir": "/Users/hicham.randrianarivo/.claude",
+    "added_dirs": []
+  },
+  "version": "2.1.329",
+  "output_style": {
+    "name": "Terse"
+  },
+  "cost": {
+    "total_cost_usd": 18.062772080000002,
+    "total_duration_ms": 54157628,
+    "total_api_duration_ms": 1903312,
+    "total_lines_added": 89,
+    "total_lines_removed": 16
+  },
+  "context_window": {
+    "total_input_tokens": 236818,
+    "total_output_tokens": 432,
+    "context_window_size": 1000000,
+    "current_usage": {
+      "input_tokens": 2,
+      "output_tokens": 432,
+      "cache_creation_input_tokens": 3443,
+      "cache_read_input_tokens": 233373
+    },
+    "used_percentage": 24,
+    "remaining_percentage": 76
+  },
+  "exceeds_200k_tokens": true,
+  "prompt_cache": null,
+  "fast_mode": false,
+  "thinking": {
+    "enabled": true
+  },
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 32,
+      "resets_at": 1795207200
+    },
+    "seven_day": {
+      "used_percentage": 9,
+      "resets_at": 1795773600
+    }
+  }
+}

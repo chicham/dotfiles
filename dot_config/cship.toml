@@ -1,0 +1,64 @@
+# cship statusline — Catppuccin Mocha, aligned with ~/.config/starship.toml
+# Layout: jj status (top, printed by ~/.claude/statusline.sh) | [ctx bar, from the wrapper] model ▸ agent  +X -Y  5h-usage | 7d-usage (bottom)
+#
+# Palette hex values track the catppuccin_mocha palette in starship.toml exactly,
+# so the Claude Code statusline and the shell prompt share one visual language.
+#
+# Role mapping (mirrors starship module colors):
+#   teal     → context bar (drawn by the wrapper; yellow/red follow the +Nk growth band)
+#   sapphire → model identifier (starship blue-family for identity)
+#   mauve    → subagent name (same role as starship's [custom.jj] — "identity/delegation")
+#   green    → +lines_added  (matches starship [nodejs]/[python] green = healthy)
+#   red      → -lines_removed (matches starship [character] error red)
+#   overlay2 → dim usage limits when safe
+#   peach / yellow → warn escalation (matches starship [cmd_duration] yellow)
+#   bold red → critical (matches starship error-state red)
+#
+# Symbol choices avoid collisions with starship [custom.jj] symbols:
+#   ⎇ ● ○ ✖ → reserved for starship jj module (workspace / commit state)
+#   ▸       → cship agent ("delegated/running" — distinct from ⎇ workspace)
+
+[cship]
+lines = [
+  "$cship.model $cship.effort $cship.agent $cship.peak_usage $cship.usage_limits  $cship.usage_limits.per_model $cship.usage_limits.extra_usage",
+]
+
+# The context bar (used / auto-compaction window) is drawn by ~/.claude/statusline.sh at the start of this line.
+
+# model — sapphire (identifier, readable but not primary)
+[cship.model]
+style      = "fg:#74c7ec"                  # sapphire
+opus_style = "bold fg:#fab387"             # peach: Opus is the costly model, make it visible
+
+# subagent — renders only when a subagent is active (invisible in normal sessions)
+# ▸ avoids collision with starship's ⎇ jj-workspace marker on line 1
+[cship.agent]
+symbol = "󰵰 "
+style  = "fg:#cba6f7"                      # mauve
+format = "[$symbol$value]($style)"
+
+# session diff size — green +added / red -removed
+[cship.cost.total_lines_added]
+format = "[+$value]($style)"
+style  = "fg:#a6e3a1"                      # green
+
+[cship.cost.total_lines_removed]
+format = "[-$value]($style)"
+style  = "fg:#f38ba8"                      # red
+
+# 5h window — dim until running low
+[cship.usage_limits]
+five_hour_format   = "5h:{pct}% ({pace}, {reset})"
+seven_day_format   = "7d:{pct}% ({pace}, {reset})"
+separator          = " | "
+style              = "fg:#a6e3a1"          # green (healthy)
+warn_threshold     = 70.0
+warn_style         = "fg:#fab387"          # peach (earlier signal than yellow)
+critical_threshold = 90.0
+critical_style     = "bold fg:#f38ba8"     # red
+
+# peak-hours flag — shows only Mon–Fri 07:00–17:00 US Pacific (Anthropic high-load window)
+[cship.peak_usage]
+symbol = "󱥵 "
+style  = "fg:#fab387"                      # peach
+
