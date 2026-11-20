@@ -10,12 +10,16 @@ while [ -n "$root" ] && [ ! -d "$root/.jj" ]; do root=${root%/*}; done
 # Delimited fields in one call; `|` cannot occur in a change id or a bookmark name.
 info=$(jj -R "$root" log -r @ --no-graph --ignore-working-copy -T \
   'change_id.shortest() ++ "|" ++ conflict ++ "|" ++ empty ++ "|" ++ if(description, "d", "n") ++ "|" ++ local_bookmarks.join(",") ++ "|" ++ working_copies' \
-  2>/dev/null) || exit 0
+  2> /dev/null) || exit 0
 [ -n "$info" ] || exit 0
-cid=${info%%|*};  rest=${info#*|}
-conflict=${rest%%|*}; rest=${rest#*|}
-empty=${rest%%|*};    rest=${rest#*|}
-hasdesc=${rest%%|*};  rest=${rest#*|}
+cid=${info%%|*}
+rest=${info#*|}
+conflict=${rest%%|*}
+rest=${rest#*|}
+empty=${rest%%|*}
+rest=${rest#*|}
+hasdesc=${rest%%|*}
+rest=${rest#*|}
 bk=${rest%%|*}
 wc=${rest#*|}
 
@@ -23,8 +27,14 @@ wc=${rest#*|}
 # (`name@`) jj itself reports; the default workspace is not worth a glyph.
 ws=""
 case "$root" in
-  */.workspaces/*) ws=${root##*/.workspaces/}; ws=${ws%%/*} ;;
-  *) ws=${wc%%@*}; ws=${ws%% *} ;;
+  */.workspaces/*)
+    ws=${root##*/.workspaces/}
+    ws=${ws%%/*}
+    ;;
+  *)
+    ws=${wc%%@*}
+    ws=${ws%% *}
+    ;;
 esac
 [ "$ws" = "default" ] && ws=""
 
@@ -33,7 +43,7 @@ esac
 # bookmark makes the revset fail, so no +N.
 ahead=""
 if [ "$1" = "--ahead" ] || [ "$JJ_PROMPT_AHEAD" = "1" ]; then
-  n=$(jj -R "$root" log -r 'main..@' --no-graph --ignore-working-copy -T '"x"' 2>/dev/null) && {
+  n=$(jj -R "$root" log -r 'main..@' --no-graph --ignore-working-copy -T '"x"' 2> /dev/null) && {
     n=${#n}
     [ "$n" -gt 0 ] && ahead=" +$n"
   }
@@ -41,8 +51,10 @@ fi
 
 out=""
 [ -n "$ws" ] && out="⎇ $ws "
-if [ "$conflict" = "true" ]; then out="${out}✖ "
-elif [ "$empty" = "true" ]; then out="${out}○ "
+if [ "$conflict" = "true" ]; then
+  out="${out}✖ "
+elif [ "$empty" = "true" ]; then
+  out="${out}○ "
 else out="${out}● "; fi
 out="${out}${cid}${ahead}"
 [ "$hasdesc" = "n" ] && out="$out ✎"
