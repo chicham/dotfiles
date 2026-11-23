@@ -53,12 +53,12 @@ if command -v jq > /dev/null 2>&1; then
          or ($p.misses|type) != "number" then empty
       else
         ( if $p.warm then
-            if ($p.ttl|type) == "string" and ($p.expires_at|type) == "number"
-            then c(148;226;213) + "cache ● \($p.ttl) ⏲ \($p.expires_at|strflocaltime("%H:%M"))" + rst
+            if ($p.expires_at|type) == "number"
+            then c(148;226;213) + "● \($p.expires_at|strflocaltime("%H:%M"))" + rst
             else empty end
           else
             if ($p.recache_tokens_if_cold|type) == "number"
-            then "\u001b[1m" + c(243;139;168) + "cache ○ cold +\(($p.recache_tokens_if_cold/1000|round))k" + rst
+            then "\u001b[1m" + c(243;139;168) + "○ cold +\(($p.recache_tokens_if_cold/1000|round))k" + rst
             else empty end
           end ) as $base
         | ( if $p.misses > 0 and (($p.last_miss_cause.causes[0]) | type) == "string"
@@ -122,12 +122,14 @@ if [[ "$sid" =~ ^[A-Za-z0-9_-]+$ ]] && ((tok > 0)); then
 fi
 [[ -n "$grow" ]] && seg="${seg:+$seg }$grow"
 
-# Context bar at the start of cship's line: used / auto-compaction window. Omitted when tok is 0.
+# Context bar at the start of cship's line: 20 cells, each 5% of the auto-compaction window.
+# Fixed segments (system prompt, tools, MCP, memory, skills) always keep their colour, messages come
+# after them, free space is dim. The split is an estimate: the payload carries only the total, so the
+# fixed parts are constants (override with CTX_EST_SYS/TOOLS/MCP/SKILLS, calibrate from /context),
+# memory is the CLAUDE.md byte size / 4, cached once per session. Omitted when tok is 0.
 if ((tok > 0)) && [[ "$max" =~ ^[0-9]+$ ]] && ((max > 0)); then
   pct=$(((tok * 100 + max / 2) / max))
-  fill=$(((pct + 5) / 10))
-  ((fill > 10)) && fill=10
-  # Colour by fill of the compaction window (the growth bands colour +Nk and drive the hooks).
+  # Colour of the total % by fill of the compaction window (the growth bands colour +Nk and drive the hooks).
   bw=${CTX_BAR_WARN_PCT:-60}
   bc=${CTX_BAR_CRIT_PCT:-80}
   [[ "$bw$bc" =~ ^[0-9]+$ ]] || {
@@ -139,9 +141,35 @@ if ((tok > 0)) && [[ "$max" =~ ^[0-9]+$ ]] && ((max > 0)); then
   elif ((pct >= bw)); then
     barcol=$'\e[38;2;249;226;175m'
   else barcol=$'\e[38;2;148;226;213m'; fi
-  b=""
-  for ((i = 0; i < 10; i++)); do ((i < fill)) && b+="█" || b+="░"; done
-  out="${barcol}󱞇 ${b} ${pct}%"$'\e[0m'"  $out"
+
+  est=""
+  ff=""
+  [[ "$sid" =~ ^[A-Za-z0-9_-]+$ ]] && ff="${TMPDIR:-/tmp}/cc-statusline-fixed-$sid"
+  [[ -n "$ff" && -r "$ff" ]] && read -r est < "$ff"
+  if [[ ! "$est" =~ ^[0-9]+\ [0-9]+\ [0-9]+\ [0-9]+\ [0-9]+$ ]]; then
+    cdir=$(printf '%s' "$in" | jq -r '.workspace.current_dir // .cwd // empty' 2> /dev/null)
+    memb=$(cat "$HOME/.claude/CLAUDE.md" "${cdir:-.}/CLAUDE.md" 2> /dev/null | wc -c | tr -d ' ')
+    est="${CTX_EST_SYS:-3500} ${CTX_EST_TOOLS:-11000} ${CTX_EST_MCP:-9000} $((${memb:-0} / 4)) ${CTX_EST_SKILLS:-5000}"
+    [[ "$est" =~ ^[0-9]+\ [0-9]+\ [0-9]+\ [0-9]+\ [0-9]+$ ]] || est="3500 11000 9000 0 5000"
+    [[ -n "$ff" ]] && printf '%s' "$est" > "$ff" 2> /dev/null
+  fi
+  b=$(awk -v tok="$tok" -v max="$max" -v est="$est" 'BEGIN {
+    n = split(est, f, " "); fixed = 0
+    for (i = 1; i <= n; i++) fixed += f[i]
+    if (fixed > tok) { for (i = 1; i <= n; i++) f[i] = f[i] * tok / fixed; fixed = tok }
+    f[6] = tok - fixed
+    split("180;190;254 116;199;236 203;166;247 148;226;213 242;205;205 137;180;250", col, " ")
+    cells = 20; used = int(tok * cells / max + 0.5); if (used < 1) used = 1; if (used > cells) used = cells
+    for (i = 1; i <= 6; i++) { raw[i] = f[i] * used / tok; c[i] = int(raw[i]); left += raw[i] - c[i] }
+    left = used; for (i = 1; i <= 6; i++) left -= c[i]
+    while (left-- > 0) { best = 0; bv = -1
+      for (i = 1; i <= 6; i++) if (raw[i] - c[i] > bv) { bv = raw[i] - c[i]; best = i }
+      c[best]++; raw[best] = c[best] }
+    out = ""
+    for (i = 1; i <= 6; i++) { s = ""; for (k = 0; k < c[i]; k++) s = s "█"; if (s != "") out = out "\033[38;2;" col[i] "m" s }
+    s = ""; for (k = used; k < cells; k++) s = s "░"
+    printf "%s\033[38;2;69;71;90m%s\033[0m", out, s }' 2> /dev/null)
+  out="${b} ${barcol}${pct}%"$'\e[0m'" $out"
 fi
 
 [[ -n "$jjline" ]] && printf '%s\n' "$jjline"
@@ -150,8 +178,9 @@ if [[ -n "$seg" ]]; then
   nl=""
   [[ "$out" == *$'\n' ]] && nl=$'\n'
   while [[ "$out" == *$'\n' ]]; do out=${out%$'\n'}; done
-  printf '%s %s%s' "$out" "$seg" "$nl"
+  while [[ "$out" == *' ' ]]; do out=${out% }; done
+  printf '%s %s%s' "$out" "$seg" "$nl" | sed -E 's/ {2,}/ /g'
 else
-  printf '%s' "$out"
+  printf '%s' "$out" | sed -E 's/ {2,}/ /g'
 fi
 exit 0
