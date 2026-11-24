@@ -100,3 +100,37 @@ arm() {
   run jj -R "$R" commit -m 'feat: c'
   [ "$status" -eq 0 ]
 }
+
+@test "an arm stacked on the landing commits lands on main" {
+  jj -R "$R" new main -m 'feat: held' > /dev/null 2>&1
+  echo held > "$R/held.txt"
+  jj -R "$R" bookmark create landing -r @ > /dev/null 2>&1
+  jj -R "$R" new 'bookmarks(exact:"landing")' > /dev/null 2>&1
+  echo s > "$R/s.txt"
+  jj -R "$R" commit -m 'feat: stacked' > /dev/null 2>&1
+  stacked=$(jj -R "$R" log --no-graph -r '@-' -T 'change_id')
+  # main moved on since landing was cut: the arm is behind main by the landing commit too.
+  jj -R "$R" new main > /dev/null 2>&1
+  echo m > "$R/m.txt"
+  jj -R "$R" commit -m 'feat: moved' > /dev/null 2>&1
+  jj -R "$R" bookmark set main -r '@-' > /dev/null 2>&1
+  before=$(id 'bookmarks(exact:"landing")')
+  run fx "land $stacked"
+  [ "$status" -eq 0 ]
+  [ "$(d main)" = "feat: stacked" ]
+  [ "$(id 'bookmarks(exact:"landing")')" = "$before" ]
+  [ -z "$(d 'conflicts() & mutable()')" ]
+}
+
+@test "an arm stacked on the landing commits lands when main has not moved" {
+  jj -R "$R" new main -m 'feat: held' > /dev/null 2>&1
+  echo held > "$R/held.txt"
+  jj -R "$R" bookmark create landing -r @ > /dev/null 2>&1
+  jj -R "$R" new 'bookmarks(exact:"landing")' > /dev/null 2>&1
+  echo s > "$R/s.txt"
+  jj -R "$R" commit -m 'feat: stacked' > /dev/null 2>&1
+  run fx "land"
+  [ "$status" -eq 0 ]
+  [ "$(d main)" = "feat: stacked" ]
+  [ -z "$(d 'conflicts() & mutable()')" ]
+}

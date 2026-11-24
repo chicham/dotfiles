@@ -62,8 +62,9 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
         echo "land: tip($rev) resolves to "(count $tip)" revisions; name a single arm commit" >&2
         return 1
     end
-    # Everything the arm adds on top of the destination.
-    set -l chain "($dest)..$tip"
+    # Everything the arm adds on top of the destination, minus the immutable `landing`
+    # commits it may be stacked on: those cannot be rebased or conflict-checked.
+    set -l chain "(($dest)..$tip ~ ::landing())"
 
     # A peer's working copy on one of these commits means they belong to its arm too
     # (I stacked on it): landing them is the owner's call, and rebasing them stales it.
@@ -84,8 +85,10 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
     end
 
     # Stale: the arm's first commit does not sit on the destination (same rule as
-    # mm_stale, which is about main).
-    if test -n "$(jj $repo_args log --no-graph -r "roots($chain)- ~ ($dest)" -T commit_id)"
+    # mm_stale, which is about main). A parent on `landing` that still descends from the
+    # destination is not stale (the land advances through it); once the destination
+    # moved past it, the mutable part is rebased onto the destination, landing stays put.
+    if test -n "$(jj $repo_args log --no-graph -r "roots($chain)- ~ ($dest) ~ (::landing() & ($dest)::)" -T commit_id)"
         jj $repo_args rebase -s "roots($chain)" -o $dest
         or return
     end
