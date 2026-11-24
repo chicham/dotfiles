@@ -29,7 +29,7 @@ function issue-new --wraps 'jj log -r' --description 'Open a GitHub issue from a
         echo "issue-new: $rev has no description; describe it first" >&2
         return 1
     end
-    set -l existing (string match -r -- '(?m)^((Closes|Fixes|Resolves):? (#\d+|org:[0-9a-f-]{36})|Issue: (#\d+|org:[0-9a-f-]{36}))$' $description)
+    set -l existing (string match -r -- '(?m)^'(__trailer_re)'$' $description)
     if test -n "$existing"
         echo "issue-new: $rev already tracks an issue: $existing[1]"
         return 0

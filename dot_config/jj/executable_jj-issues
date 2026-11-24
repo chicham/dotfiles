@@ -2,8 +2,17 @@
 # `jj issues`: the raw alias output with each org:<uuid> followed by its task title.
 # A uuid orgtool cannot resolve stays bare. Extra args go to the raw alias (e.g. -r REVSET).
 set -uo pipefail
-orgtool=${ORGTOOL:-$HOME/Work/skills/skills/org/scripts/orgtool}
-jj issues-raw "$@" | ORGTOOL=$orgtool perl -pe '
+# jj util exec runs in the caller's cwd, so `jj -R <repo> issues` must pass the repo on:
+# jj exports JJ_WORKSPACE_ROOT to the alias (fall back to cwd outside jj's exec).
+# ORGTOOL overrides the orgtool path (tests point it at a checkout); else the installed
+# skill, then the skills checkout.
+orgtool=${ORGTOOL:-}
+if [ -z "$orgtool" ]; then
+  for c in "$HOME/.claude/skills/org/scripts/orgtool" "$HOME/Work/skills/skills/org/scripts/orgtool"; do
+    [ -r "$c" ] && { orgtool=$c; break; }
+  done
+fi
+jj ${JJ_WORKSPACE_ROOT:+-R "$JJ_WORKSPACE_ROOT"} issues-raw "$@" | ORGTOOL=$orgtool perl -pe '
   our %t;
   s{org:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}{
     my $u=$1;
