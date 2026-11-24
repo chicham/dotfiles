@@ -64,10 +64,6 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
         return 1
     end
 
-    # Pinned by change id for the same reason: the org tasks they close are looked up
-    # after main has advanced.
-    set -l landing (jj $repo_args log --no-graph -r $chain -T 'change_id ++ "\n"')
-
     # Stale: the arm's first commit does not sit on the destination (same rule as
     # mm_stale, which is about main).
     if test -n "$(jj $repo_args log --no-graph -r "roots($chain)- ~ ($dest)" -T commit_id)"
@@ -85,6 +81,9 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
         printf '    %s\n' (jj $repo_args log --no-graph -r "$chain & conflicts()" -T $line) >&2
         return 1
     end
+    # Sweep (or seed the watermark of) main as it is now, so that the sweep after the
+    # advance covers exactly what this land brings. Main only: another bookmark closes nothing.
+    test "$bm" = main; and __jj_org_close $JJ_WORKSPACE_ROOT
     # Forward-only: refuses if the destination moved since the rebase; rerun `jj land`.
     jj $repo_args bookmark advance $bm --to $tip
     or return
@@ -93,9 +92,9 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
     # not where work counts as done.
     test "$bm" = main; or return 0
 
-    # `Closes: org:<UUID>` trailers close their org tasks at land time, so no agent has to.
-    set -l landed_revset '('(string join ' | ' -- 'change_id('$landing')')') & ::main'
-    __jj_org_close $landed_revset $repo_args
+    # `Closes: org:<UUID>` trailers close their org tasks as the commits reach main, so no
+    # agent has to.
+    __jj_org_close $JJ_WORKSPACE_ROOT
 
     # The old main is now an unpushed commit below the new one, and every arm still on it
     # forks from there (`mm_unpushed_forks()`), which blocks pushing main. Move the arms no

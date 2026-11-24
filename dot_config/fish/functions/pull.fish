@@ -10,10 +10,6 @@ function pull --wraps 'jj git fetch' --description 'jj git fetch, fix a conflict
     test -n "$JJ_WORKSPACE_ROOT"; and set repo_args -R "$JJ_WORKSPACE_ROOT"
     set -l line 'change_id.short() ++ " " ++ description.first_line() ++ "\n"'
 
-    # The forge's merges (PR path) reach main only here, so this is where their
-    # `Closes: org:<UUID>` trailers close the org tasks.
-    set -l before (jj $repo_args log --no-graph -r 'present(main@origin)' -T 'commit_id ++ "\n"')
-
     jj $repo_args git fetch $argv
     or return
 
@@ -33,9 +29,9 @@ function pull --wraps 'jj git fetch' --description 'jj git fetch, fix a conflict
         or return
     end
 
-    if test (count $before) -eq 1
-        __jj_org_close "$before..main@origin" $repo_args
-    end
+    # The forge's merges (PR path) reach main only here, so this is where their
+    # `Closes: org:<UUID>` trailers close the org tasks.
+    __jj_org_close $JJ_WORKSPACE_ROOT
 
     # Everything after the fetch is local: my arm and the orphan arms onto main.
     jj-sync
