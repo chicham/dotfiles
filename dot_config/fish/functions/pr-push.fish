@@ -10,5 +10,5 @@ function pr-push --description 'Create or update bookmark at branch tip and push
     end
     jj bookmark set $argv[1] -r 'tip(@)' --allow-backwards
     or return
-    jj git push --remote origin -b $argv[1] --allow-new
+    jj git push --remote origin -b $argv[1]
 end

@@ -28,7 +28,8 @@ pp() {
   run pp feature-x
   [ "$status" -eq 0 ]
   rg -q 'bookmark set feature-x' "$T/calls"
-  rg -q 'git push --remote origin -b feature-x' "$T/calls"
+  rg -q 'git push --remote origin -b feature-x$' "$T/calls"
+  ! rg -q -- '--allow-new' "$T/calls"
 }
 
 @test "pr-push without a name still prints the usage" {
