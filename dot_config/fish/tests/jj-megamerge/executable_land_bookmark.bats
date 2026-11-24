@@ -10,8 +10,15 @@ setup() {
   FUNCS=$(cd "$here/../../functions" && pwd)
   command -v fish > /dev/null || skip "fish not available"
   T=$BATS_TEST_TMPDIR
-  CFG=$(cd "$here/../../../jj" && pwd)/config.toml.tmpl
   command -v chezmoi > /dev/null || skip "chezmoi not available"
+  # Source tree: the template sits beside the tests' ancestor dirs. Live tree: only the
+  # rendered config.toml exists, so ask chezmoi where its source is.
+  JJDIR=$(cd "$here/../../../jj" 2>/dev/null && pwd)
+  CFG=$JJDIR/config.toml.tmpl
+  if [ ! -f "$CFG" ]; then
+    CFG=$(chezmoi source-path "$JJDIR/config.toml" 2>/dev/null) || CFG=
+  fi
+  [ -f "$CFG" ] || skip "config.toml.tmpl not found"
   chezmoi execute-template < "$CFG" > "$T/config.toml"
   export JJ_CONFIG=$T/config.toml
   export ORGFILES=$T/org XDG_STATE_HOME=$T/state
