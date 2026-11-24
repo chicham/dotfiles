@@ -7,7 +7,14 @@ set -u
 here=$(cd "$(dirname "$0")" && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-cp "$here"/setup.sh "$here"/cases.sh "$here"/flows.sh "$work"/
+# The chezmoi source names the scripts executable_<name>; the live tree has the plain name.
+for f in setup cases flows; do
+  src=$here/$f.sh
+  [ -f "$src" ] || src=$here/executable_$f.sh
+  cp "$src" "$work/$f.sh" || exit 1
+done
+# cases.sh runs $S/setup.sh directly; a source-tree copy may lack the exec bit.
+chmod +x "$work"/setup.sh "$work"/cases.sh "$work"/flows.sh
 status=0
 for t in cases flows; do
   echo "### $t"
