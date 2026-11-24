@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# `jj issues`: the raw alias output with each org:<uuid> followed by its task title.
+# A uuid orgtool cannot resolve stays bare. Extra args go to the raw alias (e.g. -r REVSET).
+set -uo pipefail
+orgtool=${ORGTOOL:-$HOME/Work/skills/skills/org/scripts/orgtool}
+jj issues-raw "$@" | ORGTOOL=$orgtool perl -pe '
+  our %t;
+  s{org:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}{
+    my $u=$1;
+    $t{$u} //= do { my $l=`"$ENV{ORGTOOL}" find --id $u 2>/dev/null | head -n1`; my @f=split /\t/,$l; $f[2] // "" };
+    $t{$u} ne "" ? "org:$u \"$t{$u}\"" : "org:$u"
+  }ge'

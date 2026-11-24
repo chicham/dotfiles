@@ -2,7 +2,7 @@ function issue-new --wraps 'jj log -r' --description 'Open a GitHub issue from a
     # `jj issue-new <rev> [--parent <N>]` ≡ `issue-new <rev> [--parent <N>]`.
     # The commit's subject becomes the issue title and its body the issue description;
     # `--parent N` files it as a sub-issue of N. A commit that already carries an issue
-    # footer (Closes/Fixes/Resolves[:] #N, Issue: #N) is left alone. An `Issue: none` line (the
+    # footer (Closes/Fixes/Resolves[:] #N or org:<uuid>, Issue: #N or org:<uuid>) is left alone. An `Issue: none` line (the
     # body stood in for an issue) is left out of the issue and replaced by `Closes: #N` in the
     # commit, so the other trailers of its paragraph (Fixes: …) stay one trailer block.
     argparse --min-args 1 --max-args 1 'parent=' -- $argv
@@ -29,7 +29,7 @@ function issue-new --wraps 'jj log -r' --description 'Open a GitHub issue from a
         echo "issue-new: $rev has no description; describe it first" >&2
         return 1
     end
-    set -l existing (string match -r -- '(?m)^((Closes|Fixes|Resolves):? #\d+|Issue: #\d+)$' $description)
+    set -l existing (string match -r -- '(?m)^((Closes|Fixes|Resolves):? (#\d+|org:[0-9a-f-]{36})|Issue: (#\d+|org:[0-9a-f-]{36}))$' $description)
     if test -n "$existing"
         echo "issue-new: $rev already tracks an issue: $existing[1]"
         return 0

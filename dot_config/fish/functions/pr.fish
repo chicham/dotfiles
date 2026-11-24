@@ -38,7 +38,7 @@ function pr --description 'Check a stack against the PR gates, preview its PRs, 
         "a level with a conflict:$stack & conflicts()" \
         "a level with no issue footer:$stack & no_issue()" \
         "a session link in a message:$stack & description(glob:'*claude.ai/code/session*')" \
-        "an issue footer sharing its paragraph (jj-stack joins the lines of a paragraph into one line of the PR body; put a blank line around each footer):$stack & description(regex:'(?m)^(Closes|Fixes|Resolves|Refs|Issue):? (#|none)[^\n]*\n[^\n]|[^\n]\n(Closes|Fixes|Resolves|Refs|Issue):? (#|none)')" \
+        "an issue footer sharing its paragraph (jj-stack joins the lines of a paragraph into one line of the PR body; put a blank line around each footer):$stack & description(regex:'(?m)^(Closes|Fixes|Resolves|Refs|Issue):? (#|org:)[^\n]*\n[^\n]|[^\n]\n(Closes|Fixes|Resolves|Refs|Issue):? (#|org:)')" \
         "unpushed commits on local main:unpushed()"
     for gate in $gates
         set -l parts (string split -m 1 ':' -- $gate)

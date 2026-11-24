@@ -80,7 +80,8 @@ deploy = ["util", "exec", "--", "fish", "-c", "deploy $argv", "--"]
 # on a conflict (after `jj automerge`; a clean automerge also stops, for review: rerun),
 # advance main to its tip (forward-only). Never touches another arm or
 # wip; the next `jj deploy` drops the landed arm from wip.
-# Usage: `jj land [<rev>]` (default @: lands `tip(@)`). Logic: land.fish.
+# Usage: `jj land [-b <bookmark>] [<rev>]` (default @: lands `tip(@)`; default bookmark main).
+# Only a land on main closes the `Closes: org:<UUID>` tasks and moves the orphan arms. Logic: land.fish.
 land = ["util", "exec", "--", "fish", "-c", "land $argv", "--"]
 
 # Local only, no fetch: rebase my arm onto main, then every arm no workspace sits on
@@ -105,12 +106,13 @@ pull = ["util", "exec", "--", "fish", "-c", "pull $argv", "--"]
 # drafts), `jj pr <arm-tip> --push --open` (mark ready). Logic: ~/.config/fish/functions/pr.fish.
 pr = ["util", "exec", "--", "fish", "-c", "pr $argv", "--"]
 
-# One line per arm commit with its issue footer (Closes/Fixes/Resolves[:] #N, or
-# `Issue: #N` for a linked issue it does not close), `local` when its body is the
-# issue (`Issue: none`), or `-` when it has neither.
+# One line per arm commit with its footer (Closes/Fixes/Resolves[:] #N or org:<uuid>, or
+# `Issue: #N` / `Issue: org:<uuid>` for a linked item it does not close), or `-` when it has
+# none. Org task titles: `orgtool find --id <uuid>`.
 # Extra `-r <revset>` args are unioned, e.g. `jj issues -r 'unpushed()'` = what the
 # next push closes.
-issues = ["log", "--no-graph", "-r", "arms()", "-T", 'change_id.short() ++ " " ++ description.first_line() ++ "  " ++ coalesce(description.lines().filter(|l| l.starts_with("Closes #") || l.starts_with("Closes: #") || l.starts_with("Fixes #") || l.starts_with("Fixes: #") || l.starts_with("Resolves #") || l.starts_with("Resolves: #") || l.starts_with("Issue: #")).join(", "), if(description.lines().filter(|l| l == "Issue: none").len() > 0, "local", "-")) ++ "\n"']
+issues-raw = ["log", "--no-graph", "-r", "arms()", "-T", 'change_id.short() ++ " " ++ description.first_line() ++ "  " ++ coalesce(description.lines().filter(|l| l.starts_with("Closes #") || l.starts_with("Closes: #") || l.starts_with("Fixes #") || l.starts_with("Fixes: #") || l.starts_with("Resolves #") || l.starts_with("Resolves: #") || l.starts_with("Closes: org:") || l.starts_with("Fixes: org:") || l.starts_with("Resolves: org:") || l.starts_with("Issue: org:") || l.starts_with("Issue: #")).join(", "), "-") ++ "\n"']
+issues = ["util", "exec", "--", "bash", "# [[ .chezmoi.homeDir ]] #/.config/jj/jj-issues"]
 
 # Open a GitHub issue from a commit that has none, and add `Closes #N` to it:
 # `jj issue-new <rev> [--parent <N>]` (--parent files it as a sub-issue of N).
@@ -236,8 +238,8 @@ label(if(current_working_copy, "working_copy"),
 "megamerge()" = 'bookmarks(exact:"main") | remote_bookmarks(exact:"main", exact:"origin") | (mutable() ~ ::bookmarks(exact:"main")) | @'
 # Local main commits not on the forge yet: what the next push carries and closes.
 "unpushed()" = "::main ~ ::present(main@origin)"
-# Arm commits that neither close an issue nor carry one in their body (`Issue: none`).
-"no_issue()" = 'arms() ~ description(regex:"(?m)^((Closes|Fixes|Resolves):? #[0-9]+|Issue: (#[0-9]+|none)$)")'
+# Arm commits that neither close nor link a tracked item (GitHub `#N` or org task `org:<uuid>`).
+"no_issue()" = 'arms() ~ description(regex:"(?m)^((Closes|Fixes|Resolves):? (#[0-9]+|org:[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})|Issue: (#[0-9]+|org:[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$)")'
 # Local copies of changes whose other copy is immutable (e.g. on main@origin after a
 # rebase-merge): what the rebase in `jj pull` drops.
 "superseded()" = "divergent() & mutable()"
