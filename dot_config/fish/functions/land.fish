@@ -1,7 +1,8 @@
 function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the destination bookmark (main by default) when stale, advance that bookmark to its tip'
     # Single source of truth for the land logic; the jj `land` alias delegates here
     # (see ~/.config/jj/config.toml) so `jj land [-b <bookmark>] [<rev>]` and `land ...` are
-    # equivalent. The destination is main unless -b/--bookmark names another bookmark.
+    # equivalent. The destination is main unless -b/--bookmark names `landing`; every other
+    # name (main and wip included) is refused.
     # Lands `tip(<rev>)`, rev defaulting to @: everything in `<dest>..tip` goes onto the
     # destination. For main, the arms no workspace sits on then follow main, and the
     # `Closes: org:<UUID>` trailers close their org tasks. Another bookmark has none of that:
@@ -17,6 +18,24 @@ function land --wraps 'jj log -r' --description 'Land my arm: rebase it onto the
 
     set -l bm main
     set -q _flag_bookmark; and set bm $_flag_bookmark
+    # Only `landing` (the landing() revset) may be advanced besides main: any other
+    # bookmark would become an orphan arm and be rebased by every later land/sync/pull,
+    # and advancing wip would move the deploy merge.
+    switch $bm
+        case main
+            # the default; -b main is not a second spelling of it
+            if set -q _flag_bookmark
+                echo "land: -b main is refused; run jj land without -b to land on main" >&2
+                return 1
+            end
+        case wip
+            echo "land: -b wip is refused: only jj deploy moves wip" >&2
+            return 1
+        case landing
+        case '*'
+            echo "land: -b accepts only the bookmark landing (got $bm)" >&2
+            return 1
+    end
     if test (count $argv) -gt 1
         echo "land: at most one <rev>; got $argv" >&2
         return 1

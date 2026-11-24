@@ -161,7 +161,11 @@ label(if(current_working_copy, "working_copy"),
 # (squash, rebase, describe, abandon, edit, restore), for agents and humans alike;
 # `--ignore-immutable` is the deliberate escape hatch. Moving the bookmark (`jj land`)
 # is not a rewrite. wip cannot be immutable: every arm sits below it.
-"immutable_heads()" = 'builtin_immutable_heads() | present(bookmarks(exact:"main"))'
+"immutable_heads()" = 'builtin_immutable_heads() | present(bookmarks(exact:"main")) | landing()'
+# The one bookmark besides main that `jj land -b` may advance: a holding place for work
+# that is reviewed and tested but not meant for main yet. It is no arm: sync, pull and land
+# never rebase it, and it is immutable like main. Empty until the bookmark `landing` exists.
+"landing()" = 'present(bookmarks(exact:"landing"))'
 # NOTE: revset function names cannot contain hyphens (jj parses `-` as minus).
 
 # --- Arms -------------------------------------------------------------------------
@@ -175,9 +179,9 @@ label(if(current_working_copy, "working_copy"),
 # workspace's undescribed `@` promotes its parent to the tip. Scratch (`wip*`,
 # `scratch*`), `private:*` commits and the frozen history pinned by
 # provenance/preserve/restore/* bookmarks are never arms.
-"arm_tips()" = '''heads(mutable() ~ ::main ~ present(wip):: ~ description(exact:"") ~ description(glob:"wip*") ~ description(glob:"scratch*") ~ description(glob:"private:*") ~ ::bookmarks(glob:"provenance/*") ~ ::bookmarks(glob:"preserve/*") ~ ::bookmarks(glob:"restore/*"))'''
+"arm_tips()" = '''heads(mutable() ~ ::main ~ ::landing() ~ present(wip):: ~ description(exact:"") ~ description(glob:"wip*") ~ description(glob:"scratch*") ~ description(glob:"private:*") ~ ::bookmarks(glob:"provenance/*") ~ ::bookmarks(glob:"preserve/*") ~ ::bookmarks(glob:"restore/*"))'''
 # Every commit on every arm.
-"arms()" = "main..arm_tips()"
+"arms()" = "(main..arm_tips()) ~ ::landing()"
 # Work `jj deploy` leaves out: content in undescribed commits (an agent mid-edit in
 # its `@`) that no arm tip contains. jj refuses to push undescribed commits, so they
 # cannot be deployed until described.
@@ -197,8 +201,9 @@ label(if(current_working_copy, "working_copy"),
 # ~/.config/fish/functions/jj-megamerge-guard.fish, and per arm by `jj deploy`.
 "mm_merges(x)" = "chain(x) & merges()"
 # The arm's first commit does not sit on the current main: stale base, or the arm
-# sits on unlanded commits that are not another arm's tip.
-"mm_stale(x)" = "roots(chain(x))- ~ main"
+# sits on unlanded commits that are not another arm's tip. Work stacked on what landed
+# on `landing` is not stale: that bookmark is held back from main on purpose.
+"mm_stale(x)" = "roots(chain(x))- ~ main ~ ::landing()"
 "mm_conflicts(x)" = "chain(x) & conflicts()"
 # Arm tips built on top of x: extending x would fork them (x is mid-arm, or another
 # arm deliberately stacked on it). `x ~ ::main` keeps `jj new main` from matching
