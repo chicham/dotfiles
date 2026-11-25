@@ -16,19 +16,21 @@ Invariants: they hold even when no skill is loaded. Procedure lives in the skill
 - **Nobody owns the root.** Work in your own workspace
   (`jj -R <repo> workspace add <repo>/.workspaces/<name> -r main`, plus its own `uv sync`).
   The repo root is read-only. Leave changes in the working copy, and never discard them.
-- **One workspace = one arm**: a linear chain on `main`. `wip` merges all arms, and only `jj deploy`
-  touches it (ask first, it pushes). Never build merges by hand.
-- **Edit across arms from a scratch `@` on `wip`.** `jj new wip` is allowed. Edit or resolve there,
-  then move each hunk into its arm with `jj absorb --into 'arms()'` (ask first). Afterwards `@` must be
-  empty. Never commit there. After every land, sync or rebase, `conflicts() & mutable()` must be empty.
+- **One workspace = one arm**: a linear chain on `main`. `wip` merges the deployed set (chosen arms plus `main`),
+  and only `jj deploy` touches it (ask first, it pushes). Never build merges by hand.
+- **Resolve a conflict between arms in your own workspace.** Rebase your arm onto the other arm's tip, resolve,
+  then `jj deploy`. Never put `@` on `wip` (the guard blocks it). After every land, sync or rebase,
+  `conflicts() & mutable()` must be empty.
 - **`main` is immutable.** Only `jj land` moves it. Never `--ignore-immutable` without a go-ahead.
 - **The megamerge guard hook is a hard gate.** Fix what it reports; never route around it.
-- **Rewrite only your own commits** (`main..@`) and `orphan_arms()`. For another workspace's
-  commits, the user must confirm the exact command in chat first. Check `jj op log` before a mutation.
+- **Rewrite only your own commits** (`main..@`) and `orphan_arms()`. The guard blocks rewrites of
+  another workspace's commits; if one is truly needed, the user must confirm the exact command in chat
+  and run it themselves. Check `jj op log` before a mutation.
 - **Never push, publish a PR, or land** without the user's explicit go-ahead. Landing also needs
-  green tests, shown by `context-hygiene/scripts/gate.sh` (not a scout summary), and drained review comments.
-- **One PR = one commit = one feature group**, with one `Closes: #N` line per issue
-  (`Issue: #N` when linked but not closing, `Issue: none` with the issue in the body when there is none).
+  green CI on the PR (read from GitHub, not a scout summary), and drained review comments.
+- **One PR = one commit = one feature group**, with one `Closes: #N` line per GitHub issue
+  or `Closes: org:<UUID>` per org task (full 36-char lowercase uuid). `Issue: #N` / `Issue: org:<UUID>` when linked but
+  not closing. Every commit closes or links a tracked item: find or create it yourself, never ask (`Issue: none` is gone).
   Each footer line is its own paragraph (blank line before and after), and the last sub-issue's
   commit also closes the parent issue. A new chain starts from `main`, unless it depends on an unlanded chain (say so).
 
@@ -122,7 +124,9 @@ The user reviews in Neovim. Never drive their editor. Load `/local-review` for t
 ## Tracking
 Each item has one home. Never copy it into a second one; link instead.
 - **Code bugs and features → GitHub issues.** Commits close them (`Closes: #N`). Issues hold code work
-  only, never run follow-ups.
+  only, never run follow-ups. Filing one needs no ask.
+- **Research ideas and experiments → org tasks.** Commits close them (`Closes: org:<UUID>`). Create with
+  `orgtool new`, close with `orgtool close` or `orgtool sweep`. Find or create the task without asking.
 - **Experiments → orgfiles**: hypotheses, runs in flight (`tracking.org`), dated results (logbook),
   leaderboard. Load `experiment-methodology` for what goes where.
 - **Metric values → the metrics store.** Notes and reports cite the store; they never copy numbers by hand.
