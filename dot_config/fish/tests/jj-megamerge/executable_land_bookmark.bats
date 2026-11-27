@@ -13,10 +13,10 @@ setup() {
   command -v chezmoi > /dev/null || skip "chezmoi not available"
   # Source tree: the template sits beside the tests' ancestor dirs. Live tree: only the
   # rendered config.toml exists, so ask chezmoi where its source is.
-  JJDIR=$(cd "$here/../../../jj" 2>/dev/null && pwd)
+  JJDIR=$(cd "$here/../../../jj" 2> /dev/null && pwd)
   CFG=$JJDIR/config.toml.tmpl
   if [ ! -f "$CFG" ]; then
-    CFG=$(chezmoi source-path "$JJDIR/config.toml" 2>/dev/null) || CFG=
+    CFG=$(chezmoi source-path "$JJDIR/config.toml" 2> /dev/null) || CFG=
   fi
   [ -f "$CFG" ] || skip "config.toml.tmpl not found"
   chezmoi execute-template < "$CFG" > "$T/config.toml"

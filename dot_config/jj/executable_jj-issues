@@ -9,7 +9,10 @@ set -uo pipefail
 orgtool=${ORGTOOL:-}
 if [ -z "$orgtool" ]; then
   for c in "$HOME/.claude/skills/org/scripts/orgtool" "$HOME/Work/skills/skills/org/scripts/orgtool"; do
-    [ -r "$c" ] && { orgtool=$c; break; }
+    [ -r "$c" ] && {
+      orgtool=$c
+      break
+    }
   done
 fi
 jj ${JJ_WORKSPACE_ROOT:+-R "$JJ_WORKSPACE_ROOT"} issues-raw "$@" | ORGTOOL=$orgtool perl -pe '

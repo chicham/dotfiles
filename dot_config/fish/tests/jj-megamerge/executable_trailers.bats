@@ -115,7 +115,10 @@ assert_rows() {
     [ "$col" = pr ] && want=$3
     if grep -qxF -- "$shape: $1" "$seen"; then got=Y; else got=N; fi
     [ "$sense" = missed ] && { [ "$got" = Y ] && got=N || got=Y; }
-    [ "$got" = "$want" ] || { echo "$shape row $1 ($4): want $want, got $got" >&2; fail=1; }
+    [ "$got" = "$want" ] || {
+      echo "$shape row $1 ($4): want $want, got $got" >&2
+      fail=1
+    }
   }
   each_row verdict
   [ "$fail" = 0 ]
