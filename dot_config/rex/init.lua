@@ -545,15 +545,236 @@ rex.action{
   end,
 }
 rex.bind(P .. "ctrl+s", "session.switch")
-rex.bind(P .. "w", "session.open_on_web")
 rex.bind(P .. "ctrl+q", "session.close")
 rex.bind(P .. "b", "client.sidebar.toggle")
 rex.bind(P .. "/", "client.find.open")
 -- ; instead of zellij's ?: on AZERTY ? needs Shift and , is already rename.
 rex.bind(P .. ";", "client.palette.toggle")
 
--- Rex rejects "$" as a key name; on a Mac AZERTY layout it is [BracketRight].
-rex.bind(P .. "[BracketRight]", "session.rename")
+-- ============================================================================
+-- GROUP TABS: Ctrl+A a moves each repository's tabs into one session
+-- ============================================================================
+
+-- Repositories are resolved by reading their files: the server's PATH has
+-- neither jj nor Homebrew's git.
+
+-- A file's content, false when the path is a directory, nil when it is absent.
+local function read_path(path)
+  local file = io.open(path, "r")
+  if not file then
+    return nil
+  end
+  -- A directory opens like a file but cannot be read.
+  local content = file:read("*a")
+  file:close()
+  return content or false
+end
+
+-- `path` resolved against the absolute directory `base`, without "." or "..".
+local function join_path(base, path)
+  if path:sub(1, 1) ~= "/" then
+    path = base .. "/" .. path
+  end
+  local parts = {}
+  for part in path:gmatch("[^/]+") do
+    if part == ".." then
+      parts[#parts] = nil
+    elseif part ~= "." then
+      parts[#parts + 1] = part
+    end
+  end
+  return "/" .. table.concat(parts, "/")
+end
+
+local function trim(s)
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+-- The main repository directory of the jj workspace rooted at `dir`, or nil.
+-- A secondary workspace's .jj/repo is a file pointing at the main .jj/repo.
+local function jj_repo(dir)
+  local pointer = read_path(dir .. "/.jj/repo")
+  if pointer == false then
+    return dir
+  end
+  if pointer then
+    local store = join_path(dir .. "/.jj", trim(pointer))
+    return (store:gsub("/%.jj/repo$", ""))
+  end
+end
+
+-- The main repository directory of the git checkout rooted at `dir`, or nil.
+-- A worktree's or submodule's .git is a file naming its git directory; a
+-- worktree's git directory names the shared one in "commondir".
+local function git_repo(dir)
+  local dot_git = read_path(dir .. "/.git")
+  if dot_git == false then
+    return dir
+  end
+  local target = dot_git and dot_git:match("^gitdir:%s*([^\r\n]+)")
+  if not target then
+    return nil
+  end
+  local git_dir = join_path(dir, trim(target))
+  local common = read_path(git_dir .. "/commondir")
+  if common then
+    git_dir = join_path(git_dir, trim(common))
+  end
+  return (git_dir:gsub("/%.git$", ""))
+end
+
+-- The repository holding the absolute directory `dir`, as the main
+-- repository's directory (a bare or separate git directory stands for
+-- itself), or nil. The nearest ancestor with a repository wins, and jj wins
+-- over git there, so a colocated repository and its worktrees share one key.
+local function repo_of(dir)
+  dir = join_path("/", dir)
+  while true do
+    local at = dir == "/" and "" or dir
+    local repo = jj_repo(at) or git_repo(at)
+    if repo or dir == "/" then
+      return repo
+    end
+    dir = dir:match("^(.*)/[^/]*$")
+    if dir == "" then
+      dir = "/"
+    end
+  end
+end
+
+-- The directory a tab works in: its focused pane's foreground program's cwd,
+-- else the pane's reported pwd, else nil.
+local function tab_dir(session_id, win)
+  local block_id = win.focused_block_id
+  if not block_id then
+    return nil
+  end
+  local target = { block_id = block_id, session_id = session_id }
+  local proc = rex.block.call(TERMINAL, "process", target)
+  local cwd = proc and proc.foreground and proc.foreground.cwd
+  if cwd then
+    return cwd
+  end
+  local res = rex.block.call(TERMINAL, "pwd", target)
+  local pwd = res and res.pwd
+  if not pwd then
+    return nil
+  end
+  -- OSC 7 reports a percent-encoded URL; a plain path is used as it is.
+  local path, found = pwd:gsub("^file://[^/]*", "")
+  if found > 0 then
+    path = path:gsub("%%(%x%x)", function(hex)
+      return string.char(tonumber(hex, 16))
+    end)
+  end
+  return path:sub(1, 1) == "/" and path or nil
+end
+
+-- The moves that gather each repository's tabs in the session already holding
+-- most of them (the first in sidebar order on a tie), in sidebar order. Tabs
+-- outside any repository stay. Reads only.
+local function plan_groups()
+  local tabs, sessions = {}, {}
+  local list, err = rex.call("session.attach_all", { event_scope = "session" })
+  if not list then
+    rex.log("error", "group_tabs: " .. tostring(err))
+  end
+  for _, s in ipairs(list and list.sessions or {}) do
+    sessions[#sessions + 1] = s
+    local view, verr = rex.session.view{ session_id = s.session_id }
+    if not view then
+      rex.log("error", "group_tabs: " .. tostring(verr))
+    end
+    for _, w in ipairs(view and view.windows or {}) do
+      local dir = tab_dir(s.session_id, w)
+      local repo = dir and repo_of(dir)
+      if repo then
+        tabs[#tabs + 1] = { session = s, win = w, repo = repo }
+      end
+    end
+  end
+
+  local counts = {}
+  for _, t in ipairs(tabs) do
+    local c = counts[t.repo] or {}
+    c[t.session.session_id] = (c[t.session.session_id] or 0) + 1
+    counts[t.repo] = c
+  end
+  local home = {}
+  for repo, c in pairs(counts) do
+    local most = 0
+    for _, s in ipairs(sessions) do
+      local n = c[s.session_id] or 0
+      if n > most then
+        home[repo], most = s, n
+      end
+    end
+  end
+
+  local moves = {}
+  for _, t in ipairs(tabs) do
+    local to = home[t.repo]
+    if to.session_id ~= t.session.session_id then
+      moves[#moves + 1] = {
+        tab = tab_name(t.session.session_id, t.win),
+        repo = t.repo,
+        window_id = t.win.window_id,
+        session_id = t.session.session_id,
+        session = t.session.label,
+        to_session_id = to.session_id,
+        to_session = to.label,
+      }
+    end
+  end
+  return moves
+end
+
+rex.action{
+  name     = "group_tabs",
+  title    = "Group Tabs by Repository",
+  category = "Tabs",
+  run      = function(ctx, args)
+    local current = locate(ctx.session_id, ctx.block_id)
+    local current_id = current and current.window_id
+    local moved, failed, home = {}, 0, ctx.session_id
+    for _, m in ipairs(plan_groups()) do
+      local is_current = m.window_id == current_id
+      local _, err = rex.call("session.transfer_window", {
+        session_id    = m.session_id,
+        window_id     = m.window_id,
+        to_session_id = m.to_session_id,
+        focus         = is_current,
+      })
+      if err then
+        failed = failed + 1
+        rex.log("error", "group_tabs: " .. m.tab .. ": " .. tostring(err))
+      else
+        moved[#moved + 1] = m
+        if is_current then
+          home = m.to_session_id
+        end
+      end
+    end
+    -- Any transfer can shift the app's selection, not only the current tab's.
+    if current_id and #moved > 0 then
+      rex.client.queue("session.select", {
+        session_id = home, window_id = current_id,
+      })
+    end
+    return { moved = moved, failed = failed }
+  end,
+}
+rex.bind(P .. "a", "group_tabs")
+
+-- The moves group_tabs would make now, without making them.
+rex.action{
+  name     = "group_tabs_preview",
+  title    = "Preview Grouping Tabs by Repository",
+  category = "Tabs",
+  run      = function(ctx, args)
+    return { moves = plan_groups() }
+  end,
+}
 
 -- ============================================================================
 -- RESIZE MODE: Ctrl+A r, then arrows; Esc, q or Enter to leave
@@ -668,15 +889,16 @@ rex.action{
   end,
 }
 
--- Physical keys: Rex's parser rejects ( ) : as key names. On a Mac AZERTY
--- layout, ( = Digit5, ) = Minus, : = Period, = = Slash.
-rex.bind("alt+[KeyN]", "type_text", { text = "~" })
--- Shift+letter bindings load but never dispatch in Rex 0.1.0, so | also has
--- Option+= until that is fixed.
-rex.bind("shift+alt+[KeyL]", "type_text", { text = "|" })
-rex.bind("alt+[Slash]", "type_text", { text = "|" })
-rex.bind("shift+alt+[Period]", "type_text", { text = "\\" })
-rex.bind("shift+alt+[Digit5]", "type_text", { text = "[" })
-rex.bind("shift+alt+[Minus]", "type_text", { text = "]" })
-rex.bind("alt+[Digit5]", "type_text", { text = "{" })
-rex.bind("alt+[Minus]", "type_text", { text = "}" })
+-- Physical keys, named by US position, giving the characters of the macOS
+-- French-PC input source.
+rex.bind("alt+[Digit2]", "type_text", { text = "~" })
+rex.bind("alt+[Digit3]", "type_text", { text = "#" })
+rex.bind("alt+[Digit4]", "type_text", { text = "{" })
+rex.bind("alt+[Digit5]", "type_text", { text = "[" })
+rex.bind("alt+[Digit6]", "type_text", { text = "|" })
+rex.bind("alt+[Digit7]", "type_text", { text = "`" })
+rex.bind("alt+[Digit8]", "type_text", { text = "\\" })
+rex.bind("alt+[Digit9]", "type_text", { text = "^" })
+rex.bind("alt+[Digit0]", "type_text", { text = "@" })
+rex.bind("alt+[Minus]", "type_text", { text = "]" })
+rex.bind("alt+[Equal]", "type_text", { text = "}" })
