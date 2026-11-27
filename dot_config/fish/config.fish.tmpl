@@ -35,6 +35,9 @@ if test -d $HOME/.local/bin
     fish_add_path $HOME/.local/bin
 end
 
+# bat reads the same configuration on every OS
+set -gx BAT_CONFIG_DIR "$HOME/.config/bat"
+
 # Add language-specific and tool paths
 if test -d $HOME/.fzf/bin
     fish_add_path $HOME/.fzf/bin

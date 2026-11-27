@@ -157,6 +157,7 @@ Re-run `chezmoi init` to update your module selection, then `chezmoi apply`.
 - [Catppuccin theme](https://github.com/catppuccin/starship) - palette currently in use
 
 ### Development Tools
+- `~/.config/fish/functions/view.fish` - fish function `view` (interactive alias `v`): show a file with the viewer matching its extension ([mcat](https://github.com/Skardyy/mcat), [fx](https://fx.wtf), [duckdb](https://duckdb.org/), [hl](https://github.com/pamburus/hl), [lnav](https://lnav.org/), [ouch](https://github.com/ouch-org/ouch), [hexyl](https://github.com/sharkdp/hexyl)), falling back to `bat`; tables, JSON, YAML, TOML (fx) and compressed logs (lnav) print through `bat` and return to the shell; tables show the first 40 rows through DuckDB, whose `excel` and `sqlite` extensions are installed on apply; the viewers are installed by Homebrew on macOS
 - `~/.config/bat/config` - Syntax highlighter configuration ([Bat Documentation](https://github.com/sharkdp/bat))
 - `~/.config/direnv/direnvrc` - Environment management ([Direnv Documentation](https://direnv.net/))
 - `~/.config/uv/uv.toml` - Python package manager configuration ([uv Documentation](https://docs.astral.sh/uv/))

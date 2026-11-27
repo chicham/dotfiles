@@ -36,6 +36,7 @@ jobs:
               - '.chezmoidata/**'
               - '.chezmoitemplates/**'
               - 'dot_**'
+              - 'dot_*/**'
               - 'private_dot_**'
             tests:
               - 'tests/**'
@@ -70,7 +71,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: install bats
-        run: sudo apt-get update && sudo apt-get install -y bats jq yq
+        # fish 4 from its PPA: the Ubuntu archive ships fish 3.
+        run: |
+          sudo add-apt-repository -y ppa:fish-shell/release-4
+          sudo apt-get update && sudo apt-get install -y bats jq yq fish
       - name: install chezmoi
         run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
       - name: run bats
@@ -87,6 +91,11 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: install bats and chezmoi
-        run: brew install bats-core chezmoi jq yq shellcheck
+        run: brew install bats-core chezmoi jq yq shellcheck fish
+      - name: install the file viewers and DuckDB extensions
+        run: |
+          brew install bat hexyl mcat fx ouch hl lnav duckdb
+          sh .chezmoiscripts/run_after_install-duckdb-extensions.sh
+          duckdb -no-init -c 'SET autoinstall_known_extensions=false; LOAD excel; LOAD sqlite;'
       - name: run bats
         run: bats tests/

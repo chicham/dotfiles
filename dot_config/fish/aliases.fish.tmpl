@@ -46,6 +46,9 @@ if type -q eza
     alias ldata="$eza_long --sort=size --reverse -I='*.log|*.tmp|.cache'"
 end
 
+# Short name for the file viewer (functions/view.fish)
+alias v="view"
+
 # Use bat instead of cat if installed
 if type -q bat
     # Set bat aliases - using smart_bat function defined in functions directory
@@ -217,7 +220,6 @@ end
 if type -q nvim
     alias vim="nvim"
     alias vi="nvim"
-    alias v="nvim"
 end
 # [[ end ]] #
 
